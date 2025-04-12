@@ -156,7 +156,7 @@ const ShipListPage: React.FC<ShipListPageProps> = ({ onSelectShip }) => {
                            ship.name.toLowerCase().includes(searchTerm.toLowerCase());
     
     if (activeTab === '全部') return matchesSearch;
-    if (activeTab === '新加船舶') return ship.status === ShipStatus.ACTIVE && matchesSearch;
+    if (activeTab === '新加坡线') return ship.status === ShipStatus.ACTIVE && matchesSearch;
     if (activeTab === '美国线') return ship.location === '美国' && matchesSearch;
     
     return matchesSearch;
@@ -205,7 +205,7 @@ const ShipListPage: React.FC<ShipListPageProps> = ({ onSelectShip }) => {
             {/* 选项卡 */}
             <div className="border-b border-gray-200 mb-6">
               <nav className="-mb-px flex space-x-8">
-                {['全部', '新加船舶', '美国线'].map(tab => (
+                {['全部', '新加坡线', '美国线'].map(tab => (
                   <button
                     key={tab}
                     className={`py-2 px-1 border-b-2 font-medium text-sm ${

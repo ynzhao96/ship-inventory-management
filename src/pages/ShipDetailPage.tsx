@@ -5,19 +5,8 @@ import Header from '../components/Header';
 
 interface ShipDetailPageProps {
   onBack: () => void;
+  ship: Ship;
 }
-
-// 模拟船舶数据
-const mockShip: Ship = {
-  id: 'ABC-123',
-  name: '远洋号',
-  type: ShipType.CARGO,
-  capacity: 2000,
-  currentLoad: 1245,
-  status: ShipStatus.ACTIVE,
-  location: '上海港',
-  lastMaintenance: new Date('2023-01-15')
-};
 
 // 模拟货物数据
 const mockCargos: Cargo[] = [
@@ -78,9 +67,8 @@ const mockStoreData = [
   { store: 'Store-7', name: '油漆', level: 10 },
 ];
 
-const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack }) => {
-  const [ship] = useState<Ship>(mockShip);
-  const [cargos] = useState<Cargo[]>(mockCargos);
+const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
+  const [cargos] = useState<Cargo[]>(mockCargos.filter(cargo => cargo.shipId === ship.id));
   const [activeInventoryTab, setActiveInventoryTab] = useState('全部');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCargo, setSelectedCargo] = useState<Cargo | null>(null);
@@ -436,7 +424,7 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack }) => {
     <div className="min-h-screen w-full flex flex-col bg-gray-50">
       {/* 使用抽象的Header组件 */}
       <Header 
-        title="船舶ABC-123"
+        title={`船舶${ship.id}`}
         notificationCount={2}
         onBack={onBack}
       />
