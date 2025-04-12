@@ -8,6 +8,14 @@ interface ShipDetailPageProps {
   ship: Ship;
 }
 
+// 预警配置接口
+interface WarningConfig {
+  id: string;
+  cargoId: string;
+  cargoName: string;
+  threshold: number;
+}
+
 // 模拟货物数据
 const mockCargos: Cargo[] = [
   {
@@ -67,54 +75,66 @@ const mockStoreData = [
   { store: 'Store-7', name: '油漆', level: 10 },
 ];
 
+// 模拟预警配置数据
+const mockWarningConfigs: WarningConfig[] = [
+  {
+    id: 'w001',
+    cargoId: '001',
+    cargoName: '发动机润滑油',
+    threshold: 50
+  },
+  {
+    id: 'w002',
+    cargoId: '002',
+    cargoName: '液压油',
+    threshold: 30
+  }
+];
+
 const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
   const [cargos] = useState<Cargo[]>(mockCargos.filter(cargo => cargo.shipId === ship.id));
   const [activeInventoryTab, setActiveInventoryTab] = useState('全部');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCargo, setSelectedCargo] = useState<Cargo | null>(null);
   const [reportTab, setReportTab] = useState('charts');
-  const [activePage, setActivePage] = useState('inventory-storage');
+  const [activePage, setActivePage] = useState('ship-info');
+  const [warningConfigs, setWarningConfigs] = useState<WarningConfig[]>(mockWarningConfigs);
+  const [batchNumber, setBatchNumber] = useState('');
+  const [supplyItems, setSupplyItems] = useState<Array<{
+    id: string;
+    cargoId: string;
+    cargoName: string;
+    quantity: number;
+  }>>([{ id: '1', cargoId: '', cargoName: '', quantity: 0 }]);
 
   // 船舶详情页特定的侧边栏菜单项
   const shipDetailMenuItems = [
     {
-      id: 'inventory',
+      id: 'ship-info',
+      label: '船舶信息',
+      icon: (
+        <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )
+    },
+    {
+      id: 'add-supply',
+      label: '物资入库',
+      icon: (
+        <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 4v16m8-8H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )
+    },
+    {
+      id: 'inventory-storage',
       label: '物资库存',
       icon: (
         <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M20 7h-3V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM9 4h6v3H9V4z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-      ),
-      children: [
-        {
-          id: 'inventory-storage',
-          label: '物资库存',
-          icon: (
-            <svg className="w-4 h-4 mr-3" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          )
-        },
-        {
-          id: 'inventory-data',
-          label: '数据报表汇总',
-          icon: (
-            <svg className="w-4 h-4 mr-3" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          )
-        },
-        {
-          id: 'inventory-prewarn',
-          label: '预警配置',
-          icon: (
-            <svg className="w-4 h-4 mr-3" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          )
-        }
-      ]
+      )
     },
     {
       id: 'data-report',
@@ -128,7 +148,7 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
       )
     },
     {
-      id: 'prewarn',
+      id: 'inventory-prewarn',
       label: '预警配置',
       icon: (
         <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -165,6 +185,58 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
     
     return matchesSearch;
   });
+
+  // 添加新的预警配置行
+  const handleAddWarningConfig = () => {
+    const newConfig: WarningConfig = {
+      id: `w${warningConfigs.length + 1}`.padStart(4, '0'),
+      cargoId: '',
+      cargoName: '',
+      threshold: 0
+    };
+    setWarningConfigs([...warningConfigs, newConfig]);
+  };
+
+  // 更新预警配置
+  const handleUpdateWarningConfig = (id: string, field: keyof WarningConfig, value: string | number) => {
+    setWarningConfigs(warningConfigs.map(config => 
+      config.id === id ? { ...config, [field]: value } : config
+    ));
+  };
+
+  // 添加新的物资行
+  const handleAddSupplyItem = () => {
+    const newItem = {
+      id: (supplyItems.length + 1).toString(),
+      cargoId: '',
+      cargoName: '',
+      quantity: 0
+    };
+    setSupplyItems([...supplyItems, newItem]);
+  };
+
+  // 更新物资行
+  const handleUpdateSupplyItem = (id: string, field: string, value: string | number) => {
+    setSupplyItems(supplyItems.map(item => 
+      item.id === id ? { ...item, [field]: value } : item
+    ));
+  };
+
+  // 删除物资行
+  const handleDeleteSupplyItem = (id: string) => {
+    if (supplyItems.length > 1) {
+      setSupplyItems(supplyItems.filter(item => item.id !== id));
+    }
+  };
+
+  // 提交物资补充表单
+  const handleSubmitSupply = () => {
+    // 这里添加提交逻辑
+    console.log('提交物资补充:', {
+      batchNumber,
+      supplyItems
+    });
+  };
 
   // 渲染库存概况页
   const renderInventoryOverview = () => (
@@ -420,9 +492,233 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
     </div>
   );
 
+  // 渲染预警配置页面
+  const renderWarningConfig = () => (
+    <div className="bg-white shadow rounded-lg p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">预警配置</h2>
+        <button 
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          onClick={handleAddWarningConfig}
+        >
+          添加配置
+        </button>
+      </div>
+      
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资编号</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资名称</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">预警阈值</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {warningConfigs.map(config => (
+              <tr key={config.id}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={config.cargoId}
+                    onChange={(e) => handleUpdateWarningConfig(config.id, 'cargoId', e.target.value)}
+                  />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={config.cargoName}
+                    onChange={(e) => handleUpdateWarningConfig(config.id, 'cargoName', e.target.value)}
+                  />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <input
+                    type="number"
+                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={config.threshold}
+                    onChange={(e) => handleUpdateWarningConfig(config.id, 'threshold', Number(e.target.value))}
+                  />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <button 
+                    className="text-red-600 hover:text-red-900"
+                    onClick={() => setWarningConfigs(warningConfigs.filter(w => w.id !== config.id))}
+                  >
+                    删除
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  // 渲染船舶信息页面
+  const renderShipInfo = () => (
+    <div className="bg-white shadow rounded-lg p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">{ship.name}</h2>
+        <div className="space-x-2">
+          <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+            编辑信息
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div className="bg-gray-50 p-4 rounded-md">
+            <h3 className="text-sm font-medium text-gray-500 mb-1">船舶编号</h3>
+            <p className="text-lg font-semibold">{ship.id}</p>
+          </div>
+          <div className="bg-gray-50 p-4 rounded-md">
+            <h3 className="text-sm font-medium text-gray-500 mb-1">船舶类型</h3>
+            <p className="text-lg font-semibold">{ship.type}</p>
+          </div>
+          <div className="bg-gray-50 p-4 rounded-md">
+            <h3 className="text-sm font-medium text-gray-500 mb-1">船舶状态</h3>
+            <p className="text-lg font-semibold">{ship.status}</p>
+          </div>
+          <div className="bg-gray-50 p-4 rounded-md">
+            <h3 className="text-sm font-medium text-gray-500 mb-1">当前位置</h3>
+            <p className="text-lg font-semibold">{ship.location}</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="bg-gray-50 p-4 rounded-md">
+            <h3 className="text-sm font-medium text-gray-500 mb-1">总容量</h3>
+            <p className="text-lg font-semibold">{ship.capacity}吨</p>
+          </div>
+          <div className="bg-gray-50 p-4 rounded-md">
+            <h3 className="text-sm font-medium text-gray-500 mb-1">当前载重</h3>
+            <p className="text-lg font-semibold">{ship.currentLoad}吨</p>
+          </div>
+          <div className="bg-gray-50 p-4 rounded-md">
+            <h3 className="text-sm font-medium text-gray-500 mb-1">使用率</h3>
+            <div className="mt-2">
+              <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-blue-500 rounded-full" 
+                  style={{ width: `${(ship.currentLoad / ship.capacity) * 100}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between mt-1 text-sm text-gray-600">
+                <span>已使用: {((ship.currentLoad / ship.capacity) * 100).toFixed(1)}%</span>
+                <span>剩余空间: {(ship.capacity - ship.currentLoad)}吨</span>
+              </div>
+            </div>
+          </div>
+          <div className="bg-gray-50 p-4 rounded-md">
+            <h3 className="text-sm font-medium text-gray-500 mb-1">上次维护时间</h3>
+            <p className="text-lg font-semibold">{ship.lastMaintenance.toLocaleDateString()}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // 渲染物资补充表单页面
+  const renderSupplyForm = () => (
+    <div className="bg-white shadow rounded-lg p-6">
+      <h2 className="text-xl font-bold mb-6">物资补充</h2>
+      
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">批次号</label>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={batchNumber}
+          onChange={(e) => setBatchNumber(e.target.value)}
+          placeholder="请输入批次号"
+        />
+      </div>
+
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium">物资详情</h3>
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            onClick={handleAddSupplyItem}
+          >
+            添加物资
+          </button>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资编号</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资名称</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {supplyItems.map(item => (
+                <tr key={item.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="text"
+                      className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={item.cargoId}
+                      onChange={(e) => handleUpdateSupplyItem(item.id, 'cargoId', e.target.value)}
+                      placeholder="请输入物资编号"
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="text"
+                      className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={item.cargoName}
+                      onChange={(e) => handleUpdateSupplyItem(item.id, 'cargoName', e.target.value)}
+                      placeholder="请输入物资名称"
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="number"
+                      className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={item.quantity}
+                      onChange={(e) => handleUpdateSupplyItem(item.id, 'quantity', Number(e.target.value))}
+                      placeholder="请输入数量"
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <button
+                      className="text-red-600 hover:text-red-900"
+                      onClick={() => handleDeleteSupplyItem(item.id)}
+                      disabled={supplyItems.length === 1}
+                    >
+                      删除
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          onClick={handleSubmitSupply}
+        >
+          提交
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen w-full flex flex-col bg-gray-50">
-      {/* 使用抽象的Header组件 */}
       <Header 
         title={`船舶${ship.id}`}
         notificationCount={2}
@@ -430,94 +726,25 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
       />
 
       <div className="flex flex-1 overflow-hidden">
-        {/* 侧边栏 */}
         <Sidebar 
           activePage={activePage} 
           onNavigate={handleNavigate} 
           menuItems={shipDetailMenuItems} 
         />
 
-        {/* 主要内容 */}
         <div className="flex-1 overflow-y-auto bg-gray-50">
           <div className="container mx-auto px-6 py-6">
-            <div className="bg-white shadow rounded-lg p-6 mb-6">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h2 className="text-2xl font-bold">{ship.name}</h2>
-                  <p className="text-gray-500">{ship.type} | {ship.status}</p>
-                </div>
-                <div className="space-x-2">
-                  <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-                    编辑信息
-                  </button>
-                  <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100">
-                    添加货物
-                  </button>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">容量</h3>
-                  <p className="text-xl font-bold">{ship.capacity}吨</p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">当前载重</h3>
-                  <p className="text-xl font-bold">{ship.currentLoad}吨</p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">位置</h3>
-                  <p className="text-xl font-bold">{ship.location}</p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">上次维护</h3>
-                  <p className="text-xl font-bold">{ship.lastMaintenance.toLocaleDateString()}</p>
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">使用率</h3>
-                <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-blue-500 rounded-full" 
-                    style={{ width: `${(ship.currentLoad / ship.capacity) * 100}%` }}
-                  ></div>
-                </div>
-                <div className="flex justify-between mt-1 text-sm text-gray-600">
-                  <span>已使用: {((ship.currentLoad / ship.capacity) * 100).toFixed(1)}%</span>
-                  <span>剩余空间: {(ship.capacity - ship.currentLoad)}吨</span>
-                </div>
-              </div>
-            </div>
-
-            <ul className="flex border-b border-gray-200 mb-6">
-              <li className="mr-2">
-                <button
-                  className={`py-2 px-4 font-medium text-sm ${
-                    reportTab !== 'charts' && reportTab !== 'table'
-                      ? 'bg-white border-t border-l border-r rounded-t-lg text-blue-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                  onClick={() => setReportTab('')}
-                >
-                  库存总览
-                </button>
-              </li>
-              <li className="mr-2">
-                <button
-                  className={`py-2 px-4 font-medium text-sm ${
-                    reportTab === 'charts' || reportTab === 'table'
-                      ? 'bg-white border-t border-l border-r rounded-t-lg text-blue-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                  onClick={() => setReportTab('charts')}
-                >
-                  报表页面
-                </button>
-              </li>
-            </ul>
-
-            {reportTab === 'charts' || reportTab === 'table' ? renderReportPage() : renderInventoryOverview()}
+            {activePage === 'ship-info' ? (
+              renderShipInfo()
+            ) : activePage === 'add-supply' ? (
+              renderSupplyForm()
+            ) : activePage === 'inventory-prewarn' ? (
+              renderWarningConfig()
+            ) : activePage === 'inventory-storage' ? (
+              renderInventoryOverview()
+            ) : activePage === 'data-report' ? (
+              renderReportPage()
+            ) : null}
           </div>
         </div>
       </div>
