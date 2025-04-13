@@ -104,8 +104,9 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
     id: string;
     cargoId: string;
     cargoName: string;
+    cargoType: string;
     quantity: number;
-  }>>([{ id: '1', cargoId: '', cargoName: '', quantity: 0 }]);
+  }>>([{ id: '1', cargoId: '', cargoName: '', cargoType: '生活用品', quantity: 0 }]);
 
   // 船舶详情页特定的侧边栏菜单项
   const shipDetailMenuItems = [
@@ -210,6 +211,7 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
       id: (supplyItems.length + 1).toString(),
       cargoId: '',
       cargoName: '',
+      cargoType: '生活用品',
       quantity: 0
     };
     setSupplyItems([...supplyItems, newItem]);
@@ -656,6 +658,7 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资编号</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资名称</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资种类</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
               </tr>
@@ -680,6 +683,17 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
                       onChange={(e) => handleUpdateSupplyItem(item.id, 'cargoName', e.target.value)}
                       placeholder="请输入物资名称"
                     />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <select
+                      className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={item.cargoType}
+                      onChange={(e) => handleUpdateSupplyItem(item.id, 'cargoType', e.target.value)}
+                    >
+                      <option value="生活用品">生活用品</option>
+                      <option value="维护物资">维护物资</option>
+                      <option value="其他">其他</option>
+                    </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
