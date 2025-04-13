@@ -6,7 +6,7 @@ import { Ship } from './types'
 import './App.css'
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(true)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [activePage, setActivePage] = useState('shipList')
   const [selectedShip, setSelectedShip] = useState<Ship | null>(null)
 

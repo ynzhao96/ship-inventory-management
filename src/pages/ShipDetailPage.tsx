@@ -283,11 +283,11 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
     if (!selectedCargo) return null;
 
     const mockRecords = [
-      { id: '1', type: '入库提交', date: '2024-03-20', quantity: 100, status: '待确认' },
-      { id: '2', type: '入库确认', date: '2024-03-19', quantity: 50, status: '已确认' },
-      { id: '3', type: '申领记录', date: '2024-03-18', quantity: 30, status: '已发放' },
-      { id: '4', type: '入库提交', date: '2024-03-17', quantity: 200, status: '待确认' },
-      { id: '5', type: '入库确认', date: '2024-03-16', quantity: 150, status: '已确认' },
+      { id: '1', type: '入库提交', date: '2024-03-20 14:30:00', quantity: 100 },
+      { id: '2', type: '入库确认', date: '2024-03-19 09:15:00', quantity: 50 },
+      { id: '3', type: '申领记录', date: '2024-03-18 16:45:00', quantity: 30 },
+      { id: '4', type: '入库提交', date: '2024-03-17 11:20:00', quantity: 200 },
+      { id: '5', type: '入库确认', date: '2024-03-16 10:00:00', quantity: 150 },
     ];
 
     const filteredRecords = mockRecords.filter(record => {
@@ -337,26 +337,16 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">类型</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日期</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日期</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredRecords.map(record => (
                     <tr key={record.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-left">{record.type}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-left">{record.date}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-left">{record.quantity}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-left">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          record.status === '已确认' || record.status === '已发放'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {record.status}
-                        </span>
-                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-left">{record.date}</td>
                     </tr>
                   ))}
                 </tbody>
