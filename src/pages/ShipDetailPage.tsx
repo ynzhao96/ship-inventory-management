@@ -27,7 +27,10 @@ const mockCargos: Cargo[] = [
     shipId: 'ABC-123',
     status: CargoStatus.STORED,
     destination: '上海港',
-    arrivalDate: new Date('2023-05-20')
+    arrivalDate: new Date('2023-05-20'),
+    cargoCode: 'M001',
+    cargoCategory: '维护物资',
+    quantity: 200
   },
   {
     id: '002',
@@ -38,7 +41,10 @@ const mockCargos: Cargo[] = [
     shipId: 'ABC-123',
     status: CargoStatus.STORED,
     destination: '上海港',
-    arrivalDate: new Date('2023-05-20')
+    arrivalDate: new Date('2023-05-20'),
+    cargoCode: 'M002',
+    cargoCategory: '维护物资',
+    quantity: 150
   },
   {
     id: '003',
@@ -49,7 +55,10 @@ const mockCargos: Cargo[] = [
     shipId: 'ABC-123',
     status: CargoStatus.STORED,
     destination: '青岛港',
-    arrivalDate: new Date('2023-06-10')
+    arrivalDate: new Date('2023-06-10'),
+    cargoCode: 'L001',
+    cargoCategory: '生活用品',
+    quantity: 50
   },
   {
     id: '004',
@@ -60,7 +69,10 @@ const mockCargos: Cargo[] = [
     shipId: 'ABC-123',
     status: CargoStatus.STORED,
     destination: '广州港',
-    arrivalDate: new Date('2023-06-15')
+    arrivalDate: new Date('2023-06-15'),
+    cargoCode: 'S001',
+    cargoCategory: '安全设备',
+    quantity: 20
   }
 ];
 
@@ -187,13 +199,10 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
   // 过滤显示的货物
   const filteredCargos = cargos.filter(cargo => {
     const matchesSearch = cargo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          cargo.type.toLowerCase().includes(searchTerm.toLowerCase());
+                          cargo.cargoCode.toLowerCase().includes(searchTerm.toLowerCase());
     
     if (activeInventoryTab === '全部') return matchesSearch;
-    if (activeInventoryTab === '生活用品') return cargo.type === CargoType.CONTAINER && matchesSearch;
-    if (activeInventoryTab === '机械设备') return cargo.type === CargoType.BULK && matchesSearch;
-    
-    return matchesSearch;
+    return cargo.cargoCategory === activeInventoryTab && matchesSearch;
   });
 
   // 添加新的预警配置行
@@ -287,7 +296,7 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
       <div className="relative mb-4">
         <input
           type="text"
-          placeholder="搜索物品编号或名称"
+          placeholder="搜索物资编号或名称"
           className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -301,7 +310,7 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
 
       <div className="border-b border-gray-200 mb-6">
         <nav className="-mb-px flex space-x-8">
-          {['全部', '生活用品', '机械设备'].map(tab => (
+          {['全部', '生活用品', '维护物资', '安全设备'].map(tab => (
             <button
               key={tab}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
@@ -325,15 +334,19 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
               className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
               onClick={() => setSelectedCargo(cargo)}
             >
-              <h3 className="text-lg font-semibold mb-2">{cargo.name}</h3>
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-lg font-semibold">{cargo.name}</h3>
+                <span className="text-sm text-gray-500">{cargo.cargoCode}</span>
+              </div>
+              <div className="text-sm text-gray-500 mb-2">{cargo.cargoCategory}</div>
               <div className="flex justify-between mb-2">
                 <div>
                   <p className="text-sm text-gray-500">当前库存</p>
-                  <p className="text-lg font-bold">{cargo.weight}</p>
+                  <p className="text-lg font-bold">{cargo.quantity}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">待入库</p>
-                  <p className="text-lg font-bold">{cargo.volume > cargo.weight ? cargo.volume - cargo.weight : cargo.weight}</p>
+                  <p className="text-lg font-bold">{cargo.volume > cargo.quantity ? cargo.volume - cargo.quantity : cargo.quantity}</p>
                 </div>
               </div>
             </div>
@@ -344,11 +357,11 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资编号</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资名称</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">类型</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资种类</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">当前库存</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">待入库</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -358,11 +371,11 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
                   className="hover:bg-gray-50 cursor-pointer"
                   onClick={() => setSelectedCargo(cargo)}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.type}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.weight}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.volume > cargo.weight ? cargo.volume - cargo.weight : cargo.weight}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.status}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-left">{cargo.cargoCode}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-left">{cargo.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-left">{cargo.cargoCategory}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-left">{cargo.quantity}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-left">{cargo.volume > cargo.quantity ? cargo.volume - cargo.quantity : cargo.quantity}</td>
                 </tr>
               ))}
             </tbody>
@@ -374,7 +387,10 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
             <div className="flex justify-between items-start mb-4">
-              <h3 className="text-xl font-bold">{selectedCargo.name}</h3>
+              <div>
+                <h3 className="text-xl font-bold">{selectedCargo.name}</h3>
+                <p className="text-sm text-gray-500">{selectedCargo.cargoCode}</p>
+              </div>
               <button 
                 className="text-gray-500 hover:text-gray-700"
                 onClick={() => setSelectedCargo(null)}
@@ -386,16 +402,16 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
             </div>
             <div className="space-y-3 mb-4">
               <div className="flex justify-between">
-                <span className="font-medium">类型:</span>
-                <span>{selectedCargo.type}</span>
+                <span className="font-medium">物资种类:</span>
+                <span>{selectedCargo.cargoCategory}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-medium">重量:</span>
-                <span>{selectedCargo.weight}吨</span>
+                <span className="font-medium">当前库存:</span>
+                <span>{selectedCargo.quantity}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-medium">体积:</span>
-                <span>{selectedCargo.volume}㎥</span>
+                <span className="font-medium">待入库:</span>
+                <span>{selectedCargo.volume > selectedCargo.quantity ? selectedCargo.volume - selectedCargo.quantity : selectedCargo.quantity}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">状态:</span>
