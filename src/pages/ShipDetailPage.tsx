@@ -115,6 +115,8 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
   const [activeInventoryTab, setActiveInventoryTab] = useState('全部');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCargo, setSelectedCargo] = useState<Cargo | null>(null);
+  const [showCargoDetail, setShowCargoDetail] = useState(false);
+  const [activeTab, setActiveTab] = useState('入库提交');
   const [reportTab, setReportTab] = useState('charts');
   const [activePage, setActivePage] = useState('ship-info');
   const [warningConfigs, setWarningConfigs] = useState<WarningConfig[]>(mockWarningConfigs);
@@ -272,6 +274,100 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
     console.log('保存账号信息:', accountInfo);
   };
 
+  const handleCargoClick = (cargo: Cargo) => {
+    setSelectedCargo(cargo);
+    setShowCargoDetail(true);
+  };
+
+  const renderCargoDetail = () => {
+    if (!selectedCargo) return null;
+
+    const mockRecords = [
+      { id: '1', type: '入库提交', date: '2024-03-20', quantity: 100, status: '待确认' },
+      { id: '2', type: '入库确认', date: '2024-03-19', quantity: 50, status: '已确认' },
+      { id: '3', type: '申领记录', date: '2024-03-18', quantity: 30, status: '已发放' },
+      { id: '4', type: '入库提交', date: '2024-03-17', quantity: 200, status: '待确认' },
+      { id: '5', type: '入库确认', date: '2024-03-16', quantity: 150, status: '已确认' },
+    ];
+
+    const filteredRecords = mockRecords.filter(record => {
+      if (activeTab === '全部') return true;
+      return record.type === activeTab;
+    });
+
+    return (
+      <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+          <div className="p-6">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">{selectedCargo.name}</h2>
+                <p className="text-gray-500">物资编号：{selectedCargo.cargoCode}</p>
+              </div>
+              <button
+                onClick={() => setShowCargoDetail(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="border-b border-gray-200 mb-6">
+              <nav className="-mb-px flex space-x-8">
+                {['全部', '入库提交', '入库确认', '申领记录'].map(tab => (
+                  <button
+                    key={tab}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                      activeTab === tab 
+                        ? 'border-blue-500 text-blue-600' 
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                    onClick={() => setActiveTab(tab)}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            <div className="overflow-auto max-h-[60vh]">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50 sticky top-0">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">类型</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日期</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredRecords.map(record => (
+                    <tr key={record.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-left">{record.type}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-left">{record.date}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-left">{record.quantity}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-left">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          record.status === '已确认' || record.status === '已发放'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {record.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // 渲染库存概况页
   const renderInventoryOverview = () => (
     <div>
@@ -332,7 +428,7 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
             <div 
               key={cargo.id} 
               className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => setSelectedCargo(cargo)}
+              onClick={() => handleCargoClick(cargo)}
             >
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-lg font-semibold">{cargo.name}</h3>
@@ -362,6 +458,7 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资种类</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">当前库存</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">待入库</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -369,72 +466,18 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
                 <tr 
                   key={cargo.id}
                   className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => setSelectedCargo(cargo)}
+                  onClick={() => handleCargoClick(cargo)}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-left">{cargo.cargoCode}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-left">{cargo.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-left">{cargo.cargoCategory}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-left">{cargo.quantity}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-left">{cargo.volume > cargo.quantity ? cargo.volume - cargo.quantity : cargo.quantity}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.cargoCode}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.cargoCategory}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.quantity}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.volume > cargo.quantity ? cargo.volume - cargo.quantity : cargo.quantity}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.status}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      )}
-
-      {selectedCargo && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-xl font-bold">{selectedCargo.name}</h3>
-                <p className="text-sm text-gray-500">{selectedCargo.cargoCode}</p>
-              </div>
-              <button 
-                className="text-gray-500 hover:text-gray-700"
-                onClick={() => setSelectedCargo(null)}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="space-y-3 mb-4">
-              <div className="flex justify-between">
-                <span className="font-medium">物资种类:</span>
-                <span>{selectedCargo.cargoCategory}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">当前库存:</span>
-                <span>{selectedCargo.quantity}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">待入库:</span>
-                <span>{selectedCargo.volume > selectedCargo.quantity ? selectedCargo.volume - selectedCargo.quantity : selectedCargo.quantity}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">状态:</span>
-                <span>{selectedCargo.status}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">目的地:</span>
-                <span>{selectedCargo.destination}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">到达日期:</span>
-                <span>{selectedCargo.arrivalDate?.toLocaleDateString()}</span>
-              </div>
-            </div>
-            <div className="flex justify-end space-x-2">
-              <button 
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                onClick={() => setSelectedCargo(null)}
-              >
-                关闭
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>
@@ -818,6 +861,7 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
             ) : activePage === 'account-management' ? (
               renderAccountManagement()
             ) : null}
+            {showCargoDetail && renderCargoDetail()}
           </div>
         </div>
       </div>
