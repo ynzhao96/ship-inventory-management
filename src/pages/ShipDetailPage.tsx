@@ -115,6 +115,7 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
     quantity: number;
   }>>([{ id: '1', cargoId: '', cargoName: '', cargoType: '生活用品', quantity: 0 }]);
   const [accountInfo, setAccountInfo] = useState(mockAccountData);
+  const [inventoryView, setInventoryView] = useState<'cards' | 'list'>('cards');
 
   // 船舶详情页特定的侧边栏菜单项
   const shipDetailMenuItems = [
@@ -267,23 +268,37 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
     <div>
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-xl font-bold">库存总览</h2>
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="搜索物品编号或名称"
-            className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-            </svg>
-          </div>
+        <div className="flex space-x-4">
+          <button 
+            className={`px-4 py-2 rounded-md ${inventoryView === 'cards' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            onClick={() => setInventoryView('cards')}
+          >
+            卡片视图
+          </button>
+          <button 
+            className={`px-4 py-2 rounded-md ${inventoryView === 'list' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            onClick={() => setInventoryView('list')}
+          >
+            列表视图
+          </button>
         </div>
       </div>
 
-      {/* 库存类型选项卡 */}
+      <div className="relative mb-4">
+        <input
+          type="text"
+          placeholder="搜索物品编号或名称"
+          className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+          </svg>
+        </div>
+      </div>
+
       <div className="border-b border-gray-200 mb-6">
         <nav className="-mb-px flex space-x-8">
           {['全部', '生活用品', '机械设备'].map(tab => (
@@ -302,30 +317,59 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
         </nav>
       </div>
 
-      {/* 货物卡片网格 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {filteredCargos.map(cargo => (
-          <div 
-            key={cargo.id} 
-            className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => setSelectedCargo(cargo)}
-          >
-            <h3 className="text-lg font-semibold mb-2">{cargo.name}</h3>
-            <div className="flex justify-between mb-2">
-              <div>
-                <p className="text-sm text-gray-500">当前库存</p>
-                <p className="text-lg font-bold">{cargo.weight}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">待入库</p>
-                <p className="text-lg font-bold">{cargo.volume > cargo.weight ? cargo.volume - cargo.weight : cargo.weight}</p>
+      {inventoryView === 'cards' ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {filteredCargos.map(cargo => (
+            <div 
+              key={cargo.id} 
+              className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => setSelectedCargo(cargo)}
+            >
+              <h3 className="text-lg font-semibold mb-2">{cargo.name}</h3>
+              <div className="flex justify-between mb-2">
+                <div>
+                  <p className="text-sm text-gray-500">当前库存</p>
+                  <p className="text-lg font-bold">{cargo.weight}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">待入库</p>
+                  <p className="text-lg font-bold">{cargo.volume > cargo.weight ? cargo.volume - cargo.weight : cargo.weight}</p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-white p-6 rounded-lg shadow">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资名称</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">类型</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">当前库存</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">待入库</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredCargos.map(cargo => (
+                <tr 
+                  key={cargo.id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => setSelectedCargo(cargo)}
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.type}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.weight}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.volume > cargo.weight ? cargo.volume - cargo.weight : cargo.weight}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.status}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      {/* 货物详情弹窗 */}
       {selectedCargo && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
@@ -392,16 +436,10 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
           >
             图表展示
           </button>
-          <button 
-            className={`px-4 py-2 rounded-md ${reportTab === 'table' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            onClick={() => setReportTab('table')}
-          >
-            列表视图
-          </button>
         </div>
       </div>
 
-      {reportTab === 'charts' ? (
+      {reportTab === 'charts' && (
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4">各库存点使用率</h3>
           <div className="grid grid-cols-7 gap-4 mb-8">
@@ -421,11 +459,9 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
 
           <h3 className="text-lg font-semibold mb-4">库存趋势 - 过去30天</h3>
           <div className="h-64 border-b border-gray-300 relative">
-            {/* 这里只是模拟图表 */}
             <div className="absolute bottom-0 left-0 right-0 h-px bg-gray-300"></div>
             <div className="absolute left-0 bottom-0 top-0 w-px bg-gray-300"></div>
             
-            {/* 模拟折线图 */}
             <svg className="h-full w-full" viewBox="0 0 400 200" preserveAspectRatio="none">
               <path 
                 d="M0,150 C50,120 100,180 150,80 C200,150 250,30 300,90 C350,10 400,70 400,100" 
@@ -454,63 +490,6 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
               <span className="text-sm">Payments</span>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-4">油品库存明细</h3>
-          <div className="flex justify-between mb-4">
-            <div>
-              <span className="text-gray-500 text-sm">当前库存</span>
-              <div className="text-xl font-bold">1,245</div>
-            </div>
-            <div>
-              <span className="text-gray-500 text-sm">待入库</span>
-              <div className="text-xl font-bold">107</div>
-            </div>
-          </div>
-          
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">记录</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日期</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">批次号</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap">补充</td>
-                <td className="px-6 py-4 whitespace-nowrap">200</td>
-                <td className="px-6 py-4 whitespace-nowrap">2023-3-12 18:00:52</td>
-                <td className="px-6 py-4 whitespace-nowrap">LOT-20230312-001</td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap">申领</td>
-                <td className="px-6 py-4 whitespace-nowrap">1</td>
-                <td className="px-6 py-4 whitespace-nowrap">2023-3-11 18:00:52</td>
-                <td className="px-6 py-4 whitespace-nowrap"></td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap">申领</td>
-                <td className="px-6 py-4 whitespace-nowrap">2</td>
-                <td className="px-6 py-4 whitespace-nowrap">2023-3-10 18:00:52</td>
-                <td className="px-6 py-4 whitespace-nowrap"></td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap">申领</td>
-                <td className="px-6 py-4 whitespace-nowrap">3</td>
-                <td className="px-6 py-4 whitespace-nowrap">2023-3-09 18:00:52</td>
-                <td className="px-6 py-4 whitespace-nowrap"></td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap">申领</td>
-                <td className="px-6 py-4 whitespace-nowrap">4</td>
-                <td className="px-6 py-4 whitespace-nowrap">2023-3-08 18:00:52</td>
-                <td className="px-6 py-4 whitespace-nowrap"></td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       )}
     </div>
