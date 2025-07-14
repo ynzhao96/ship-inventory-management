@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const AccountManagementPage = () => {
   // 模拟账号管理数据
@@ -19,7 +19,7 @@ const AccountManagementPage = () => {
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <h2 className="text-xl font-bold mb-6">账号管理</h2>
-      
+
       <div className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">账号</label>

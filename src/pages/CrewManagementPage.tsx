@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const CrewManagementPage = () => {
     // 模拟船员数据

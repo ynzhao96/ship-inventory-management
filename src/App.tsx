@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import LoginPage from './pages/LoginPage'
 import ShipListPage from './pages/ShipListPage'
 import ShipDetailPage from './pages/ShipDetailPage'

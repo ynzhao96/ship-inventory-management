@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const WarningConfigPage = () => {
   // 预警配置接口
@@ -40,7 +40,7 @@ const WarningConfigPage = () => {
 
   // 更新预警配置
   const handleUpdateWarningConfig = (id: string, field: keyof WarningConfig, value: string | number) => {
-    setWarningConfigs(warningConfigs.map(config => 
+    setWarningConfigs(warningConfigs.map(config =>
       config.id === id ? { ...config, [field]: value } : config
     ));
   };
@@ -49,14 +49,14 @@ const WarningConfigPage = () => {
     <div className="bg-white shadow rounded-lg p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold">预警配置</h2>
-        <button 
+        <button
           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
           onClick={handleAddWarningConfig}
         >
           添加配置
         </button>
       </div>
-      
+
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -95,7 +95,7 @@ const WarningConfigPage = () => {
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <button 
+                  <button
                     className="text-red-600 hover:text-red-900"
                     onClick={() => setWarningConfigs(warningConfigs.filter(w => w.id !== config.id))}
                   >

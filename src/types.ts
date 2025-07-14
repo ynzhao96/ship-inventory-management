@@ -7,7 +7,10 @@ export enum CargoType {
 export enum CargoStatus {
   STORED = '已入库',
   IN_TRANSIT = '运输中',
-  PENDING = '待入库'
+  PENDING = '待入库',
+  LOADING = '装货中',
+  UNLOADING = '卸货中',
+  DELIVERED = '已送达'
 }
 
 export enum ShipType {
@@ -17,7 +20,11 @@ export enum ShipType {
 }
 
 export enum ShipStatus {
+  ACTIVE = '活跃',
   IN_PORT = '在港',
+  LOADING = '装货中',
+  UNLOADING = '卸货中',
+  DECOMMISSIONED = '',
   AT_SEA = '在航',
   MAINTENANCE = '维修中',
   DOCKED = '停泊'
