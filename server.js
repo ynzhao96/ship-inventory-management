@@ -5,12 +5,12 @@ const port = 3000;
 
 app.use(express.json());
 
-app.get('/api/ping', (req, res) => {
+app.get('/ping', (req, res) => {
   res.json({ message: 'pong' });
 });
 
 // 登录接口
-app.post('/api/login', (req, res) => {
+app.post('/login', (req, res) => {
   const { username, password } = req.body;
   // 假设我们有一个用户列表进行验证
   const users = [{ username: 'user1', password: '123456', shipID: '1233332' }];
@@ -23,7 +23,7 @@ app.post('/api/login', (req, res) => {
 });
 
 // 获取首页信息接口
-app.post('/api/getHomeInfo', (req, res) => {
+app.post('/getHomeInfo', (req, res) => {
   const { shipID } = req.body;
   // 假设我们有一个船舶信息列表
   const ships = [{ shipID: '1233332', shipName: '船名' }];
@@ -36,7 +36,7 @@ app.post('/api/getHomeInfo', (req, res) => {
 });
 
 // 获取低库存预警接口
-app.post('/api/getLowInventory', (req, res) => {
+app.post('/getLowInventory', (req, res) => {
   const { shipID } = req.body;
   console.log(shipID);
   // 假设我们有一个低库存预警信息列表
@@ -45,7 +45,7 @@ app.post('/api/getLowInventory', (req, res) => {
 });
 
 // 获取全部库存接口
-app.post('/api/getInventoryList', (req, res) => {
+app.post('/getInventoryList', (req, res) => {
   const { shipID } = req.body;
   console.log(shipID);
   // 假设我们有一个库存信息列表
@@ -54,7 +54,7 @@ app.post('/api/getInventoryList', (req, res) => {
 });
 
 // 撤销入库接口
-app.post('/api/cancelConfirm', (req, res) => {
+app.post('/cancelConfirm', (req, res) => {
   const { shipID, confirmID, remark } = req.body;
   console.log(shipID, confirmID, remark);
   // 这里可以添加撤销入库的逻辑
@@ -62,7 +62,7 @@ app.post('/api/cancelConfirm', (req, res) => {
 });
 
 // 查看入库历史接口
-app.post('/api/getConfirmLog', (req, res) => {
+app.post('/getConfirmLog', (req, res) => {
   const { shipID, startTime, endTime } = req.body;
   console.log(shipID, startTime, endTime);
   // 这里可以添加查看入库历史的逻辑
@@ -70,7 +70,7 @@ app.post('/api/getConfirmLog', (req, res) => {
 });
 
 // 申领物资接口
-app.post('/api/claimItem', (req, res) => {
+app.post('/claimItem', (req, res) => {
   const { shipID, itemID, amount, remark, claimer } = req.body;
   console.log(shipID, itemID, amount, remark, claimer);
   // 这里可以添加申领物资的逻辑
@@ -78,7 +78,7 @@ app.post('/api/claimItem', (req, res) => {
 });
 
 // 撤销申领接口
-app.post('/api/cancelClaim', (req, res) => {
+app.post('/cancelClaim', (req, res) => {
   const { shipID, claimID, remark } = req.body;
   console.log(shipID, claimID, remark);
   // 这里可以添加撤销申领的逻辑
@@ -86,7 +86,7 @@ app.post('/api/cancelClaim', (req, res) => {
 });
 
 // 获取申领人列表接口
-app.post('/api/getClaimerList', (req, res) => {
+app.post('/getClaimerList', (req, res) => {
   const { shipID } = req.body;
   console.log(shipID);
   // 这里可以添加获取申领人列表的逻辑
@@ -94,7 +94,7 @@ app.post('/api/getClaimerList', (req, res) => {
 });
 
 // 查看申领历史接口
-app.post('/api/getClaimLog', (req, res) => {
+app.post('/getClaimLog', (req, res) => {
   const { shipID, startTime, endTime } = req.body;
   console.log(shipID, startTime, endTime);
   // 这里可以添加查看申领历史的逻辑
