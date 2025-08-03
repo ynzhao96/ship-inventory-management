@@ -1,6 +1,6 @@
-const mysql = require('mysql2/promise');
+import { createPool } from 'mysql2/promise';
 
-const pool = mysql.createPool({
+const pool = createPool({
   host: '10.0.4.11',      // 内网 IP
   port: 3306,
   user: 'root',   // 数据库用户名
@@ -11,4 +11,4 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-module.exports = pool;
+export default pool;
