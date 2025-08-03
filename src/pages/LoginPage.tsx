@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { login, ping } from '../api';
+import { adminLogin, ping } from '../api';
 
 interface LoginPageProps {
   onLogin: () => void;
@@ -12,7 +12,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     // 模拟登录逻辑 - 实际使用中应当进行用户名和密码验证
-    login(username, password);
+    adminLogin(username, password);
     ping();
     onLogin();
   };

@@ -11,7 +11,7 @@ app.get('/ping', (req, res) => {
 });
 
 // 登录接口
-app.post('/login', async (req, res) => {
+app.post('/adminLogin', async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
@@ -20,7 +20,7 @@ app.post('/login', async (req, res) => {
 
   try {
     const [rows] = await pool.query(
-      'SELECT id, username, password FROM users WHERE username = ? LIMIT 1',
+      'SELECT username, password, type FROM users WHERE username = ? LIMIT 1',
       [username]
     );
     console.log(rows);
