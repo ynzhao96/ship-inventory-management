@@ -1,5 +1,5 @@
 import express from 'express';
-import pool from './db';
+import pool from './db.js';
 
 const app = express();
 const port = 3000;
