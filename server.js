@@ -23,6 +23,7 @@ app.post('/login', async (req, res) => {
       'SELECT id, username, password FROM users WHERE username = ? LIMIT 1',
       [username]
     );
+    console.log(rows);
 
     if (rows.length === 0) {
       return res.status(401).json({ error: 'User not found' });

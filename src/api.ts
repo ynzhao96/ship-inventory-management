@@ -1,3 +1,11 @@
+export const ping = async () => {
+  const response = await fetch('/api/ping', {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  return response.json();
+};
+
 export const login = async (username: string, password: string) => {
   const response = await fetch('/api/login', {
     method: 'POST',
