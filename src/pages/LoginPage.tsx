@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { login } from '../api';
 
 interface LoginPageProps {
   onLogin: () => void;
@@ -11,7 +12,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     // 模拟登录逻辑 - 实际使用中应当进行用户名和密码验证
-    console.log('登录尝试:', username, password);
+    login(username, password);
     onLogin();
   };
 
@@ -22,8 +23,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           <h1 className="text-2xl font-bold mb-2">登录页面</h1>
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 flex items-center justify-center bg-blue-100 rounded-full">
-              <img 
-                src="/ship-icon.svg" 
+              <img
+                src="/ship-icon.svg"
                 alt="船舶图标"
                 className="w-10 h-10 text-blue-500"
                 onError={(e) => {
@@ -36,7 +37,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           </div>
           <h2 className="text-lg">船舶仓储管理系统-管理端</h2>
         </div>
-        
+
         <form onSubmit={handleLogin}>
           <div className="mb-4">
             <input
@@ -48,7 +49,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               required
             />
           </div>
-          
+
           <div className="mb-6">
             <input
               type="password"
@@ -59,7 +60,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               required
             />
           </div>
-          
+
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -67,7 +68,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             登录
           </button>
         </form>
-        
+
         <div className="mt-6 text-center text-xs text-gray-500">
           <p>Copyright © {new Date().getFullYear()} 船舶仓储管理系统</p>
           <p>版本号 v1.0</p>

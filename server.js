@@ -1,4 +1,5 @@
 import express from 'express';
+const pool = require('./db');
 
 const app = express();
 const port = 3000;
@@ -10,15 +11,34 @@ app.get('/ping', (req, res) => {
 });
 
 // 登录接口
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  // 假设我们有一个用户列表进行验证
-  const users = [{ username: 'user1', password: '123456', shipID: '1233332' }];
-  const user = users.find(u => u.username === username && u.password === password);
-  if (user) {
-    res.json({ code: 200, message: '登录成功', data: { shipID: user.shipID, token: 'xxxxxxxxxxxxxxxxxxxxxx' } });
-  } else {
-    res.status(401).json({ code: 401, message: '用户名或密码错误' });
+
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password required' });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, username, password FROM users WHERE username = ? LIMIT 1',
+      [username]
+    );
+
+    if (rows.length === 0) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    const user = rows[0];
+
+    // 简单对比密码（生产环境必须用 bcrypt 哈希）
+    if (user.password !== password) {
+      return res.status(401).json({ error: 'Invalid password' });
+    }
+
+    return res.json({ message: 'Login successful', userId: user.id });
+  } catch (err) {
+    console.error('DB error:', err);
+    return res.status(500).json({ error: 'Database error' });
   }
 });
 
