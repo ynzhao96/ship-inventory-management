@@ -23,7 +23,6 @@ app.post('/adminLogin', async (req, res) => {
       'SELECT username, password, type FROM users WHERE username = ? LIMIT 1',
       [username]
     );
-    console.log(rows);
 
     if (rows.length === 0) {
       return res.status(401).json({ error: 'User not found' });
@@ -36,7 +35,7 @@ app.post('/adminLogin', async (req, res) => {
       return res.status(401).json({ error: 'Invalid password' });
     }
 
-    return res.json({ message: 'Login successful', userId: user.id });
+    return res.json({ message: 'Login successful', success: true });
   } catch (err) {
     console.error('DB error:', err);
     return res.status(500).json({ error: 'Database error' });

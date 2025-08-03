@@ -9,12 +9,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     // 模拟登录逻辑 - 实际使用中应当进行用户名和密码验证
-    adminLogin(username, password);
-    ping();
-    onLogin();
+    const status = await adminLogin(username, password);
+    if (status.success) {
+      onLogin();
+    } else {
+      alert(status.error);
+    }
   };
 
   return (
