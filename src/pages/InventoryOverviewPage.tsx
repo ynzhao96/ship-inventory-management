@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Cargo, CargoType, CargoStatus, Ship } from '../types';
+import { Cargo, CargoType, CargoStatus } from '../types';
 
 interface InventoryOverviewPageProps {
   shipId?: string;

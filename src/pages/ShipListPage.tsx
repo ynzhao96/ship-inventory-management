@@ -1,12 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Ship, ShipType, ShipStatus } from '../types';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
-
-interface ShipListPageProps {
-  onSelectShip: (ship: Ship) => void;
-}
 
 // 模拟船舶数据
 const mockShips: Ship[] = [
@@ -92,7 +88,7 @@ const mockShips: Ship[] = [
   }
 ];
 
-const ShipListPage = ({ onLogout }: { onLogout: () => void }) => {
+const ShipListPage = ({ }: { onLogout: () => void }) => {
   const navigate = useNavigate();
   const handleSelectShip = (shipId: string) => {
     navigate(`/ships/${shipId}`);

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Ship } from '../types';
 
 interface ShipInfoPageProps {
   shipId?: string;

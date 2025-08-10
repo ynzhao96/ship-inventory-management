@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Ship } from '../types';
+import { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import ShipInfoPage from './ShipInfoPage';
@@ -10,11 +9,6 @@ import AccountManagementPage from './AccountManagementPage';
 import InventoryOverviewPage from './InventoryOverviewPage';
 import CrewManagementPage from './CrewManagementPage';
 import { useParams } from 'react-router-dom';
-
-interface ShipDetailPageProps {
-  onBack: () => void;
-  ship: Ship;
-}
 
 const ShipDetailPage = ({ onBack }: { onBack: () => void }) => {
   const { shipId } = useParams();

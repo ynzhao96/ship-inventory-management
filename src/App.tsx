@@ -4,7 +4,6 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import ShipListPage from './pages/ShipListPage';
 import ShipDetailPage from './pages/ShipDetailPage';
-import { Ship } from './types';
 
 // 简单的登录态读取
 function useAuth() {
