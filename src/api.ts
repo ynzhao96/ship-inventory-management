@@ -7,12 +7,29 @@ export const ping = async () => {
 };
 
 export const adminLogin = async (username: string, password: string) => {
-  const response = await fetch('/api/adminLogin', {
+  const res = await fetch('/api/adminLogin', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
+    body: JSON.stringify({ username, password }),
   });
-  return response.json();
+
+  let data: any = {};
+  try { data = await res.json(); } catch { }
+
+  if (!res.ok) {
+    // 401 / 404 / 500 等都走这里
+    return {
+      success: false,
+      error: data?.message || data?.error || `登录失败(${res.status})`,
+      code: data?.code || 'ERROR',
+    };
+  }
+
+  return {
+    success: data?.success === true,
+    user: data?.user,
+    message: data?.message || '登录成功',
+  };
 };
 
 export const getHomeInfo = async (shipID: string) => {

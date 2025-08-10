@@ -10,12 +10,12 @@ app.get('/ping', (req, res) => {
   res.json({ message: 'pong' });
 });
 
-// 登录接口
+// 管理员登录接口
 app.post('/adminLogin', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password } = req.body || {};
 
   if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password required' });
+    return res.status(400).json({ success: false, code: 'BAD_REQUEST', message: '用户名和密码必填' });
   }
 
   try {
@@ -25,20 +25,29 @@ app.post('/adminLogin', async (req, res) => {
     );
 
     if (rows.length === 0) {
-      return res.status(401).json({ error: 'User not found' });
+      // 账号不存在
+      return res.status(404).json({ success: false, code: 'USER_NOT_FOUND', message: '账号不存在' });
     }
 
     const user = rows[0];
 
-    // 简单对比密码（生产环境必须用 bcrypt 哈希）
+    // ⚠️ 生产要用 bcrypt.compare，这里暂时明文对比
     if (user.password !== password) {
-      return res.status(401).json({ error: 'Invalid password' });
+      // 密码错误
+      return res.status(401).json({ success: false, code: 'INVALID_PASSWORD', message: '密码错误' });
     }
 
-    return res.json({ message: 'Login successful', success: true });
+    // 成功
+    return res.status(200).json({
+      success: true,
+      code: 'OK',
+      message: '登录成功',
+      user: { username: user.username, type: user.type }
+      // 生产建议返回 JWT：token: 'xxx'
+    });
   } catch (err) {
     console.error('DB error:', err);
-    return res.status(500).json({ error: 'Database error' });
+    return res.status(500).json({ success: false, code: 'DB_ERROR', message: '数据库错误' });
   }
 });
 

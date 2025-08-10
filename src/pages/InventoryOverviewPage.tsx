@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Cargo, CargoType, CargoStatus, Ship } from '../types';
 
 interface InventoryOverviewPageProps {
-  ship: Ship;
+  shipId?: string;
 }
-const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ ship }) => {
+const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId }) => {
   // 模拟货物数据
   const mockCargos: Cargo[] = [
     {
@@ -67,11 +67,11 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ ship }) =
   const [inventoryView, setInventoryView] = useState<'cards' | 'list'>('cards');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeInventoryTab, setActiveInventoryTab] = useState('全部');
-  const [cargos] = useState<Cargo[]>(mockCargos.filter(cargo => cargo.shipId === ship.id));
+  const [cargos] = useState<Cargo[]>(mockCargos.filter(cargo => cargo.shipId === shipId));
   const [selectedCargo, setSelectedCargo] = useState<Cargo | null>(null);
   const [showCargoDetail, setShowCargoDetail] = useState(false);
   const [activeTab, setActiveTab] = useState('入库提交');
-  
+
 
 
   // 过滤显示的货物
@@ -130,8 +130,8 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ ship }) =
                   <button
                     key={tab}
                     className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                     onClick={() => setActiveTab(tab)}
                   >
@@ -208,8 +208,8 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ ship }) =
             <button
               key={tab}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${activeInventoryTab === tab
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               onClick={() => setActiveInventoryTab(tab)}
             >

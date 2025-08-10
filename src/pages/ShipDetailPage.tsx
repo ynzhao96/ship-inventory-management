@@ -9,13 +9,15 @@ import DataReportPage from './DataReportPage';
 import AccountManagementPage from './AccountManagementPage';
 import InventoryOverviewPage from './InventoryOverviewPage';
 import CrewManagementPage from './CrewManagementPage';
+import { useParams } from 'react-router-dom';
 
 interface ShipDetailPageProps {
   onBack: () => void;
   ship: Ship;
 }
 
-const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
+const ShipDetailPage = ({ onBack }: { onBack: () => void }) => {
+  const { shipId } = useParams();
   const [activePage, setActivePage] = useState('ship-info');
   // 船舶详情页特定的侧边栏菜单项
   const shipDetailMenuItems = [
@@ -97,7 +99,7 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
   return (
     <div className="min-h-screen w-full flex flex-col bg-gray-50">
       <Header
-        title={`船舶${ship.id}`}
+        title={`船舶${shipId}`}
         notificationCount={2}
         onBack={onBack}
       />
@@ -112,13 +114,13 @@ const ShipDetailPage: React.FC<ShipDetailPageProps> = ({ onBack, ship }) => {
         <div className="flex-1 overflow-y-auto bg-gray-50">
           <div className="container mx-auto px-6 py-6">
             {activePage === 'ship-info' ? (
-              <ShipInfoPage ship={ship} />
+              <ShipInfoPage shipId={shipId} />
             ) : activePage === 'add-supply' ? (
               <SupplyFormPage />
             ) : activePage === 'inventory-prewarn' ? (
               <WarningConfigPage />
             ) : activePage === 'inventory-storage' ? (
-              <InventoryOverviewPage ship={ship} />
+              <InventoryOverviewPage shipId={shipId} />
             ) : activePage === 'data-report' ? (
               <DataReportPage />
             ) : activePage === 'account-management' ? (

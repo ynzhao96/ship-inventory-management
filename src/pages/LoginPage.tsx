@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { adminLogin, ping } from '../api';
+import { adminLogin } from '../api';
 
 interface LoginPageProps {
   onLogin: () => void;
@@ -11,12 +11,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // 模拟登录逻辑 - 实际使用中应当进行用户名和密码验证
-    const status = await adminLogin(username, password);
-    if (status.success) {
-      onLogin();
+    const result = await adminLogin(username, password);
+
+    if (result.success) {
+      // 简单持久化登录态（生产建议存 token）
+      localStorage.setItem('auth', '1');
+      onLogin();  // 或者用路由跳转 navigate('/')
     } else {
-      alert(status.error);
+      alert(result.error || '登录失败');
     }
   };
 

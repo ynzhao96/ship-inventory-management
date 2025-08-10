@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Ship, ShipType, ShipStatus } from '../types';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import { useNavigate } from 'react-router-dom';
 
 interface ShipListPageProps {
   onSelectShip: (ship: Ship) => void;
@@ -91,7 +92,11 @@ const mockShips: Ship[] = [
   }
 ];
 
-const ShipListPage: React.FC<ShipListPageProps> = ({ onSelectShip }) => {
+const ShipListPage = ({ onLogout }: { onLogout: () => void }) => {
+  const navigate = useNavigate();
+  const handleSelectShip = (shipId: string) => {
+    navigate(`/ships/${shipId}`);
+  };
   const [ships] = useState<Ship[]>(mockShips);
   const [activeTab, setActiveTab] = useState('全部');
   const [searchTerm, setSearchTerm] = useState('');
@@ -104,10 +109,10 @@ const ShipListPage: React.FC<ShipListPageProps> = ({ onSelectShip }) => {
       label: '船舶管理',
       icon: (
         <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M2 20a6 6 0 0 0 12 0 6 6 0 0 0 12 0H2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M12 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M4.93 9.93A4 4 0 0 1 8 8a4 4 0 0 1 8 0 4 4 0 0 1 3.07 1.93" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M12 8v12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M2 20a6 6 0 0 0 12 0 6 6 0 0 0 12 0H2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M12 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M4.93 9.93A4 4 0 0 1 8 8a4 4 0 0 1 8 0 4 4 0 0 1 3.07 1.93" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M12 8v12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       )
     },
@@ -116,9 +121,9 @@ const ShipListPage: React.FC<ShipListPageProps> = ({ onSelectShip }) => {
       label: '数据报表汇总',
       icon: (
         <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M8 18H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M8 18v2a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M10 10h4m-4 4h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M8 18H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M8 18v2a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M10 10h4m-4 4h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       )
     },
@@ -127,8 +132,8 @@ const ShipListPage: React.FC<ShipListPageProps> = ({ onSelectShip }) => {
       label: '异常',
       icon: (
         <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 9v4m0 4h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M12 2c-1.61 0-3.09.86-3.93 2.25L2.75 14.25A4.49 4.49 0 0 0 6.9 21h10.2a4.49 4.49 0 0 0 4.15-6.75L15.93 4.25A4.47 4.47 0 0 0 12 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M12 9v4m0 4h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M12 2c-1.61 0-3.09.86-3.93 2.25L2.75 14.25A4.49 4.49 0 0 0 6.9 21h10.2a4.49 4.49 0 0 0 4.15-6.75L15.93 4.25A4.47 4.47 0 0 0 12 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       )
     },
@@ -143,29 +148,29 @@ const ShipListPage: React.FC<ShipListPageProps> = ({ onSelectShip }) => {
   // 过滤显示的船舶
   const filteredShips = ships.filter(ship => {
     const matchesSearch = ship.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           ship.name.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      ship.name.toLowerCase().includes(searchTerm.toLowerCase());
+
     if (activeTab === '全部') return matchesSearch;
     if (activeTab === '新加坡线') return ship.status === ShipStatus.ACTIVE && matchesSearch;
     if (activeTab === '美国线') return ship.location === '美国' && matchesSearch;
-    
+
     return matchesSearch;
   });
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-gray-50">
       {/* 使用抽象的Header组件 */}
-      <Header 
+      <Header
         title="船舶管理系统"
         notificationCount={11}
       />
 
       <div className="flex flex-1 overflow-hidden">
         {/* 侧边栏 */}
-        <Sidebar 
-          activePage={activePage} 
-          onNavigate={handleNavigate} 
-          menuItems={shipListMenuItems} 
+        <Sidebar
+          activePage={activePage}
+          onNavigate={handleNavigate}
+          menuItems={shipListMenuItems}
         />
 
         {/* 主要内容 */}
@@ -198,11 +203,10 @@ const ShipListPage: React.FC<ShipListPageProps> = ({ onSelectShip }) => {
                 {['全部', '新加坡线', '美国线'].map(tab => (
                   <button
                     key={tab}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === tab 
-                        ? 'border-blue-500 text-blue-600' 
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
                     onClick={() => setActiveTab(tab)}
                   >
                     {tab}
@@ -214,10 +218,10 @@ const ShipListPage: React.FC<ShipListPageProps> = ({ onSelectShip }) => {
             {/* 船舶卡片网格 */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {filteredShips.map(ship => (
-                <div 
-                  key={ship.id} 
+                <div
+                  key={ship.id}
                   className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => onSelectShip(ship)}
+                  onClick={() => handleSelectShip(ship.id)}
                 >
                   <h3 className="text-lg font-semibold mb-2">{ship.id}</h3>
                   <div className="flex justify-between mb-2">
