@@ -51,6 +51,27 @@ app.post('/adminLogin', async (req, res) => {
   }
 });
 
+// 获取船舶列表接口
+app.get('/getShipList', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM ships');
+    return res.status(200).json({
+      success: true,
+      code: 'OK',
+      message: '获取船舶列表成功',
+      totalShips: rows.length,
+      data: rows
+    });
+  } catch (err) {
+    console.error('DB error:', err);
+    return res.status(500).json({
+      success: false,
+      code: 'DB_ERROR',
+      message: '数据库错误'
+    });
+  }
+});
+
 // 获取首页信息接口
 app.post('/getHomeInfo', (req, res) => {
   const { shipID } = req.body;

@@ -49,9 +49,4 @@ export interface Ship {
   id: string;
   name: string;
   type: ShipType;
-  status: ShipStatus;
-  location: string;
-  capacity: number;
-  currentLoad: number;
-  lastMaintenance: Date;
 } 
