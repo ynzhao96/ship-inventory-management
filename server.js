@@ -85,7 +85,7 @@ app.get('/getShipInfo', async (req, res) => {
   }
 
   try {
-    const [rows] = await db.execute('SELECT * FROM ships WHERE id = ?', [id]);
+    const [rows] = await pool.query('SELECT * FROM ships WHERE id = ?', [id]);
 
     if (rows.length === 0) {
       return res.status(404).json({
