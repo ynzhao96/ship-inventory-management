@@ -128,7 +128,7 @@ const ShipListPage = ({ }: { onLogout: () => void }) => {
                     className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
                     onClick={() => handleSelectShip(ship.id)}
                   >
-                    <h3 className="text-lg font-semibold mb-2">{ship.id}</h3>
+                    <h3 className="text-lg font-semibold mb-2">{ship.id} {ship.name}</h3>
                     <div className="flex justify-between mb-2">
                       <div>
                         <p className="text-sm text-gray-500">总库存</p>

@@ -72,6 +72,44 @@ app.get('/getShipList', async (req, res) => {
   }
 });
 
+// 获取船舶信息接口
+app.get('/getShipInfo', async (req, res) => {
+  const id = req.query.id;
+
+  if (!id) {
+    return res.status(400).json({
+      success: false,
+      error: 'Missing id',
+      code: 'BAD_REQUEST',
+    });
+  }
+
+  try {
+    const [rows] = await db.execute('SELECT * FROM ships WHERE id = ?', [id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Ship not found',
+        code: 'NOT_FOUND',
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: rows[0],
+      message: 'Ship info fetched successfully',
+    });
+  } catch (err) {
+    console.error('Error fetching ship info:', err);
+    return res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      code: 'INTERNAL_ERROR',
+    });
+  }
+});
+
 // 获取首页信息接口
 app.post('/getHomeInfo', (req, res) => {
   const { shipID } = req.body;
