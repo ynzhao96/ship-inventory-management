@@ -57,7 +57,7 @@ export const getShipList = async () => {
 };
 
 // 获取船舶信息接口
-export const getShipInfo = async (id: string | number) => {
+export const getShipInfo = async (id?: string | number) => {
   const res = await fetch(`/api/getShipInfo?id=${encodeURIComponent(String(id))}`);
 
   let json: any = {};

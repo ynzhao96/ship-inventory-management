@@ -3,7 +3,7 @@ import { Ship } from '../types';
 import { getShipInfo } from '../api';
 
 interface ShipInfoPageProps {
-  shipId: string;
+  shipId?: string;
 }
 
 const ShipInfoPage: React.FC<ShipInfoPageProps> = ({ shipId }) => {
