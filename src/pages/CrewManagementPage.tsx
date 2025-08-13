@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getCrewList } from '../api';
+import { getCrewList, updateCrews } from '../api';
 
 interface Props {
     shipId?: string;
@@ -48,8 +48,11 @@ const CrewManagementPage: React.FC<Props> = ({ shipId }) => {
         }
     };
 
-    const handleSubmitCrewMembers = () => {
-        console.log('提交船员信息:', crewMembers);
+    const handleSubmitCrewMembers = async () => {
+        if (!shipId) return;
+        const r = await updateCrews(shipId, crewMembers);
+        if (!r.success) { setError(r.message || '保存失败'); return; }
+        setCrewMembers(r.data || []); // 覆盖为后端回写（含新生成的 id）
     };
 
     return (

@@ -49,4 +49,10 @@ export interface Ship {
   id: string;
   name: string;
   type: ShipType;
-} 
+}
+
+export interface Crew {
+  id?: number;         // 新增时可不传；已有的稳定 id 会被保留
+  name: string;
+  position: string;
+}

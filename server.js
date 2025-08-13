@@ -1,5 +1,6 @@
 import express from 'express';
 import { ok, fail, asyncHandler, requireFields, q } from './utils.js';
+import pool from './db.js';
 
 const app = express();
 const port = 3000;
@@ -139,10 +140,85 @@ app.get('/getCrewList', async (req, res) => {
   return ok(res, { data: rows }, { message: 'Ship info fetched successfully' });
 });
 
-// 新增船员接口
-app.post('/addCrew', async (req, res) => {
-  // const { }
-})
+// 更新船员接口
+app.post('/api/updateCrews', async (req, res) => {
+  const { shipId, crews } = req.body || {};
+
+  // 基本校验
+  if (!shipId) {
+    return res.status(400).json({ success: false, code: 'BAD_REQUEST', message: 'Missing shipId' });
+  }
+  if (!Array.isArray(crews)) {
+    return res.status(400).json({ success: false, code: 'BAD_REQUEST', message: 'crews 必须是数组' });
+  }
+  for (let i = 0; i < crews.length; i++) {
+    const c = crews[i] || {};
+    if (!c.name || !c.position) {
+      return res.status(400).json({ success: false, code: 'BAD_REQUEST', message: `第 ${i + 1} 项缺少 name/position` });
+    }
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // 1) 读取该船当前已有的 id 集合
+    const [existingRows] = await conn.query(
+      'SELECT id FROM crews WHERE ship_id = ?',
+      [shipId]
+    );
+    const existingIds = new Set(existingRows.map(r => r.id));
+    const incomingIds = new Set(
+      crews.filter(c => c.id != null).map(c => Number(c.id))
+    );
+
+    // 2) 删除：现有但未提交的 id
+    const toDelete = [...existingIds].filter(id => !incomingIds.has(id));
+    if (toDelete.length > 0) {
+      await conn.query(
+        `DELETE FROM crews WHERE ship_id = ? AND id IN (${toDelete.map(() => '?').join(',')})`,
+        [shipId, ...toDelete]
+      );
+    }
+
+    // 3) 更新/插入
+    for (const c of crews) {
+      if (c.id != null) {
+        // 更新（限定 ship_id，避免越权/错改）
+        await conn.query(
+          'UPDATE crews SET name = ?, position = ? WHERE id = ? AND ship_id = ?',
+          [c.name, c.position, c.id, shipId]
+        );
+      } else {
+        // 新增
+        await conn.query(
+          'INSERT INTO crews (ship_id, name, position) VALUES (?, ?, ?)',
+          [shipId, c.name, c.position]
+        );
+      }
+    }
+
+    // 4) 回读最新列表（含新生成的 id）
+    const [list] = await conn.query(
+      'SELECT id, name, position FROM crews WHERE ship_id = ? ORDER BY id ASC',
+      [shipId]
+    );
+
+    await conn.commit();
+    return res.status(200).json({
+      success: true,
+      code: 'OK',
+      message: '保存成功',
+      data: list
+    });
+  } catch (err) {
+    await conn.rollback();
+    console.error('updateCrews error:', err);
+    return res.status(500).json({ success: false, code: 'DB_ERROR', message: '数据库错误' });
+  } finally {
+    conn.release();
+  }
+});
 
 // 查看申领历史接口
 app.post('/getClaimLog', (req, res) => {
