@@ -170,8 +170,8 @@ export const cancelClaim = async (shipID: string, claimID: string, remark: strin
 };
 
 // 获取船员列表接口
-export const getCrewList = async (shipID?: string) => {
-  const res = await fetch(`/api/getCrewList?id=${encodeURIComponent(String(shipID))}`);
+export const getCrewList = async (shipId?: string) => {
+  const res = await fetch(`/api/getCrewList?id=${encodeURIComponent(String(shipId))}`);
 
   let json: any = {};
   try { json = await res.json(); } catch { }

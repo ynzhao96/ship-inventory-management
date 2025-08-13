@@ -128,14 +128,14 @@ app.post('/cancelClaim', (req, res) => {
 
 // 获取船员列表接口
 app.get('/getCrewList', async (req, res) => {
-  const { shipID } = req.query || {};
+  const { shipId } = req.query || {};
 
-  const check = requireFields(req.query, ['shipID']);
+  const check = requireFields(req.query, ['shipId']);
   if (!check.ok) {
-    return fail(res, 400, { code: 'BAD_REQUEST', message: 'Missing shipID' });
+    return fail(res, 400, { code: 'BAD_REQUEST', message: 'Missing shipId' });
   }
 
-  const rows = await q('SELECT * FROM crews WHERE ship_id = ?', [shipID]);
+  const rows = await q('SELECT * FROM crews WHERE ship_id = ?', [shipId]);
   return ok(res, { data: rows }, { message: 'Ship info fetched successfully' });
 });
 
