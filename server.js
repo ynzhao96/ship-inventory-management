@@ -68,6 +68,19 @@ app.post('/login', async (req, res) => {
   }, { message: '登录成功' });
 });
 
+// 获取用户账户密码信息
+app.get('/getUserInfo', async (req, res) => {
+  const { shipId } = req.query || {};
+
+  const check = requireFields(req.query, ['shipId']);
+  if (!check.ok) {
+    return fail(res, 400, { code: 'BAD_REQUEST', message: 'Missing shipId' });
+  }
+
+  const rows = await q('SELECT * FROM users WHERE ship_id = ?', [shipId]);
+  return ok(res, { data: rows }, { message: 'User info fetched successfully' });
+});
+
 // 获取船舶列表
 app.get('/getShipList', asyncHandler(async (_req, res) => {
   const rows = await q('SELECT * FROM ships');
