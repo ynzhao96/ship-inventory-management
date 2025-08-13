@@ -1,3 +1,5 @@
+import pool from './db.js';
+
 export const ok = (res, payload = {}, { code = 'OK', message } = {}) => {
   return res.status(200).json({
     success: true,

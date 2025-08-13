@@ -1,5 +1,4 @@
 import express from 'express';
-import pool from './db.js';
 import { ok, fail, asyncHandler, requireFields, q } from './utils.js';
 
 const app = express();
