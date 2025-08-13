@@ -120,7 +120,7 @@ const ShipDetailPage = ({ onBack }: { onBack: () => void }) => {
             ) : activePage === 'account-management' ? (
               <AccountManagementPage />
             ) : activePage === 'crew-management' ? (
-              < CrewManagementPage />
+              < CrewManagementPage shipId={shipId} />
             ) : null}
           </div>
         </div>

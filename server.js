@@ -126,13 +126,23 @@ app.post('/cancelClaim', (req, res) => {
   res.json({ code: 200, message: '撤销申领成功', data: true });
 });
 
-// 获取申领人列表接口
-app.post('/getClaimerList', (req, res) => {
-  const { shipID } = req.body;
-  console.log(shipID);
-  // 这里可以添加获取申领人列表的逻辑
-  res.json({ code: 200, data: [{ position: '船长', name: '张三' }] });
+// 获取船员列表接口
+app.get('/getCrewList', async (req, res) => {
+  const { shipID } = req.query || {};
+
+  const check = requireFields(req.query, ['shipID']);
+  if (!check.ok) {
+    return fail(res, 400, { code: 'BAD_REQUEST', message: 'Missing shipID' });
+  }
+
+  const rows = await q('SELECT * FROM crews WHERE ship_id = ?', [shipID]);
+  return ok(res, { data: rows }, { message: 'Ship info fetched successfully' });
 });
+
+// 新增船员接口
+app.post('/addCrew', async (req, res) => {
+  // const { }
+})
 
 // 查看申领历史接口
 app.post('/getClaimLog', (req, res) => {
