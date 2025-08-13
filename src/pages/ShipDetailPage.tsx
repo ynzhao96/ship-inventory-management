@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import ShipInfoPage from './ShipInfoPage';
@@ -9,10 +9,38 @@ import AccountManagementPage from './AccountManagementPage';
 import InventoryOverviewPage from './InventoryOverviewPage';
 import CrewManagementPage from './CrewManagementPage';
 import { useParams } from 'react-router-dom';
+import { Ship } from '../types';
+import { getShipInfo } from '../api';
 
 const ShipDetailPage = ({ onBack }: { onBack: () => void }) => {
   const { shipId } = useParams();
   const [activePage, setActivePage] = useState('ship-info');
+  const [ship, setShip] = useState<Ship>();
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        setError('');
+
+        const result = await getShipInfo(shipId);
+        if (!result.success) {
+          throw new Error(result.error || '获取船舶信息失败');
+        }
+
+        setShip(result.data as Ship);
+      } catch (e: any) {
+        if (e?.name !== 'AbortError') {
+          setError(e?.message || '获取船舶信息失败');
+        }
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
   // 船舶详情页特定的侧边栏菜单项
   const shipDetailMenuItems = [
     {
@@ -93,7 +121,7 @@ const ShipDetailPage = ({ onBack }: { onBack: () => void }) => {
   return (
     <div className="min-h-screen w-full flex flex-col bg-gray-50">
       <Header
-        title={`船舶${shipId}`}
+        title={`${shipId} - ${ship?.name}`}
         notificationCount={2}
         onBack={onBack}
       />
@@ -105,25 +133,37 @@ const ShipDetailPage = ({ onBack }: { onBack: () => void }) => {
           menuItems={shipDetailMenuItems}
         />
 
-        <div className="flex-1 overflow-y-auto bg-gray-50">
-          <div className="container mx-auto px-6 py-6">
-            {activePage === 'ship-info' ? (
-              <ShipInfoPage shipId={shipId} />
-            ) : activePage === 'add-supply' ? (
-              <SupplyFormPage />
-            ) : activePage === 'inventory-prewarn' ? (
-              <WarningConfigPage />
-            ) : activePage === 'inventory-storage' ? (
-              <InventoryOverviewPage shipId={shipId} />
-            ) : activePage === 'data-report' ? (
-              <DataReportPage />
-            ) : activePage === 'account-management' ? (
-              <AccountManagementPage />
-            ) : activePage === 'crew-management' ? (
-              < CrewManagementPage shipId={shipId} />
-            ) : null}
-          </div>
-        </div>
+        <>
+          {/* 加载/错误/空态 */}
+          {loading && (
+            <div className="text-gray-500">加载中...</div>
+          )}
+          {!loading && error && (
+            <div className="text-red-600">加载失败：{error}</div>
+          )}
+
+          {!loading && !error && (
+            <div className="flex-1 overflow-y-auto bg-gray-50">
+              <div className="container mx-auto px-6 py-6">
+                {activePage === 'ship-info' ? (
+                  <ShipInfoPage ship={ship} />
+                ) : activePage === 'add-supply' ? (
+                  <SupplyFormPage />
+                ) : activePage === 'inventory-prewarn' ? (
+                  <WarningConfigPage />
+                ) : activePage === 'inventory-storage' ? (
+                  <InventoryOverviewPage shipId={shipId} />
+                ) : activePage === 'data-report' ? (
+                  <DataReportPage />
+                ) : activePage === 'account-management' ? (
+                  <AccountManagementPage />
+                ) : activePage === 'crew-management' ? (
+                  < CrewManagementPage shipId={shipId} />
+                ) : null}
+              </div>
+            </div>
+          )}
+        </>
       </div>
     </div>
   );
