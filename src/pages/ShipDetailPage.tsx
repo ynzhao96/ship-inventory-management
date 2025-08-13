@@ -156,7 +156,7 @@ const ShipDetailPage = ({ onBack }: { onBack: () => void }) => {
                 ) : activePage === 'data-report' ? (
                   <DataReportPage />
                 ) : activePage === 'account-management' ? (
-                  <AccountManagementPage />
+                  <AccountManagementPage shipId={shipId} />
                 ) : activePage === 'crew-management' ? (
                   < CrewManagementPage shipId={shipId} />
                 ) : null}

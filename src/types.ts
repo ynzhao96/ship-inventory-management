@@ -56,3 +56,8 @@ export interface Crew {
   name: string;
   position: string;
 }
+
+export interface UserInfo {
+  username?: string;
+  password?: string;
+}
