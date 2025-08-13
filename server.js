@@ -141,7 +141,7 @@ app.get('/getCrewList', async (req, res) => {
 });
 
 // 更新船员接口
-app.post('/api/updateCrews', async (req, res) => {
+app.post('/updateCrews', async (req, res) => {
   const { shipId, crews } = req.body || {};
 
   // 基本校验
