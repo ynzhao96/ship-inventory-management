@@ -48,7 +48,7 @@ app.post('/login', async (req, res) => {
   }
 
   const rows = await q(
-    'SELECT username, password, type FROM users WHERE username = ? and type = 1 LIMIT 1',
+    'SELECT username, password, ship_id, type FROM users WHERE username = ? and type = 1 LIMIT 1',
     [username]
   );
 
