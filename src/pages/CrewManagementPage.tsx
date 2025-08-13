@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getCrewList, updateCrews } from '../api';
+import Toast from '../components/Toast';
 
 interface Props {
     shipId?: string;
@@ -9,6 +10,10 @@ const CrewManagementPage: React.FC<Props> = ({ shipId }) => {
     const [crewMembers, setCrewMembers] = useState<{ position: string; name: string }[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
+
+    // Toast
+    const [open, setOpen] = useState(false);
+    const [text, setText] = useState('');
 
     useEffect(() => {
         (async () => {
@@ -53,10 +58,14 @@ const CrewManagementPage: React.FC<Props> = ({ shipId }) => {
         const r = await updateCrews(shipId, crewMembers);
         if (!r.success) { setError(r.message || '保存失败'); return; }
         setCrewMembers(r.data || []); // 覆盖为后端回写（含新生成的 id）
+        setText(r.message);
+        setOpen(false);
+        requestAnimationFrame(() => setOpen(true));
     };
 
     return (
         <>
+
             {/* 加载/错误/空态 */}
             {loading && (
                 <div className="text-gray-500">加载中...</div>
@@ -120,6 +129,11 @@ const CrewManagementPage: React.FC<Props> = ({ shipId }) => {
                         >
                             提交
                         </button>
+                        <Toast
+                            open={open}
+                            message={text}
+                            onClose={() => setOpen(false)}
+                        />
                     </div>
                 </div>
             )}
