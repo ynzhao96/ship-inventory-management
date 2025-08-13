@@ -1,5 +1,6 @@
 import express from 'express';
 import pool from './db.js';
+import { ok, fail, asyncHandler, requireFields, q } from './utils.js';
 
 const app = express();
 const port = 3000;
@@ -10,105 +11,58 @@ app.get('/ping', (req, res) => {
   res.json({ message: 'pong' });
 });
 
-// 管理员登录接口
-app.post('/adminLogin', async (req, res) => {
+// 管理员登录
+app.post('/adminLogin', asyncHandler(async (req, res) => {
   const { username, password } = req.body || {};
-
-  if (!username || !password) {
-    return res.status(400).json({ success: false, code: 'BAD_REQUEST', message: '用户名和密码必填' });
+  const check = requireFields(req.body, ['username', 'password']);
+  if (!check.ok) {
+    return fail(res, 400, { code: 'BAD_REQUEST', message: '用户名和密码必填' });
   }
 
-  try {
-    const [rows] = await pool.query(
-      'SELECT username, password, type FROM users WHERE username = ? LIMIT 1',
-      [username]
-    );
-
-    if (rows.length === 0) {
-      // 账号不存在
-      return res.status(404).json({ success: false, code: 'USER_NOT_FOUND', message: '账号不存在' });
-    }
-
-    const user = rows[0];
-
-    // ⚠️ 生产要用 bcrypt.compare，这里暂时明文对比
-    if (user.password !== password) {
-      // 密码错误
-      return res.status(401).json({ success: false, code: 'INVALID_PASSWORD', message: '密码错误' });
-    }
-
-    // 成功
-    return res.status(200).json({
-      success: true,
-      code: 'OK',
-      message: '登录成功',
-      user: { username: user.username, type: user.type }
-      // 生产建议返回 JWT：token: 'xxx'
-    });
-  } catch (err) {
-    console.error('DB error:', err);
-    return res.status(500).json({ success: false, code: 'DB_ERROR', message: '数据库错误' });
-  }
-});
-
-// 获取船舶列表接口
-app.get('/getShipList', async (req, res) => {
-  try {
-    const [rows] = await pool.query('SELECT * FROM ships');
-    return res.status(200).json({
-      success: true,
-      code: 'OK',
-      message: '获取船舶列表成功',
-      totalShips: rows.length,
-      data: rows
-    });
-  } catch (err) {
-    console.error('DB error:', err);
-    return res.status(500).json({
-      success: false,
-      code: 'DB_ERROR',
-      message: '数据库错误'
-    });
-  }
-});
-
-// 获取船舶信息接口
-app.get('/getShipInfo', async (req, res) => {
-  const id = req.query.id;
-
-  if (!id) {
-    return res.status(400).json({
-      success: false,
-      error: 'Missing id',
-      code: 'BAD_REQUEST',
-    });
+  const rows = await q(
+    'SELECT username, password, type FROM users WHERE username = ? LIMIT 1',
+    [username]
+  );
+  if (rows.length === 0) {
+    return fail(res, 404, { code: 'USER_NOT_FOUND', message: '账号不存在' });
   }
 
-  try {
-    const [rows] = await pool.query('SELECT * FROM ships WHERE id = ?', [id]);
-
-    if (rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: 'Ship not found',
-        code: 'NOT_FOUND',
-      });
-    }
-
-    return res.json({
-      success: true,
-      data: rows[0],
-      message: 'Ship info fetched successfully',
-    });
-  } catch (err) {
-    console.error('Error fetching ship info:', err);
-    return res.status(500).json({
-      success: false,
-      error: 'Internal server error',
-      code: 'INTERNAL_ERROR',
-    });
+  const user = rows[0];
+  // ⚠️ 生产请改为 bcrypt.compare
+  if (user.password !== password) {
+    return fail(res, 401, { code: 'INVALID_PASSWORD', message: '密码错误' });
   }
-});
+
+  return ok(res, {
+    user: { username: user.username, type: user.type },
+    // 生产建议返回 JWT：token: 'xxx'
+  }, { message: '登录成功' });
+}));
+
+// 获取船舶列表
+app.get('/getShipList', asyncHandler(async (_req, res) => {
+  const rows = await q('SELECT * FROM ships');
+  return ok(res, {
+    totalShips: rows.length,
+    data: rows,
+  }, { message: '获取船舶列表成功' });
+}));
+
+// 获取船舶信息
+app.get('/getShipInfo', asyncHandler(async (req, res) => {
+  const { id } = req.query || {};
+  const check = requireFields(req.query, ['id']);
+  if (!check.ok) {
+    return fail(res, 400, { code: 'BAD_REQUEST', message: 'Missing id' });
+  }
+
+  const rows = await q('SELECT * FROM ships WHERE id = ?', [id]);
+  if (rows.length === 0) {
+    return fail(res, 404, { code: 'NOT_FOUND', message: 'Ship not found' });
+  }
+
+  return ok(res, { data: rows[0] }, { message: 'Ship info fetched successfully' });
+}));
 
 // 获取首页信息接口
 app.post('/getHomeInfo', (req, res) => {
