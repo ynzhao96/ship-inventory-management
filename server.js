@@ -78,7 +78,7 @@ app.get('/getUserInfo', async (req, res) => {
   }
 
   const rows = await q('SELECT * FROM users WHERE ship_id = ?', [shipId]);
-  return ok(res, { data: rows }, { message: 'User info fetched successfully' });
+  return ok(res, { data: rows[0] }, { message: 'User info fetched successfully' });
 });
 
 // 获取船舶列表
