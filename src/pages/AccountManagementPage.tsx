@@ -62,7 +62,7 @@ const AccountManagementPage: React.FC<Props> = ({ shipId }) => {
               <input
                 type="text"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={accountInfo.username}
+                value={accountInfo?.username}
                 onChange={(e) => handleAccountInfoChange('username', e.target.value)}
                 placeholder="请输入账号"
               />
@@ -73,7 +73,7 @@ const AccountManagementPage: React.FC<Props> = ({ shipId }) => {
               <input
                 type="text"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={accountInfo.password}
+                value={accountInfo?.password}
                 onChange={(e) => handleAccountInfoChange('password', e.target.value)}
                 placeholder="请输入密码"
               />
