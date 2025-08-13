@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { getUserInfo } from '../api';
+import { getUserInfo, updateUserInfo } from '../api';
 import { UserInfo } from '../types';
+import Toast from '../components/Toast';
 
 interface Props {
   shipId?: string;
@@ -11,6 +12,10 @@ const AccountManagementPage: React.FC<Props> = ({ shipId }) => {
   const [accountInfo, setAccountInfo] = useState<UserInfo>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
+
+  // Toast
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -38,8 +43,14 @@ const AccountManagementPage: React.FC<Props> = ({ shipId }) => {
     setAccountInfo({ ...accountInfo, [field]: value });
   };
 
-  const handleSaveAccountInfo = () => {
-    console.log('保存账号信息:', accountInfo);
+  const handleSaveAccountInfo = async () => {
+    if (!shipId) return;
+    const r = await updateUserInfo(shipId, accountInfo?.username, accountInfo?.password);
+    if (!r.success) { setError(r.message || '保存失败'); return; }
+
+    setText(r.message);
+    setOpen(false);
+    requestAnimationFrame(() => setOpen(true));
   };
 
   return (
@@ -87,6 +98,12 @@ const AccountManagementPage: React.FC<Props> = ({ shipId }) => {
             >
               保存
             </button>
+
+            <Toast
+              open={open}
+              message={text}
+              onClose={() => setOpen(false)}
+            />
           </div>
         </div>
       )}
