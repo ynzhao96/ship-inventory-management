@@ -165,7 +165,7 @@ app.get('/getShipInfo', asyncHandler(async (req, res) => {
 
 // 批量添加入库
 app.post('/createInboundBatch', async (req, res) => {
-  const { docNo, shipId, items, remark = null, createdBy = 'admin' } = req.body || {};
+  const { docNo, shipId, items } = req.body || {};
 
   // 基本校验
   if (!docNo || !shipId || !Array.isArray(items) || items.length === 0) {
@@ -199,8 +199,6 @@ app.post('/createInboundBatch', async (req, res) => {
         it.unit,           // unit
         it.quantity,       // quantity
         'PENDING',         // status
-        remark,            // remark
-        createdBy          // created_by
       );
     }
 

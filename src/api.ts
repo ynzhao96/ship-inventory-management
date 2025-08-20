@@ -96,8 +96,6 @@ export const createInboundBatch = async (params: {
   docNo: string;
   shipId: number | string;
   items: InboundItemInput[];
-  remark?: string;
-  createdBy?: string;
 }) => {
   const res = await fetch('/api/createInboundBatch', {
     method: 'POST',

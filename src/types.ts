@@ -63,8 +63,10 @@ export interface UserInfo {
 }
 
 export type InboundItemInput = {
+  id: string;
   itemId: number | string;
   itemName: string;
+  itemType: string;
   quantity: number | string;
   unit: string;
 };

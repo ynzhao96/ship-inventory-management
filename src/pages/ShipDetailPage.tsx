@@ -148,7 +148,7 @@ const ShipDetailPage = ({ onBack }: { onBack: () => void }) => {
                 {activePage === 'ship-info' ? (
                   <ShipInfoPage ship={ship} />
                 ) : activePage === 'add-supply' ? (
-                  <SupplyFormPage />
+                  <SupplyFormPage shipId={shipId} />
                 ) : activePage === 'inventory-prewarn' ? (
                   <WarningConfigPage />
                 ) : activePage === 'inventory-storage' ? (

@@ -1,11 +1,13 @@
 import { useState } from 'react';
+import { createInboundBatch } from '../api.ts';
+import { InboundItemInput } from '../types';
 
-const SupplyFormPage = () => {
+const SupplyFormPage = (shipId: any) => {
   const [batchNumber, setBatchNumber] = useState('');
-  const [supplyItems, setSupplyItems] = useState([{ id: '1', itemId: '', cargoName: '', cargoType: '生活用品', quantity: 0, unit: '' }]);
+  const [supplyItems, setSupplyItems] = useState<InboundItemInput[]>([{ id: '1', itemId: '', itemName: '', itemType: '生活用品', quantity: 0, unit: '' }]);
 
   const handleAddSupplyItem = () => {
-    const newItem = { id: (supplyItems.length + 1).toString(), itemId: '', cargoName: '', cargoType: '生活用品', quantity: 0, unit: '' };
+    const newItem = { id: (supplyItems.length + 1).toString(), itemId: '', itemName: '', itemType: '生活用品', quantity: 0, unit: '' };
     setSupplyItems([...supplyItems, newItem]);
   };
 
@@ -20,7 +22,7 @@ const SupplyFormPage = () => {
   };
 
   const handleSubmitSupply = () => {
-    console.log('提交物资补充:', { batchNumber, supplyItems });
+    createInboundBatch({ docNo: batchNumber, shipId: shipId, items: supplyItems });
   };
 
   return (
@@ -57,7 +59,7 @@ const SupplyFormPage = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资名称</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资种类</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">单位</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -76,16 +78,16 @@ const SupplyFormPage = () => {
                     <input
                       type="text"
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={item.cargoName}
-                      onChange={(e) => handleUpdateSupplyItem(item.id, 'cargoName', e.target.value)}
+                      value={item.itemName}
+                      onChange={(e) => handleUpdateSupplyItem(item.id, 'itemName', e.target.value)}
                       placeholder="请输入物资名称"
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <select
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={item.cargoType}
-                      onChange={(e) => handleUpdateSupplyItem(item.id, 'cargoType', e.target.value)}
+                      value={item.itemType}
+                      onChange={(e) => handleUpdateSupplyItem(item.id, 'itemType', e.target.value)}
                     >
                       <option value="生活用品">生活用品</option>
                       <option value="维护物资">维护物资</option>
