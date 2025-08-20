@@ -61,3 +61,10 @@ export interface UserInfo {
   username?: string;
   password?: string;
 }
+
+export type InboundItemInput = {
+  itemId: number | string;
+  itemName: string;
+  quantity: number | string;
+  unit: string;
+};

@@ -163,6 +163,87 @@ app.get('/getShipInfo', asyncHandler(async (req, res) => {
   return ok(res, { data: rows[0] }, { message: 'Ship info fetched successfully' });
 }));
 
+// 批量添加入库
+app.post('/createInboundBatch', async (req, res) => {
+  const { docNo, shipId, items, remark = null, createdBy = 'admin' } = req.body || {};
+
+  // 基本校验
+  if (!docNo || !shipId || !Array.isArray(items) || items.length === 0) {
+    return fail(res, 400, { code: 'BAD_REQUEST', message: 'docNo, shipId, items 必填且 items 需为非空数组' });
+  }
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i] || {};
+    if (it.itemId == null || !it.itemName || it.quantity == null || !it.unit) {
+      return fail(res, 400, { code: 'BAD_ITEM', message: `第 ${i + 1} 项缺少 itemId/itemName/quantity/unit` });
+    }
+    const qty = Number(it.quantity);
+    if (!Number.isFinite(qty) || qty <= 0) {
+      return fail(res, 400, { code: 'BAD_QTY', message: `第 ${i + 1} 项 quantity 必须为正数` });
+    }
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // 批量插入
+    const placeholders = [];
+    const params = [];
+    for (const it of items) {
+      placeholders.push('(?, ?, ?, ?, ?, ?, ?, ?, NOW())');
+      params.push(
+        docNo,             // doc_no
+        shipId,            // ship_id
+        it.itemId,         // item_id
+        it.itemName,       // item_name
+        it.unit,           // unit
+        it.quantity,       // quantity
+        'PENDING',         // status
+        remark,            // remark
+        createdBy          // created_by
+      );
+    }
+
+    const [ins] = await conn.query(
+      `INSERT INTO inbounds
+       (doc_no, ship_id, item_id, item_name, unit, quantity, status, remark, created_by, created_at)
+       VALUES ${placeholders.join(',')}`,
+      params
+    );
+    // ins.insertId: 第一条插入行的自增ID；ins.affectedRows: 插入行数
+    const firstId = Number(ins.insertId);
+    const lastId = firstId + Number(ins.affectedRows) - 1;
+
+    // 回读“本次插入”的行
+    const [list] = await conn.query(
+      `SELECT id,
+              doc_no  AS docNo,
+              ship_id AS shipId,
+              item_id AS itemId,
+              item_name AS itemName,
+              unit,
+              quantity,
+              status,
+              remark,
+              created_by AS createdBy,
+              created_at AS createdAt
+       FROM inbounds
+       WHERE id BETWEEN ? AND ?
+       ORDER BY id ASC`,
+      [firstId, lastId]
+    );
+
+    await conn.commit();
+    return ok(res, { data: { docNo, shipId, items: list } }, { message: '创建入库批次成功' });
+  } catch (err) {
+    await conn.rollback();
+    console.error('createInboundBatch error:', err);
+    return fail(res, 500, { code: 'DB_ERROR', message: '数据库错误' });
+  } finally {
+    conn.release();
+  }
+});
+
 // 获取首页信息接口
 app.post('/getHomeInfo', (req, res) => {
   const { shipID } = req.body;

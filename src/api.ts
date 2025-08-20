@@ -1,4 +1,4 @@
-import { Crew } from './types';
+import { Crew, InboundItemInput } from './types';
 
 export const ping = async () => {
   const response = await fetch('/api/ping', {
@@ -88,6 +88,39 @@ export const updateUserInfo = async (shipId: string, username?: string, password
     // 为与 adminLogin 一致，这里将 data 映射为 user
     data: json?.data,
     message: json?.message || '保存成功',
+  };
+};
+
+// 批量添加入库
+export const createInboundBatch = async (params: {
+  docNo: string;
+  shipId: number | string;
+  items: InboundItemInput[];
+  remark?: string;
+  createdBy?: string;
+}) => {
+  const res = await fetch('/api/createInboundBatch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+
+  let data: any = {};
+  try { data = await res.json(); } catch { }
+
+  if (!res.ok || data?.success !== true) {
+    return {
+      success: false,
+      error: data?.message || data?.error || `创建失败(${res.status})`,
+      code: data?.code || 'ERROR',
+    };
+  }
+
+  // data.data = { docNo, shipId, items: [...] }
+  return {
+    success: true,
+    data: data?.data,
+    message: data?.message || '创建入库批次成功',
   };
 };
 

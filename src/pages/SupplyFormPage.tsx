@@ -2,10 +2,10 @@ import { useState } from 'react';
 
 const SupplyFormPage = () => {
   const [batchNumber, setBatchNumber] = useState('');
-  const [supplyItems, setSupplyItems] = useState([{ id: '1', cargoId: '', cargoName: '', cargoType: '生活用品', quantity: 0 }]);
+  const [supplyItems, setSupplyItems] = useState([{ id: '1', itemId: '', cargoName: '', cargoType: '生活用品', quantity: 0, unit: '个' }]);
 
   const handleAddSupplyItem = () => {
-    const newItem = { id: (supplyItems.length + 1).toString(), cargoId: '', cargoName: '', cargoType: '生活用品', quantity: 0 };
+    const newItem = { id: (supplyItems.length + 1).toString(), itemId: '', cargoName: '', cargoType: '生活用品', quantity: 0, unit: '个' };
     setSupplyItems([...supplyItems, newItem]);
   };
 
@@ -67,8 +67,8 @@ const SupplyFormPage = () => {
                     <input
                       type="text"
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={item.cargoId}
-                      onChange={(e) => handleUpdateSupplyItem(item.id, 'cargoId', e.target.value)}
+                      value={item.itemId}
+                      onChange={(e) => handleUpdateSupplyItem(item.id, 'itemId', e.target.value)}
                       placeholder="请输入物资编号"
                     />
                   </td>
@@ -99,6 +99,15 @@ const SupplyFormPage = () => {
                       value={item.quantity}
                       onChange={(e) => handleUpdateSupplyItem(item.id, 'quantity', Number(e.target.value))}
                       placeholder="请输入数量"
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="text"
+                      className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={item.unit}
+                      onChange={(e) => handleUpdateSupplyItem(item.unit, 'unit', e.target.value)}
+                      placeholder="请输入单位名称"
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
