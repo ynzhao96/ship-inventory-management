@@ -2,10 +2,10 @@ import { useState } from 'react';
 
 const SupplyFormPage = () => {
   const [batchNumber, setBatchNumber] = useState('');
-  const [supplyItems, setSupplyItems] = useState([{ id: '1', itemId: '', cargoName: '', cargoType: '生活用品', quantity: 0, unit: '个' }]);
+  const [supplyItems, setSupplyItems] = useState([{ id: '1', itemId: '', cargoName: '', cargoType: '生活用品', quantity: 0, unit: '' }]);
 
   const handleAddSupplyItem = () => {
-    const newItem = { id: (supplyItems.length + 1).toString(), itemId: '', cargoName: '', cargoType: '生活用品', quantity: 0, unit: '个' };
+    const newItem = { id: (supplyItems.length + 1).toString(), itemId: '', cargoName: '', cargoType: '生活用品', quantity: 0, unit: '' };
     setSupplyItems([...supplyItems, newItem]);
   };
 
