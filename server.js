@@ -232,10 +232,25 @@ app.post('/createInboundBatch', async (req, res) => {
 
     await conn.commit();
     return ok(res, { data: { docNo, shipId, items: list } }, { message: '创建入库批次成功' });
-  } catch (err) {
+  }
+  // catch (err) {
+  //   await conn.rollback();
+  //   console.error('createInboundBatch error:', err);
+  //   return fail(res, 500, { code: 'DB_ERROR', message: '数据库错误' });
+  catch (err) {
     await conn.rollback();
-    console.error('createInboundBatch error:', err);
-    return fail(res, 500, { code: 'DB_ERROR', message: '数据库错误' });
+    console.error('createInboundBatch error:', {
+      code: err?.code,
+      errno: err?.errno,
+      message: err?.sqlMessage || err?.message,
+      sql: err?.sql,
+    });
+    return fail(res, 500, {
+      code: 'DB_ERROR',
+      message: '数据库错误',
+      // 开发期可以回传细节，生产请去掉
+      extra: { code: err?.code, errno: err?.errno, message: err?.sqlMessage }
+    });
   } finally {
     conn.release();
   }
