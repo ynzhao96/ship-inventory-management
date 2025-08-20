@@ -204,7 +204,7 @@ app.post('/createInboundBatch', async (req, res) => {
 
     const [ins] = await conn.query(
       `INSERT INTO inbounds
-       (doc_no, ship_id, item_id, item_name, unit, quantity, status, remark, created_by, created_at)
+       (doc_no, ship_id, item_id, item_name, unit, quantity, status, remark, created_at)
        VALUES ${placeholders.join(',')}`,
       params
     );
@@ -223,7 +223,6 @@ app.post('/createInboundBatch', async (req, res) => {
               quantity,
               status,
               remark,
-              created_by AS createdBy,
               created_at AS createdAt
        FROM inbounds
        WHERE id BETWEEN ? AND ?
