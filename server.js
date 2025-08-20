@@ -165,11 +165,11 @@ app.get('/getShipInfo', asyncHandler(async (req, res) => {
 
 // 批量添加入库
 app.post('/createInboundBatch', async (req, res) => {
-  const { docNo, shipId, items } = req.body || {};
+  const { batchNo, shipId, items } = req.body || {};
 
   // 基本校验
-  if (!docNo || !shipId || !Array.isArray(items) || items.length === 0) {
-    return fail(res, 400, { code: 'BAD_REQUEST', message: 'docNo, shipId, items 必填且 items 需为非空数组' });
+  if (!batchNo || !shipId || !Array.isArray(items) || items.length === 0) {
+    return fail(res, 400, { code: 'BAD_REQUEST', message: 'batchNo, shipId, items 必填且 items 需为非空数组' });
   }
   for (let i = 0; i < items.length; i++) {
     const it = items[i] || {};
@@ -192,7 +192,7 @@ app.post('/createInboundBatch', async (req, res) => {
     for (const it of items) {
       placeholders.push('(?, ?, ?, ?, ?, ?, NOW())');
       params.push(
-        docNo,             // doc_no
+        batch_no,             // batch_no
         shipId,            // ship_id
         it.itemId,         // item_id
         it.itemName,       // item_name
@@ -204,7 +204,7 @@ app.post('/createInboundBatch', async (req, res) => {
 
     const [ins] = await conn.query(
       `INSERT INTO inbounds
-       (doc_no, ship_id, item_id, item_name, unit, quantity, status, created_at)
+       (batch_no, ship_id, item_id, item_name, unit, quantity, status, created_at)
        VALUES ${placeholders.join(',')}`,
       params
     );
@@ -215,7 +215,7 @@ app.post('/createInboundBatch', async (req, res) => {
     // 回读“本次插入”的行
     const [list] = await conn.query(
       `SELECT id,
-              doc_no  AS docNo,
+              batch_no  AS batchNo,
               ship_id AS shipId,
               item_id AS itemId,
               item_name AS itemName,
@@ -230,7 +230,7 @@ app.post('/createInboundBatch', async (req, res) => {
     );
 
     await conn.commit();
-    return ok(res, { data: { docNo, shipId, items: list } }, { message: '创建入库批次成功' });
+    return ok(res, { data: { batchNo, shipId, items: list } }, { message: '创建入库批次成功' });
   }
   // catch (err) {
   //   await conn.rollback();

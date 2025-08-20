@@ -93,7 +93,7 @@ export const updateUserInfo = async (shipId: string, username?: string, password
 
 // 批量添加入库
 export const createInboundBatch = async (params: {
-  docNo: string;
+  batchNo: string;
   shipId: number | string;
   items: InboundItemInput[];
 }) => {

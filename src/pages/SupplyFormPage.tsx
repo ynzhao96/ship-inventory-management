@@ -22,7 +22,7 @@ const SupplyFormPage = (shipId: any) => {
   };
 
   const handleSubmitSupply = () => {
-    createInboundBatch({ docNo: batchNumber, shipId: shipId, items: supplyItems });
+    createInboundBatch({ batchNo: batchNumber, shipId: shipId, items: supplyItems });
   };
 
   return (
