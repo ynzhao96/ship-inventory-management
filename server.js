@@ -186,58 +186,43 @@ app.post('/createInboundBatch', async (req, res) => {
   try {
     await conn.beginTransaction();
 
-    // 批量插入
-    // const placeholders = [];
-    // const params = [];
-    // for (const it of items) {
-    //   placeholders.push('(?, ?, ?, ?, ?, ?, NOW())');
-    //   params.push(
-    //     batchNo,             // batch_no
-    //     shipId,            // ship_id
-    //     it.itemId,         // item_id
-    //     it.itemName,       // item_name
-    //     it.unit,           // unit
-    //     it.quantity,       // quantity
-    //     'PENDING',         // status
-    //   );
-    // }
-    const rows = items.map(it => [
-      batchNo,
-      shipId,
-      it.item_id ?? null,
-      it.item_name ?? null,
-      it.unit ?? null,
-      it.quantity ?? 0,
-      'PENDING',
-    ]);
+    // 显式列名 + 参数化，占位符数量与列完全一致
+    const placeholders = [];
+    const params = [];
+    for (const it of items) {
+      placeholders.push('(?, ?, ?, ?, ?, ?, ?, NOW())');
+      params.push(
+        batchNo,           // batch_no
+        shipId,            // ship_id
+        it.itemId,         // item_id  (注意：驼峰 -> 下划线)
+        it.itemName,       // item_name
+        it.unit,           // unit
+        Number(it.quantity), // quantity
+        'PENDING'          // status
+      );
+    }
 
-    const placeholders = rows.map(() => '(?, ?, ?, ?, ?, ?, ?, NOW())').join(',');
-    await q(
-      `INSERT INTO inbounds (batch_no, ship_id, item_id, item_name, unit, quantity, status, created_at) VALUES ${placeholders}`,
-      rows.flat()
-    );
+    const insertSql = `
+      INSERT INTO inbounds
+        (batch_no, ship_id, item_id, item_name, unit, quantity, status, created_at)
+      VALUES ${placeholders.join(',')}
+    `;
+    const [ins] = await conn.query(insertSql, params);
 
-    const [ins] = await conn.query(
-      `INSERT INTO inbounds
-       (batch_no, ship_id, item_id, item_name, unit, quantity, status, created_at)
-       VALUES ${placeholders.join(',')}`,
-      params
-    );
-    // ins.insertId: 第一条插入行的自增ID；ins.affectedRows: 插入行数
     const firstId = Number(ins.insertId);
     const lastId = firstId + Number(ins.affectedRows) - 1;
 
-    // 回读“本次插入”的行
     const [list] = await conn.query(
       `SELECT id,
               batch_no  AS batchNo,
-              ship_id AS shipId,
-              item_id AS itemId,
+              ship_id   AS shipId,
+              item_id   AS itemId,
               item_name AS itemName,
               unit,
               quantity,
               status,
-              created_at AS createdAt
+              created_at AS createdAt,
+              confirmed_at AS confirmedAt
        FROM inbounds
        WHERE id BETWEEN ? AND ?
        ORDER BY id ASC`,
@@ -246,25 +231,12 @@ app.post('/createInboundBatch', async (req, res) => {
 
     await conn.commit();
     return ok(res, { data: { batchNo, shipId, items: list } }, { message: '创建入库批次成功' });
-  }
-  // catch (err) {
-  //   await conn.rollback();
-  //   console.error('createInboundBatch error:', err);
-  //   return fail(res, 500, { code: 'DB_ERROR', message: '数据库错误' });
-  catch (err) {
+  } catch (err) {
     await conn.rollback();
     console.error('createInboundBatch error:', {
-      code: err?.code,
-      errno: err?.errno,
-      message: err?.sqlMessage || err?.message,
-      sql: err?.sql,
+      code: err?.code, errno: err?.errno, message: err?.sqlMessage || err?.message, sql: err?.sql,
     });
-    return fail(res, 500, {
-      code: 'DB_ERROR',
-      message: '数据库错误',
-      // 开发期可以回传细节，生产请去掉
-      extra: { code: err?.code, errno: err?.errno, message: err?.sqlMessage }
-    });
+    return fail(res, 500, { code: 'DB_ERROR', message: err?.sqlMessage || '数据库错误' });
   } finally {
     conn.release();
   }
