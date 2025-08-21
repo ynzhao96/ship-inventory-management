@@ -94,13 +94,23 @@ export const updateUserInfo = async (shipId: string, username?: string, password
 // 批量添加入库
 export const createInboundBatch = async (params: {
   batchNo: string;
-  shipId: number | string;
+  shipId?: number | string;
   items: InboundItemInput[];
 }) => {
+  const body = {
+    batchNo: String(params.batchNo ?? '').trim(),
+    shipId: normalizeId(params.shipId),
+    items: (params.items ?? []).map(it => ({
+      itemId: String(it.itemId ?? '').trim(),
+      itemName: String(it.itemName ?? '').trim(),
+      quantity: Number(it.quantity ?? 0),
+      unit: String(it.unit ?? '').trim(),
+    })),
+  };
   const res = await fetch('/api/createInboundBatch', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(params),
+    body: JSON.stringify(body),
   });
 
   let json: any = {};
@@ -320,4 +330,12 @@ export const getClaimLog = async (shipID: string, startTime: string, endTime: st
     body: JSON.stringify({ shipID, startTime, endTime })
   });
   return response.json();
-}; 
+};
+
+function normalizeId(input: any): string {
+  if (input && typeof input === 'object') {
+    const v = input.shipId ?? input.id ?? input.value ?? input.key;
+    return v != null ? String(v) : '';
+  }
+  return String(input ?? '');
+}

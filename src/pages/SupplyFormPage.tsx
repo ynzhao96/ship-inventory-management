@@ -3,7 +3,7 @@ import { createInboundBatch } from '../api.ts';
 import { InboundItemInput } from '../types';
 
 interface Props {
-  shipId: string;
+  shipId?: string;
 }
 
 const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
