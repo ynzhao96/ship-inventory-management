@@ -192,7 +192,7 @@ app.post('/createInboundBatch', async (req, res) => {
     for (const it of items) {
       placeholders.push('(?, ?, ?, ?, ?, ?, NOW())');
       params.push(
-        batch_no,             // batch_no
+        batchNo,             // batch_no
         shipId,            // ship_id
         it.itemId,         // item_id
         it.itemName,       // item_name

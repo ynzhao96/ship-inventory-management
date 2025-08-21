@@ -103,22 +103,21 @@ export const createInboundBatch = async (params: {
     body: JSON.stringify(params),
   });
 
-  let data: any = {};
-  try { data = await res.json(); } catch { }
+  let json: any = {};
+  try { json = await res.json(); } catch { }
 
-  if (!res.ok || data?.success !== true) {
+  if (!res.ok || json?.success !== true) {
     return {
       success: false,
-      error: data?.message || data?.error || `创建失败(${res.status})`,
-      code: data?.code || 'ERROR',
+      error: json?.message || json?.error || `创建失败(${res.status})`,
+      code: json?.code || 'ERROR',
     };
   }
 
-  // data.data = { docNo, shipId, items: [...] }
   return {
     success: true,
-    data: data?.data,
-    message: data?.message || '创建入库批次成功',
+    data: json?.data,
+    message: json?.message || '创建入库批次成功',
   };
 };
 
