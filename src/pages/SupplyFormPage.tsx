@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { createInboundBatch } from '../api.ts';
 import { InboundItemInput } from '../types';
 
-const SupplyFormPage = (shipId: any) => {
+interface Props {
+  shipId: string;
+}
+
+const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   const [batchNumber, setBatchNumber] = useState('');
   const [supplyItems, setSupplyItems] = useState<InboundItemInput[]>([{ id: '1', itemId: '', itemName: '', itemType: '生活用品', quantity: 0, unit: '' }]);
 
