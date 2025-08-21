@@ -187,20 +187,35 @@ app.post('/createInboundBatch', async (req, res) => {
     await conn.beginTransaction();
 
     // 批量插入
-    const placeholders = [];
-    const params = [];
-    for (const it of items) {
-      placeholders.push('(?, ?, ?, ?, ?, ?, NOW())');
-      params.push(
-        batchNo,             // batch_no
-        shipId,            // ship_id
-        it.itemId,         // item_id
-        it.itemName,       // item_name
-        it.unit,           // unit
-        it.quantity,       // quantity
-        'PENDING',         // status
-      );
-    }
+    // const placeholders = [];
+    // const params = [];
+    // for (const it of items) {
+    //   placeholders.push('(?, ?, ?, ?, ?, ?, NOW())');
+    //   params.push(
+    //     batchNo,             // batch_no
+    //     shipId,            // ship_id
+    //     it.itemId,         // item_id
+    //     it.itemName,       // item_name
+    //     it.unit,           // unit
+    //     it.quantity,       // quantity
+    //     'PENDING',         // status
+    //   );
+    // }
+    const rows = items.map(it => [
+      batchNo,
+      shipId,
+      it.item_id ?? null,
+      it.item_name ?? null,
+      it.unit ?? null,
+      it.quantity ?? 0,
+      'PENDING',
+    ]);
+
+    const placeholders = rows.map(() => '(?, ?, ?, ?, ?, ?, ?, NOW())').join(',');
+    await q(
+      `INSERT INTO inbounds (batch_no, ship_id, item_id, item_name, unit, quantity, status, created_at) VALUES ${placeholders}`,
+      rows.flat()
+    );
 
     const [ins] = await conn.query(
       `INSERT INTO inbounds
