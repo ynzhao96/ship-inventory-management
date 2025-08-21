@@ -232,6 +232,7 @@ app.post('/createInboundBatch', async (req, res) => {
     await conn.commit();
     return ok(res, { data: { batchNo, shipId, items: list } }, { message: '创建入库批次成功' });
   } catch (err) {
+    console.error('ERR SQL =', err.sql);
     await conn.rollback();
     console.error('createInboundBatch error:', {
       code: err?.code, errno: err?.errno, message: err?.sqlMessage || err?.message, sql: err?.sql,
