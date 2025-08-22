@@ -245,7 +245,17 @@ app.post('/createInboundBatch', async (req, res) => {
 // 获取待入库信息
 app.get('/getInboundList', async (req, res) => {
   const { shipId } = req.query || {};
-  const rows = await q('SELECT * FROM inbounds WHERE ship_id = ? and status = \'PENDING\'', [shipId]);
+  const rows = await q(`SELECT 
+    confirm_id AS confirmId,
+    batch_no AS batchNumber,
+    item_id AS itemId,
+    item_name AS itemName,
+    item_name_en AS itemNameEn,
+    unit AS unit,
+    quantity AS quantity,
+    status AS status,
+    create_at AS createAt,
+    FROM inbounds WHERE ship_id = ? and status = \'PENDING\'`, [shipId]);
   return ok(res, {
     totalInbounds: rows.length,
     data: rows,
