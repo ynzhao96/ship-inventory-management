@@ -18,6 +18,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
       }
 
       setCategories(result.data as any);
+      console.log(categories);
     })();
   }, []);
 
