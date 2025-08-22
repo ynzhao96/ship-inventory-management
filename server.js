@@ -251,11 +251,14 @@ app.get('/getInboundList', async (req, res) => {
     item_id AS itemId,
     item_name AS itemName,
     item_name_en AS itemNameEn,
-    unit AS unit,
-    quantity AS quantity,
-    status AS status,
-    create_at AS createAt,
-    FROM inbounds WHERE ship_id = ? and status = 'PENDING'`, [shipId]);
+    unit,
+    quantity,
+    status,
+    create_at AS createAt
+    FROM inbounds 
+    WHERE ship_id = ? and status = 'PENDING'`,
+    [shipId]
+  );
   return ok(res, {
     totalInbounds: rows.length,
     data: rows,
