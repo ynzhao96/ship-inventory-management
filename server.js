@@ -389,7 +389,7 @@ app.post('/getInventoryList', async (req, res) => {
     FROM inventory AS inv
     JOIN items AS it
       ON it.item_id = inv.item_id
-    WHERE ${where.join(' AND ')}
+    WHERE inv.ship_id = ?
     ORDER BY it.item_name ASC, it.item_id ASC
   `;
 
