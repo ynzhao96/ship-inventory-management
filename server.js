@@ -263,14 +263,81 @@ app.get('/getInboundList', async (req, res) => {
 
 // 确认入库
 app.post('/confirmInbound', async (req, res) => {
-  const { inboundId, actualQuantity, remark, item } = req.body || {};
-  const updateInbounds = await q(
-    `UPDATE inbounds SET status = 'CONFIRMED', actual_quantity = ?, remark = ?, confirmed_at = NOW() WHERE inbound_id = ?`, [actualQuantity, remark, inboundId]
-  );
-  const updateInventory = await q(
-    // TODO
-  );
-  return ok(res, { data: true }, { message: '确认入库成功' });
+  let { inboundId, actualQuantity, remark } = req.body || {};
+
+  // 基础校验
+  inboundId = String(inboundId ?? '').trim();
+  const qty = Number(actualQuantity);
+  if (!inboundId) {
+    return fail(res, 400, { code: 'BAD_REQUEST', message: 'inboundId 必填' });
+  }
+  if (!Number.isFinite(qty) || qty <= 0) {
+    return fail(res, 400, { code: 'BAD_QTY', message: 'actualQuantity 必须为正数' });
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // 1) 锁定该入库记录，拿到 ship_id/item_id/status
+    const [rows] = await conn.query(
+      `SELECT inbound_id, ship_id, item_id, status
+         FROM inbounds
+        WHERE inbound_id = ?
+        FOR UPDATE`,
+      [inboundId]
+    );
+    if (!rows || rows.length === 0) {
+      await conn.rollback();
+      return fail(res, 404, { code: 'NOT_FOUND', message: '入库记录不存在' });
+    }
+    const inbound = rows[0];
+
+    // 幂等处理：已确认则不再重复累加库存
+    if (String(inbound.status).toUpperCase() === 'CONFIRMED') {
+      await conn.commit();
+      return ok(res, { data: true }, { message: '该入库记录已确认（幂等返回）' });
+    }
+
+    // 2) 更新 inbounds 状态为 CONFIRMED（只允许从非 CONFIRMED 变更）
+    const [u] = await conn.query(
+      `UPDATE inbounds
+          SET status = 'CONFIRMED',
+              actual_quantity = ?,
+              remark = ?,
+              confirmed_at = NOW()
+        WHERE inbound_id = ?
+          AND status <> 'CONFIRMED'`,
+      [qty, remark ?? null, inboundId]
+    );
+    if (u.affectedRows === 0) {
+      // 理论上不会到这里（因为前面锁定后检查过），兜底处理
+      await conn.rollback();
+      return fail(res, 409, { code: 'ALREADY_CONFIRMED', message: '该入库记录已被确认' });
+    }
+
+    // 3) UPSERT 到 inventory：不存在则插入，存在则累加
+    //    用 VALUES(quantity) 表示本次增量，ON DUPLICATE 时做 quantity = quantity + 增量
+    await conn.query(
+      `INSERT INTO inventory (ship_id, item_id, quantity, updated_at)
+       VALUES (?, ?, ?, NOW())
+       ON DUPLICATE KEY UPDATE
+         quantity   = quantity + VALUES(quantity),
+         updated_at = NOW()`,
+      [inbound.ship_id, inbound.item_id, qty]
+    );
+
+    await conn.commit();
+    return ok(res, { data: true }, { message: '确认入库成功' });
+  } catch (err) {
+    await conn.rollback();
+    console.error('confirmInbound error:', {
+      code: err?.code, errno: err?.errno, message: err?.sqlMessage || err?.message, sql: err?.sql,
+    });
+    return fail(res, 500, { code: err?.code || 'DB_ERROR', message: err?.sqlMessage || '数据库错误' });
+  } finally {
+    conn.release();
+  }
 });
 
 // 获取首页信息接口
