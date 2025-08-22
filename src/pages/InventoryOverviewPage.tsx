@@ -12,9 +12,8 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
   const [inventoryView, setInventoryView] = useState<'cards' | 'list'>('cards');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeInventoryTab, setActiveInventoryTab] = useState('全部');
-  const [cargos, setCargos] = useState<InboundItemInput[]>(items);
-  const [selectedCargo, setSelectedCargo] = useState<InboundItemInput | null>(null);
-  const [showCargoDetail, setShowCargoDetail] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<InboundItemInput | null>(null);
+  const [showItemDetail, setShowItemDetail] = useState(false);
   const [activeTab, setActiveTab] = useState('入库提交');
 
   useEffect(() => {
@@ -24,8 +23,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
         throw new Error(res1.error || '获取物资库存失败');
       }
 
-      setItems(res1.data as any);
-      setCargos(res1.data);
+      setItems(res1.data);
 
       const res2 = await getCategories();
       if (!res2.success) {
@@ -40,22 +38,22 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
 
   // 过滤显示的货物
-  const filteredCargos = cargos.filter(cargo => {
-    const matchesSearch = cargo.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (cargo.itemId + '').toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredItems = items.filter(item => {
+    const matchesSearch = item.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.itemId + '').toLowerCase().includes(searchTerm.toLowerCase());
 
     if (activeInventoryTab === '全部') return matchesSearch;
-    return cargo.category === activeInventoryTab && matchesSearch;
+    return item.category === activeInventoryTab && matchesSearch;
   });
 
-  const handleCargoClick = (cargo: InboundItemInput) => {
-    setSelectedCargo(cargo);
-    setShowCargoDetail(true);
+  const handleItemClick = (item: InboundItemInput) => {
+    setSelectedItem(item);
+    setShowItemDetail(true);
   };
 
   // 渲染物资详情
-  const renderCargoDetail = () => {
-    if (!selectedCargo) return null;
+  const renderItemDetail = () => {
+    if (!selectedItem) return null;
 
     const mockRecords = [
       { id: '1', type: '入库提交', date: '2024-03-20 14:30:00', quantity: 100 },
@@ -76,11 +74,11 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
           <div className="p-6">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">{selectedCargo.itemName}</h2>
-                <p className="text-gray-500">物资编号：{selectedCargo.category}</p>
+                <h2 className="text-2xl font-bold text-gray-900">{selectedItem.itemName}</h2>
+                <p className="text-gray-500">物资编号：{selectedItem.category}</p>
               </div>
               <button
-                onClick={() => setShowCargoDetail(false)}
+                onClick={() => setShowItemDetail(false)}
                 className="text-gray-400 hover:text-gray-500"
               >
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -186,25 +184,25 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
       {inventoryView === 'cards' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {filteredCargos.map(cargo => (
+          {filteredItems.map(item => (
             <div
-              key={cargo.id}
+              key={item.id}
               className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => handleCargoClick(cargo)}
+              onClick={() => handleItemClick(item)}
             >
               <div className="flex justify-between items-start mb-2">
-                <h3 className="text-lg font-semibold">{cargo.itemName}</h3>
-                <span className="text-sm text-gray-500">{cargo.category}</span>
+                <h3 className="text-lg font-semibold">{item.itemName}</h3>
+                <span className="text-sm text-gray-500">{item.category}</span>
               </div>
-              <div className="text-sm text-gray-500 mb-2">{cargo.category}</div>
+              <div className="text-sm text-gray-500 mb-2">{item.category}</div>
               <div className="flex justify-between mb-2">
                 <div>
                   <p className="text-sm text-gray-500">当前库存</p>
-                  <p className="text-lg font-bold">{cargo.quantity}</p>
+                  <p className="text-lg font-bold">{item.quantity}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">待入库</p>
-                  <p className="text-lg font-bold">{cargo.quantity}</p>
+                  <p className="text-lg font-bold">{item.quantity}</p>
                 </div>
               </div>
             </div>
@@ -220,29 +218,27 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资种类</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">当前库存</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">待入库</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredCargos.map(cargo => (
+              {filteredItems.map(item => (
                 <tr
-                  key={cargo.id}
+                  key={item.id}
                   className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => handleCargoClick(cargo)}
+                  onClick={() => handleItemClick(item)}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.category}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.itemName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.itemNameEn}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.quantity}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.quantity}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.itemId}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.itemId}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.itemName}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.category}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.quantity}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.quantity}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
-      {showCargoDetail && renderCargoDetail()}
+      {showItemDetail && renderItemDetail()}
     </div>
   )
 }
