@@ -242,6 +242,16 @@ app.post('/createInboundBatch', async (req, res) => {
   }
 });
 
+// 获取待入库信息
+app.get('/getInboundList', async (req, res) => {
+  const { shipId } = req.query || {};
+  const rows = await q('SELECT * FROM inbounds WHERE ship_id = ? and status = \'PENDING\'', [shipId]);
+  return ok(res, {
+    totalInbounds: rows.length,
+    data: rows,
+  }, { message: '获取待入库信息成功' });
+});
+
 // 获取首页信息接口
 app.post('/getHomeInfo', (req, res) => {
   const { shipID } = req.body;
