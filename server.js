@@ -319,11 +319,10 @@ app.post('/confirmInbound', async (req, res) => {
     // 3) UPSERT 到 inventory：不存在则插入，存在则累加
     //    用 VALUES(quantity) 表示本次增量，ON DUPLICATE 时做 quantity = quantity + 增量
     await conn.query(
-      `INSERT INTO inventory (ship_id, item_id, quantity, updated_at)
+      `INSERT INTO inventory (ship_id, item_id, quantity)
        VALUES (?, ?, ?, NOW())
        ON DUPLICATE KEY UPDATE
-         quantity   = quantity + VALUES(quantity),
-         updated_at = NOW()`,
+         quantity   = quantity + VALUES(quantity)`,
       [inbound.ship_id, inbound.item_id, qty]
     );
 
