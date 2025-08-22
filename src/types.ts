@@ -72,3 +72,9 @@ export type InboundItemInput = {
   unit: string;
   specification?: string;
 };
+
+export type Category = {
+  categoryId: string;
+  categoryName: string;
+  categoryNameEn: string;
+}

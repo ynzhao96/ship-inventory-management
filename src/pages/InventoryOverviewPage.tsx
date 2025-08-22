@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { InboundItemInput } from '../types';
+import { Category, InboundItemInput } from '../types';
 import { getInventoryList, getCategories } from '../api';
 
 interface InventoryOverviewPageProps {
@@ -7,11 +7,11 @@ interface InventoryOverviewPageProps {
 }
 const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId }) => {
   const [items, setItems] = useState<InboundItemInput[]>([]);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const [inventoryView, setInventoryView] = useState<'cards' | 'list'>('cards');
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeInventoryTab, setActiveInventoryTab] = useState('全部');
+  const [activeInventoryTab, setActiveInventoryTab] = useState('ALL');
   const [selectedItem, setSelectedItem] = useState<InboundItemInput | null>(null);
   const [showItemDetail, setShowItemDetail] = useState(false);
   const [activeTab, setActiveTab] = useState('入库提交');
@@ -42,7 +42,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
     const matchesSearch = item.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (item.itemId + '').toLowerCase().includes(searchTerm.toLowerCase());
 
-    if (activeInventoryTab === '全部') return matchesSearch;
+    if (activeInventoryTab === 'ALL') return matchesSearch;
     return item.category === activeInventoryTab && matchesSearch;
   });
 
@@ -167,16 +167,16 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
       <div className="border-b border-gray-200 mb-6">
         <nav className="-mb-px flex space-x-8">
-          {['全部', '生活用品', '维护物资', '安全设备'].map(tab => (
+          {[{ categoryId: 'ALL', categoryName: '全部' }, ...categories].map(tab => (
             <button
-              key={tab}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeInventoryTab === tab
+              key={tab.categoryId}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeInventoryTab === tab.categoryId
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
-              onClick={() => setActiveInventoryTab(tab)}
+              onClick={() => setActiveInventoryTab(tab.categoryId)}
             >
-              {tab}
+              {tab.categoryName}
             </button>
           ))}
         </nav>
