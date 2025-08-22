@@ -260,7 +260,7 @@ app.post('/getLowInventory', (req, res) => {
   const { shipID } = req.body;
   console.log(shipID);
   // 假设我们有一个低库存预警信息列表
-  const lowInventoryWarnings = [{ itemID: '330456', itemName: '电动空气压缩机', threshold: 15, amount: 3 }];
+  const lowInventoryWarnings = [{ itemID: '330456', itemName: '电动空气压缩机', threshold: 15, quantity: 3 }];
   res.json({ data: lowInventoryWarnings });
 });
 
@@ -269,7 +269,7 @@ app.post('/getInventoryList', (req, res) => {
   const { shipID } = req.body;
   console.log(shipID);
   // 假设我们有一个库存信息列表
-  const inventoryList = [{ categoryID: '33', categoryName: '救生救难用具、消火器类', itemID: '330456', itemName: '电动空气压缩机', itemNameEn: 'Elec.Air Compressor', threshold: 15, amount: 3, specification: '型号:S.A.S.3.2，类型：橱柜型，电动，电源：直流110V，单相', remark: '主仓库A6/AK-01-02，物资完好存放' }];
+  const inventoryList = [{ categoryID: '33', categoryName: '救生救难用具、消火器类', itemID: '330456', itemName: '电动空气压缩机', itemNameEn: 'Elec.Air Compressor', threshold: 15, quantity: 3, specification: '型号:S.A.S.3.2，类型：橱柜型，电动，电源：直流110V，单相', remark: '主仓库A6/AK-01-02，物资完好存放' }];
   res.json({ totalInventory: inventoryList.length, data: inventoryList });
 });
 
@@ -286,13 +286,13 @@ app.post('/getConfirmLog', (req, res) => {
   const { shipID, startTime, endTime } = req.body;
   console.log(shipID, startTime, endTime);
   // 这里可以添加查看入库历史的逻辑
-  res.json({ code: 200, data: [{ confirmID: '33045ssx6', itemID: '330456', itemName: '电动空气压缩机', amount: '20', remark: '确认入库备注信息', batchNumber: 'LOT-20230615-001', submitDate: '2023-07-15 09:30', confirmDate: '2023-08-15 09:30' }] });
+  res.json({ code: 200, data: [{ confirmID: '33045ssx6', itemID: '330456', itemName: '电动空气压缩机', quantity: '20', remark: '确认入库备注信息', batchNumber: 'LOT-20230615-001', submitDate: '2023-07-15 09:30', confirmDate: '2023-08-15 09:30' }] });
 });
 
 // 申领物资接口
 app.post('/claimItem', (req, res) => {
-  const { shipID, itemID, amount, remark, claimer } = req.body;
-  console.log(shipID, itemID, amount, remark, claimer);
+  const { shipID, itemID, quantity, remark, claimer } = req.body;
+  console.log(shipID, itemID, quantity, remark, claimer);
   // 这里可以添加申领物资的逻辑
   res.json({ code: 200, message: '申领成功', data: true });
 });
@@ -403,7 +403,7 @@ app.post('/getClaimLog', (req, res) => {
   const { shipID, startTime, endTime } = req.body;
   console.log(shipID, startTime, endTime);
   // 这里可以添加查看申领历史的逻辑
-  res.json({ code: 200, data: [{ claimID: '330456', itemID: '330456', itemName: '牙刷', amount: '20', remark: '申领详情', claimer: '大副', date: '2023-07-15 09:30' }] });
+  res.json({ code: 200, data: [{ claimID: '330456', itemID: '330456', itemName: '牙刷', quantity: '20', remark: '申领详情', claimer: '大副', date: '2023-07-15 09:30' }] });
 });
 
 // 启动服务器
