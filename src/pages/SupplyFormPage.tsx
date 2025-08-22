@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { createInboundBatch, getCategories } from '../api.ts';
+import { createInboundBatch, getCategories, updateItems } from '../api.ts';
 import { InboundItemInput } from '../types';
 
 interface Props {
@@ -38,6 +38,16 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   };
 
   const handleSubmitSupply = () => {
+    const items = supplyItems.map((i) => {
+      return {
+        itemId: i.itemId + '',
+        itemName: i.itemName,
+        itemNameEn: i.itemNameEn,
+        unit: i.unit,
+        specification: i.specification
+      }
+    })
+    updateItems(items);
     createInboundBatch({ batchNo: batchNumber, shipId: shipId, items: supplyItems });
   };
 
@@ -83,6 +93,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
             <tbody className="bg-white divide-y divide-gray-200">
               {supplyItems.map(item => (
                 <tr key={item.id}>
+                  <span>{item.id}</span>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
                       type="text"
@@ -111,12 +122,13 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <select
+                    <input
+                      type="text"
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       disabled
                       value={item.category}
                     >
-                    </select>
+                    </input>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
