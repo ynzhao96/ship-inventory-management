@@ -18,7 +18,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
   const [activeTab, setActiveTab] = useState('入库提交');
 
   useEffect(() => {
-    async () => {
+    (async () => {
       const res1 = await getInventoryList(shipId);
       if (!res1.success) {
         throw new Error(res1.error || '获取物资库存失败');
@@ -33,7 +33,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
       setCategories(res2.data as any);
       console.log(categories);
-    }
+    })();
   }, [])
 
 
