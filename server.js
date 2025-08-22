@@ -380,9 +380,10 @@ app.post('/getInventoryList', async (req, res) => {
       inv.ship_id              AS shipId,
       inv.item_id              AS itemId,
       inv.quantity             AS quantity,
-      inv.updated_at           AS updatedAt,
+      inv.remark               AS remark,
       it.item_name             AS itemName,
       it.item_name_en          AS itemNameEn,
+      it.category_id           AS categoryId,
       it.unit                  AS unit,
       it.specification         AS specification
     FROM inventory AS inv
