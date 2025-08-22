@@ -66,7 +66,9 @@ export type InboundItemInput = {
   id: string;
   itemId: number | string;
   itemName: string;
-  itemType: string;
+  itemNameEn?: string;
+  category: string;
   quantity: number | string;
   unit: string;
+  specification?: string;
 };

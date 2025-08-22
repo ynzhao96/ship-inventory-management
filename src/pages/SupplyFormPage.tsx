@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { createInboundBatch } from '../api.ts';
+import { useEffect, useState } from 'react';
+import { createInboundBatch, getCategories } from '../api.ts';
 import { InboundItemInput } from '../types';
 
 interface Props {
@@ -8,10 +8,21 @@ interface Props {
 
 const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   const [batchNumber, setBatchNumber] = useState('');
-  const [supplyItems, setSupplyItems] = useState<InboundItemInput[]>([{ id: '1', itemId: '', itemName: '', itemType: '生活用品', quantity: 0, unit: '' }]);
+  const [supplyItems, setSupplyItems] = useState<InboundItemInput[]>([{ id: '1', itemId: '', itemName: '', category: '', quantity: 0, unit: '' }]);
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    (async () => {
+      const result = await getCategories();
+      if (!result.success) {
+        throw new Error(result.error || '获取物资种类失败');
+      }
+
+      setCategories(result.data as any);
+    })();
+  }, []);
 
   const handleAddSupplyItem = () => {
-    const newItem = { id: (supplyItems.length + 1).toString(), itemId: '', itemName: '', itemType: '生活用品', quantity: 0, unit: '' };
+    const newItem = { id: (supplyItems.length + 1).toString(), itemId: '', itemName: '', category: '', quantity: 0, unit: '' };
     setSupplyItems([...supplyItems, newItem]);
   };
 
@@ -61,9 +72,11 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资编号</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资名称</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资名称(英文)</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资种类</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">单位</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">规格</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -88,14 +101,20 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="text"
+                      className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={item.itemNameEn}
+                      onChange={(e) => handleUpdateSupplyItem(item.id, 'itemNameEn', e.target.value)}
+                      placeholder="请输入物资名称(英文)"
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <select
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={item.itemType}
-                      onChange={(e) => handleUpdateSupplyItem(item.id, 'itemType', e.target.value)}
+                      disabled
+                      value={item.category}
                     >
-                      <option value="生活用品">生活用品</option>
-                      <option value="维护物资">维护物资</option>
-                      <option value="其他">其他</option>
                     </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -114,6 +133,15 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                       value={item.unit}
                       onChange={(e) => handleUpdateSupplyItem(item.id, 'unit', e.target.value)}
                       placeholder="请输入单位名称"
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="text"
+                      className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={item.specification}
+                      onChange={(e) => handleUpdateSupplyItem(item.id, 'specification', e.target.value)}
+                      placeholder="请输入规格"
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
