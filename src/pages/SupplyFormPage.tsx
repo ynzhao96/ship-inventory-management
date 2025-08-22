@@ -38,15 +38,13 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   };
 
   const handleSubmitSupply = () => {
-    const items = supplyItems.map((i) => {
-      return {
-        itemId: i.itemId + '',
-        itemName: i.itemName,
-        itemNameEn: i.itemNameEn,
-        unit: i.unit,
-        specification: i.specification
-      }
-    })
+    const items = supplyItems.map((i) => ({
+      itemId: i.itemId + '',
+      itemName: i.itemName,
+      itemNameEn: i.itemNameEn,
+      unit: i.unit,
+      specification: i.specification
+    }));
     updateItems(items);
     createInboundBatch({ batchNo: batchNumber, shipId: shipId, items: supplyItems });
   };

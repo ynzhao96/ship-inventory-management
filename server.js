@@ -211,7 +211,7 @@ app.post('/createInboundBatch', async (req, res) => {
     const lastId = firstId + Number(ins.affectedRows) - 1;
 
     const [list] = await conn.query(
-      `SELECT id,
+      `SELECT inbound_id AS inboundId,
               batch_no  AS batchNo,
               ship_id   AS shipId,
               item_id   AS itemId,
