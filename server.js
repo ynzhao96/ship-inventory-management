@@ -220,8 +220,8 @@ app.post('/createInboundBatch', async (req, res) => {
               created_at AS createdAt,
               confirmed_at AS confirmedAt
        FROM inbounds
-       WHERE id BETWEEN ? AND ?
-       ORDER BY id ASC`,
+       WHERE inbound_id BETWEEN ? AND ?
+       ORDER BY inbound_id ASC`,
       [firstId, lastId]
     );
 
