@@ -255,7 +255,7 @@ app.get('/getInboundList', async (req, res) => {
     quantity AS quantity,
     status AS status,
     create_at AS createAt,
-    FROM inbounds WHERE ship_id = ? and status = \'PENDING\'`, [shipId]);
+    FROM inbounds WHERE ship_id = ? and status = 'PENDING'`, [shipId]);
   return ok(res, {
     totalInbounds: rows.length,
     data: rows,
