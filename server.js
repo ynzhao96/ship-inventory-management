@@ -427,8 +427,7 @@ app.get('/getCategories', async (req, res) => {
     id AS categoryId,
     name AS categoryName,
     name_en AS categoryNameEn
-    FROM crews WHERE ship_id = ?`,
-    [shipId]
+    FROM categories`
   );
   return ok(res, { data: rows }, { message: '获取库存类型成功' });
 });
