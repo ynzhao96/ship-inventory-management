@@ -267,9 +267,12 @@ app.get('/getInboundList', async (req, res) => {
 
 // 确认入库
 app.post('/confirmInbound', async (req, res) => {
-  const { inboundId, actualQuantity, remark } = req.body || {};
-  const upd = await q(
+  const { inboundId, actualQuantity, remark, item } = req.body || {};
+  const updateInbounds = await q(
     `UPDATE inbounds SET status = 'CONFIRMED', actual_quantity = ?, remark = ?, confirmed_at = NOW() WHERE inbound_id = ?`, [actualQuantity, remark, inboundId]
+  );
+  const updateInventory = await q(
+    // TODO
   );
   return ok(res, { data: true }, { message: '确认入库成功' });
 });
