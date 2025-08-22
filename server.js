@@ -173,8 +173,8 @@ app.post('/createInboundBatch', async (req, res) => {
   }
   for (let i = 0; i < items.length; i++) {
     const it = items[i] || {};
-    if (it.itemId == null || !it.itemName || it.quantity == null || !it.unit) {
-      return fail(res, 400, { code: 'BAD_ITEM', message: `第 ${i + 1} 项缺少 itemId/itemName/quantity/unit` });
+    if (it.itemId == null || it.quantity == null) {
+      return fail(res, 400, { code: 'BAD_ITEM', message: `第 ${i + 1} 项缺少 itemId/quantity` });
     }
     const qty = Number(it.quantity);
     if (!Number.isFinite(qty) || qty <= 0) {
@@ -190,13 +190,11 @@ app.post('/createInboundBatch', async (req, res) => {
     const placeholders = [];
     const params = [];
     for (const it of items) {
-      placeholders.push('(?, ?, ?, ?, ?, ?, ?, NOW())');
+      placeholders.push('(?, ?, ?, ?, ?, NOW())');
       params.push(
         batchNo,           // batch_no
         shipId,            // ship_id
         it.itemId,         // item_id  (注意：驼峰 -> 下划线)
-        it.itemName,       // item_name
-        it.unit,           // unit
         Number(it.quantity), // quantity
         'PENDING'          // status
       );
@@ -204,7 +202,7 @@ app.post('/createInboundBatch', async (req, res) => {
 
     const insertSql = `
       INSERT INTO inbounds
-        (batch_no, ship_id, item_id, item_name, unit, quantity, status, created_at)
+        (batch_no, ship_id, item_id, quantity, status, created_at)
       VALUES ${placeholders.join(',')}
     `;
     const [ins] = await conn.query(insertSql, params);
@@ -217,9 +215,7 @@ app.post('/createInboundBatch', async (req, res) => {
               batch_no  AS batchNo,
               ship_id   AS shipId,
               item_id   AS itemId,
-              item_name AS itemName,
               quantity,
-              unit,
               status,
               created_at AS createdAt,
               confirmed_at AS confirmedAt

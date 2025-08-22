@@ -137,9 +137,7 @@ export const createInboundBatch = async (params: {
     shipId: normalizeId(params.shipId),
     items: (params.items ?? []).map(it => ({
       itemId: String(it.itemId ?? '').trim(),
-      itemName: String(it.itemName ?? '').trim(),
       quantity: Number(it.quantity ?? 0),
-      unit: String(it.unit ?? '').trim(),
     })),
   };
   const res = await fetch('/api/createInboundBatch', {
