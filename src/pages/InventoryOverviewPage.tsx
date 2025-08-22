@@ -88,7 +88,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
             </div>
 
             <div className="border-b border-gray-200 mb-6">
-              <nav className="-mb-px flex flex-wrap space-x-8">
+              <nav className="-mb-px flex space-x-8">
                 {['全部', '入库提交', '入库确认', '申领记录'].map(tab => (
                   <button
                     key={tab}
@@ -166,7 +166,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
       </div>
 
       <div className="border-b border-gray-200 mb-6">
-        <nav className="-mb-px flex space-x-8">
+        <nav className="-mb-px flex flex-wrap space-x-8">
           {[{ categoryId: 'ALL', categoryName: '全部' }, ...categories].map(tab => (
             <button
               key={tab.categoryId}
