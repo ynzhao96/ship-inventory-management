@@ -1,89 +1,53 @@
-import React, { useState } from 'react';
-import { Cargo, CargoType, CargoStatus } from '../types';
+import React, { useEffect, useState } from 'react';
+import { InboundItemInput } from '../types';
+import { getInventoryList, getCategories } from '../api';
 
 interface InventoryOverviewPageProps {
   shipId?: string;
 }
 const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId }) => {
-  // 模拟货物数据
-  const mockCargos: Cargo[] = [
-    {
-      id: '001',
-      name: '发动机润滑油',
-      type: CargoType.LIQUID,
-      weight: 200,
-      volume: 220,
-      shipId: 'ABC-123',
-      status: CargoStatus.STORED,
-      destination: '上海港',
-      arrivalDate: new Date('2023-05-20'),
-      cargoCode: 'M001',
-      cargoCategory: '维护物资',
-      quantity: 200
-    },
-    {
-      id: '002',
-      name: '液压油',
-      type: CargoType.LIQUID,
-      weight: 150,
-      volume: 165,
-      shipId: 'ABC-123',
-      status: CargoStatus.STORED,
-      destination: '上海港',
-      arrivalDate: new Date('2023-05-20'),
-      cargoCode: 'M002',
-      cargoCategory: '维护物资',
-      quantity: 150
-    },
-    {
-      id: '003',
-      name: '安全装备',
-      type: CargoType.CONTAINER,
-      weight: 300,
-      volume: 350,
-      shipId: 'ABC-123',
-      status: CargoStatus.STORED,
-      destination: '青岛港',
-      arrivalDate: new Date('2023-06-10'),
-      cargoCode: 'L001',
-      cargoCategory: '生活用品',
-      quantity: 50
-    },
-    {
-      id: '004',
-      name: '灭火器',
-      type: CargoType.CONTAINER,
-      weight: 100,
-      volume: 120,
-      shipId: 'ABC-123',
-      status: CargoStatus.STORED,
-      destination: '广州港',
-      arrivalDate: new Date('2023-06-15'),
-      cargoCode: 'S001',
-      cargoCategory: '安全设备',
-      quantity: 20
-    }
-  ];
+  const [items, setItems] = useState<InboundItemInput[]>([]);
+  const [categories, setCategories] = useState([]);
+
   const [inventoryView, setInventoryView] = useState<'cards' | 'list'>('cards');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeInventoryTab, setActiveInventoryTab] = useState('全部');
-  const [cargos] = useState<Cargo[]>(mockCargos.filter(cargo => cargo.shipId === shipId));
-  const [selectedCargo, setSelectedCargo] = useState<Cargo | null>(null);
+  const [cargos] = useState<InboundItemInput[]>(items);
+  const [selectedCargo, setSelectedCargo] = useState<InboundItemInput | null>(null);
   const [showCargoDetail, setShowCargoDetail] = useState(false);
   const [activeTab, setActiveTab] = useState('入库提交');
+
+  useEffect(() => {
+    async () => {
+      const res1 = await getInventoryList(shipId);
+      if (!res1.success) {
+        throw new Error(res1.error || '获取物资库存失败');
+      }
+
+      setItems(res1.data as any);
+
+      const res2 = await getCategories();
+      if (!res2.success) {
+        throw new Error(res2.error || '获取物资种类失败');
+      }
+
+      setCategories(res2.data as any);
+      console.log(categories);
+    }
+  }, [])
 
 
 
   // 过滤显示的货物
   const filteredCargos = cargos.filter(cargo => {
-    const matchesSearch = cargo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cargo.cargoCode.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = cargo.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (cargo.itemId + '').toLowerCase().includes(searchTerm.toLowerCase());
 
     if (activeInventoryTab === '全部') return matchesSearch;
-    return cargo.cargoCategory === activeInventoryTab && matchesSearch;
+    return cargo.category === activeInventoryTab && matchesSearch;
   });
 
-  const handleCargoClick = (cargo: Cargo) => {
+  const handleCargoClick = (cargo: InboundItemInput) => {
     setSelectedCargo(cargo);
     setShowCargoDetail(true);
   };
@@ -111,8 +75,8 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
           <div className="p-6">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">{selectedCargo.name}</h2>
-                <p className="text-gray-500">物资编号：{selectedCargo.cargoCode}</p>
+                <h2 className="text-2xl font-bold text-gray-900">{selectedCargo.itemName}</h2>
+                <p className="text-gray-500">物资编号：{selectedCargo.category}</p>
               </div>
               <button
                 onClick={() => setShowCargoDetail(false)}
@@ -228,10 +192,10 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
               onClick={() => handleCargoClick(cargo)}
             >
               <div className="flex justify-between items-start mb-2">
-                <h3 className="text-lg font-semibold">{cargo.name}</h3>
-                <span className="text-sm text-gray-500">{cargo.cargoCode}</span>
+                <h3 className="text-lg font-semibold">{cargo.itemName}</h3>
+                <span className="text-sm text-gray-500">{cargo.category}</span>
               </div>
-              <div className="text-sm text-gray-500 mb-2">{cargo.cargoCategory}</div>
+              <div className="text-sm text-gray-500 mb-2">{cargo.category}</div>
               <div className="flex justify-between mb-2">
                 <div>
                   <p className="text-sm text-gray-500">当前库存</p>
@@ -239,7 +203,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">待入库</p>
-                  <p className="text-lg font-bold">{cargo.volume > cargo.quantity ? cargo.volume - cargo.quantity : cargo.quantity}</p>
+                  <p className="text-lg font-bold">{cargo.quantity}</p>
                 </div>
               </div>
             </div>
@@ -265,12 +229,12 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
                   className="hover:bg-gray-50 cursor-pointer"
                   onClick={() => handleCargoClick(cargo)}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.cargoCode}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.cargoCategory}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.category}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.itemName}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.itemNameEn}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{cargo.quantity}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.volume > cargo.quantity ? cargo.volume - cargo.quantity : cargo.quantity}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{cargo.status}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.quantity}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{cargo.itemId}</td>
                 </tr>
               ))}
             </tbody>

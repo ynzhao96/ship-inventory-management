@@ -375,13 +375,6 @@ app.post('/getInventoryList', async (req, res) => {
     return fail(res, 400, { code: 'BAD_REQUEST', message: 'Missing shipId' });
   }
 
-  // 临时调试（确认命中的库 & shipId 是否有空白）
-  try {
-    const dbinfo = await q('SELECT DATABASE() AS db, @@hostname AS host, @@port AS port');
-    console.log('[DB]', dbinfo[0]);
-    console.log('[getInventoryList] shipId =', JSON.stringify(shipId), 'len=', shipId.length);
-  } catch { }
-
   const where = ['TRIM(inv.ship_id) = ?']; // 双保险：列也 TRIM 一次
   const params = [shipId];
 
