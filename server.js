@@ -360,18 +360,34 @@ app.post('/getLowInventory', (req, res) => {
 
 // 获取全部库存接口
 app.post('/getInventoryList', async (req, res) => {
-  const { shipId, keyword } = req.body || {};
+  const rawShipId = req.body?.shipId;
+  const keyword = req.body?.keyword;
+  function normalizeId(input) {
+    if (input && typeof input === 'object') {
+      const v = input.shipId ?? input.id ?? input.value ?? input.key;
+      return v != null ? String(v).trim() : '';
+    }
+    return String(input ?? '').trim();
+  }
 
+  const shipId = normalizeId(rawShipId);
   if (!shipId) {
     return fail(res, 400, { code: 'BAD_REQUEST', message: 'Missing shipId' });
   }
 
-  // 关键词可选
-  const where = ['inv.ship_id = ?'];
+  // 临时调试（确认命中的库 & shipId 是否有空白）
+  try {
+    const dbinfo = await q('SELECT DATABASE() AS db, @@hostname AS host, @@port AS port');
+    console.log('[DB]', dbinfo[0]);
+    console.log('[getInventoryList] shipId =', JSON.stringify(shipId), 'len=', shipId.length);
+  } catch { }
+
+  const where = ['TRIM(inv.ship_id) = ?']; // 双保险：列也 TRIM 一次
   const params = [shipId];
+
   if (keyword && String(keyword).trim() !== '') {
-    where.push('(it.item_id LIKE ? OR it.item_name LIKE ? OR it.item_name_en LIKE ?)');
     const kw = `%${String(keyword).trim()}%`;
+    where.push('(it.item_id LIKE ? OR it.item_name LIKE ? OR it.item_name_en LIKE ?)');
     params.push(kw, kw, kw);
   }
 
@@ -389,7 +405,7 @@ app.post('/getInventoryList', async (req, res) => {
     FROM inventory AS inv
     JOIN items AS it
       ON it.item_id = inv.item_id
-    WHERE inv.ship_id = ?
+    WHERE ${where.join(' AND ')}
     ORDER BY it.item_name ASC, it.item_id ASC
   `;
 
