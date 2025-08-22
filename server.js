@@ -265,6 +265,16 @@ app.get('/getInboundList', async (req, res) => {
   }, { message: '获取待入库信息成功' });
 });
 
+// 确认入库
+app.post('/confirmInbound', async (req, res) => {
+  const { inboundId, actualQuantity, remark } = req.body || {};
+  const upd = await q(
+    `UPDATE inbounds SET status = 'CONFIRMED', actual_quantity = ?, remark = ? WHERE inbound_id = ?`, [inboundId, actualQuantity, remark],
+    params
+  );
+  return ok(res, { data: true }, { message: '确认入库成功' });
+});
+
 // 获取首页信息接口
 app.post('/getHomeInfo', (req, res) => {
   const { shipID } = req.body;
