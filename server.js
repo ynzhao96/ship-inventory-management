@@ -246,7 +246,7 @@ app.post('/createInboundBatch', async (req, res) => {
 app.get('/getInboundList', async (req, res) => {
   const { shipId } = req.query || {};
   const rows = await q(`SELECT 
-    confirm_id AS confirmId,
+    inbound_id AS inboundId,
     batch_no AS batchNumber,
     item_id AS itemId,
     item_name AS itemName,

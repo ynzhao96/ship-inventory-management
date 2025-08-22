@@ -177,6 +177,34 @@ export const getShipInfo = async (id?: string | number) => {
   };
 }
 
+// 获取待入库信息 暂时可能不需要
+// export const getInboundList = async (shipId?: string) => {
+//   const res = await fetch('/api/getInboundList', {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify({
+//       shipId: shipId
+//     }),
+//   });
+
+//   let json: any = {};
+//   try { json = await res.json(); } catch { }
+
+//   if (!res.ok || json?.success !== true) {
+//     return {
+//       success: false,
+//       error: json?.message || json?.error || `获取失败(${res.status})`,
+//       code: json?.code || 'ERROR',
+//     };
+//   }
+
+//   return {
+//     success: true,
+//     data: json?.data,
+//     message: json?.message || '获取入库信息成功',
+//   };
+// }
+
 export const getHomeInfo = async (shipID: string) => {
   const response = await fetch('/api/getHomeInfo', {
     method: 'POST',
