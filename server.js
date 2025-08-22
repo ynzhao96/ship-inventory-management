@@ -254,7 +254,7 @@ app.get('/getInboundList', async (req, res) => {
     unit,
     quantity,
     status,
-    create_at AS createAt
+    created_at AS createdAt
     FROM inbounds 
     WHERE ship_id = ? and status = 'PENDING'`,
     [shipId]
