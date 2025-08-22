@@ -655,6 +655,23 @@ app.post('/getClaimLog', (req, res) => {
   res.json({ code: 200, data: [{ claimID: '330456', itemID: '330456', itemName: '牙刷', quantity: '20', remark: '申领详情', claimer: '大副', date: '2023-07-15 09:30' }] });
 });
 
+// 
+app.post('/editItemRemark', async (req, res) => {
+  const { shipId, itemId, remark } = req.body || {};
+
+  const check = requireFields(req.body, ['shipId', 'itemId']);
+  if (!check.ok) {
+    return fail(res, 400, { code: 'BAD_REQUEST', message: 'Missing shipId or itemId' });
+  }
+
+  const rows = await q('SELECT * FROM inventory WHERE ship_id = ? AND item_id = ?', [shipId, itemId]);
+  if (rows.length === 0) {
+    return fail(res, 400, { code: 'BAD_ITEMS', message: '未找到对应的记录' });
+  }
+  const upd = await q('UPDATE inventory SET remark = ? WHERE ship_id = ? AND item_id = ?', [remark, shipId, itemId]);
+  return ok(res, { data: true }, { message: '修改备注成功' });
+})
+
 // 启动服务器
 app.listen(port, () => {
   console.log(`服务器正在运行在 http://localhost:${port}`);
