@@ -245,9 +245,6 @@ app.get('/getInboundList', async (req, res) => {
     inbound_id AS inboundId,
     batch_no AS batchNumber,
     item_id AS itemId,
-    item_name AS itemName,
-    item_name_en AS itemNameEn,
-    unit,
     quantity,
     status,
     created_at AS createdAt
