@@ -12,7 +12,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
   const [inventoryView, setInventoryView] = useState<'cards' | 'list'>('cards');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeInventoryTab, setActiveInventoryTab] = useState('全部');
-  const [cargos] = useState<InboundItemInput[]>(items);
+  const [cargos, setCargos] = useState<InboundItemInput[]>(items);
   const [selectedCargo, setSelectedCargo] = useState<InboundItemInput | null>(null);
   const [showCargoDetail, setShowCargoDetail] = useState(false);
   const [activeTab, setActiveTab] = useState('入库提交');
@@ -25,6 +25,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
       }
 
       setItems(res1.data as any);
+      setCargos(res1.data);
 
       const res2 = await getCategories();
       if (!res2.success) {
