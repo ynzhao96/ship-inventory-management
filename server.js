@@ -218,8 +218,8 @@ app.post('/createInboundBatch', async (req, res) => {
               ship_id   AS shipId,
               item_id   AS itemId,
               item_name AS itemName,
-              unit,
               quantity,
+              unit,
               status,
               created_at AS createdAt,
               confirmed_at AS confirmedAt
