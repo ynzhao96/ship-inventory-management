@@ -359,12 +359,48 @@ app.post('/getLowInventory', (req, res) => {
 });
 
 // 获取全部库存接口
-app.post('/getInventoryList', (req, res) => {
-  const { shipID } = req.body;
-  console.log(shipID);
-  // 假设我们有一个库存信息列表
-  const inventoryList = [{ categoryID: '33', categoryName: '救生救难用具、消火器类', itemID: '330456', itemName: '电动空气压缩机', itemNameEn: 'Elec.Air Compressor', threshold: 15, quantity: 3, specification: '型号:S.A.S.3.2，类型：橱柜型，电动，电源：直流110V，单相', remark: '主仓库A6/AK-01-02，物资完好存放' }];
-  res.json({ totalInventory: inventoryList.length, data: inventoryList });
+app.post('/getInventoryList', async (req, res) => {
+  const { shipId, keyword } = req.body || {};
+
+  if (!shipId) {
+    return fail(res, 400, { code: 'BAD_REQUEST', message: 'Missing shipId' });
+  }
+
+  // 关键词可选
+  const where = ['inv.ship_id = ?'];
+  const params = [shipId];
+  if (keyword && String(keyword).trim() !== '') {
+    where.push('(it.item_id LIKE ? OR it.item_name LIKE ? OR it.item_name_en LIKE ?)');
+    const kw = `%${String(keyword).trim()}%`;
+    params.push(kw, kw, kw);
+  }
+
+  const sql = `
+    SELECT
+      inv.ship_id              AS shipId,
+      inv.item_id              AS itemId,
+      inv.quantity             AS quantity,
+      inv.updated_at           AS updatedAt,
+      it.item_name             AS itemName,
+      it.item_name_en          AS itemNameEn,
+      it.unit                  AS unit,
+      it.specification         AS specification
+    FROM inventory AS inv
+    JOIN items AS it
+      ON it.item_id = inv.item_id
+    WHERE ${where.join(' AND ')}
+    ORDER BY it.item_name ASC, it.item_id ASC
+  `;
+
+  try {
+    const rows = await q(sql, params);
+    return ok(res, { data: rows }, { message: 'Inventory fetched successfully' });
+  } catch (err) {
+    console.error('getInventoryList error:', {
+      code: err?.code, errno: err?.errno, message: err?.sqlMessage || err?.message, sql: err?.sql,
+    });
+    return fail(res, 500, { code: err?.code || 'DB_ERROR', message: err?.sqlMessage || '数据库错误' });
+  }
 });
 
 // 撤销入库接口
