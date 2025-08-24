@@ -8,7 +8,7 @@ interface Props {
 
 const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   const [batchNumber, setBatchNumber] = useState('');
-  const [supplyItems, setSupplyItems] = useState<InboundItemInput[]>([{ id: '1', itemId: '', itemName: '', category: '', quantity: 0, unit: '' }]);
+  const [supplyItems, setSupplyItems] = useState<InboundItemInput[]>([{ itemId: '', itemName: '', categoryId: '', quantity: 0, unit: '' }]);
   const [categories, setCategories] = useState([]);
   useEffect(() => {
     (async () => {
@@ -23,17 +23,17 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   }, []);
 
   const handleAddSupplyItem = () => {
-    const newItem = { id: (supplyItems.length + 1).toString(), itemId: '', itemName: '', category: '', quantity: 0, unit: '' };
+    const newItem = { id: (supplyItems.length + 1).toString(), itemId: '', itemName: '', categoryId: '', quantity: 0, unit: '' };
     setSupplyItems([...supplyItems, newItem]);
   };
 
-  const handleUpdateSupplyItem = (id: string, field: string, value: string | number) => {
-    setSupplyItems(supplyItems.map(item => item.id === id ? { ...item, [field]: value } : item));
+  const handleUpdateSupplyItem = (id: string | number, field: string, value: string | number) => {
+    setSupplyItems(supplyItems.map((item, index) => index === id ? { ...item, [field]: value } : item));
   };
 
-  const handleDeleteSupplyItem = (id: string) => {
+  const handleDeleteSupplyItem = (id: string | number) => {
     if (supplyItems.length > 1) {
-      setSupplyItems(supplyItems.filter(item => item.id !== id));
+      setSupplyItems(supplyItems.filter((_item, index) => index !== id));
     }
   };
 
@@ -89,15 +89,14 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {supplyItems.map(item => (
-                <tr key={item.id}>
-                  <span>{item.id}</span>
+              {supplyItems.map((item, index) => (
+                <tr key={index}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
                       type="text"
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={item.itemId}
-                      onChange={(e) => handleUpdateSupplyItem(item.id, 'itemId', e.target.value)}
+                      onChange={(e) => handleUpdateSupplyItem(index, 'itemId', e.target.value)}
                       placeholder="请输入物资编号"
                     />
                   </td>
@@ -106,7 +105,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                       type="text"
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={item.itemName}
-                      onChange={(e) => handleUpdateSupplyItem(item.id, 'itemName', e.target.value)}
+                      onChange={(e) => handleUpdateSupplyItem(index, 'itemName', e.target.value)}
                       placeholder="请输入物资名称"
                     />
                   </td>
@@ -115,7 +114,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                       type="text"
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={item.itemNameEn}
-                      onChange={(e) => handleUpdateSupplyItem(item.id, 'itemNameEn', e.target.value)}
+                      onChange={(e) => handleUpdateSupplyItem(index, 'itemNameEn', e.target.value)}
                       placeholder="请输入物资名称(英文)"
                     />
                   </td>
@@ -124,7 +123,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                       type="text"
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       disabled
-                      value={item.category}
+                      value={item.categoryId}
                     >
                     </input>
                   </td>
@@ -133,7 +132,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                       type="number"
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={item.quantity}
-                      onChange={(e) => handleUpdateSupplyItem(item.id, 'quantity', Number(e.target.value))}
+                      onChange={(e) => handleUpdateSupplyItem(index, 'quantity', Number(e.target.value))}
                       placeholder="请输入数量"
                     />
                   </td>
@@ -142,7 +141,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                       type="text"
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={item.unit}
-                      onChange={(e) => handleUpdateSupplyItem(item.id, 'unit', e.target.value)}
+                      onChange={(e) => handleUpdateSupplyItem(index, 'unit', e.target.value)}
                       placeholder="请输入单位名称"
                     />
                   </td>
@@ -151,19 +150,20 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                       type="text"
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={item.specification}
-                      onChange={(e) => handleUpdateSupplyItem(item.id, 'specification', e.target.value)}
+                      onChange={(e) => handleUpdateSupplyItem(index, 'specification', e.target.value)}
                       placeholder="请输入规格"
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button
                       className="text-red-600 hover:text-red-900"
-                      onClick={() => handleDeleteSupplyItem(item.id)}
+                      onClick={() => handleDeleteSupplyItem(index)}
                       disabled={supplyItems.length === 1}
                     >
                       删除
                     </button>
                   </td>
+                  <span>{index}</span>
                 </tr>
               ))}
             </tbody>
