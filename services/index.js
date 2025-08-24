@@ -9,6 +9,7 @@ import getShipInfo from './getShipInfo.js';
 import createInboundBatch from './createInboundBatch.js';
 import getInboundList from './getInboundList.js';
 import confirmInbound from './confirmInbound.js';
+import getInventoryList from './getInventoryList.js';
 
 const router = Router();
 
@@ -23,5 +24,6 @@ router.use(getShipInfo);
 router.use(createInboundBatch);
 router.use(getInboundList);
 router.use(confirmInbound);
+router.use(getInventoryList);
 
 export default router;
