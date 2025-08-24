@@ -7,7 +7,7 @@ import updateUserInfo from './updateUserInfo.js';
 import getShipList from './getShipList.js';
 import getShipInfo from './getShipInfo.js';
 import createInboundBatch from './createInboundBatch.js';
-import getInboundList from './getInboundList';
+import getInboundList from './getInboundList.js';
 
 const router = Router();
 
