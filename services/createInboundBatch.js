@@ -66,7 +66,12 @@ router.post('/createInboundBatch', asyncHandler(async (req, res) => {
     );
 
     await conn.commit();
-    log();
+    // 记录日志
+    let itemListLog = [];
+    for (const it of items) {
+      itemListLog.push(it.itemId + '*' + it.quantity);
+    }
+    addLog('INBOUND_CREATED', 'admin', batchNo, null, `管理员添加物资入库，${itemListLog.join(',')}`);
     return ok(res, { data: { batchNo, shipId, items: list } }, { message: '创建入库批次成功' });
   } catch (err) {
     await conn.rollback();
@@ -76,15 +81,6 @@ router.post('/createInboundBatch', asyncHandler(async (req, res) => {
     return fail(res, 500, { code: 'DB_ERROR', message: err?.sqlMessage || '数据库错误' });
   } finally {
     conn.release();
-  }
-
-  // 记录日志
-  function log() {
-    let itemListLog = [];
-    for (const it of items) {
-      itemListLog.push(it.itemId + '*' + it.quantity);
-    }
-    addLog('INBOUND_CREATED', 'admin', batchNo, null, `管理员添加物资入库，${itemListLog.join(',')}`);
   }
 }));
 
