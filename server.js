@@ -430,11 +430,29 @@ app.post('/getConfirmLog', (req, res) => {
 });
 
 // 申领物资接口
-app.post('/claimItem', (req, res) => {
-  const { shipID, itemID, quantity, remark, claimer } = req.body;
-  console.log(shipID, itemID, quantity, remark, claimer);
-  // 这里可以添加申领物资的逻辑
-  res.json({ code: 200, message: '申领成功', data: true });
+app.post('/claimItem', async (req, res) => {
+  const { shipId, itemId, quantity, remark, claimer } = req.body;
+  const check = requireFields(req.body, [shipId, itemId, quantity, claimer]);
+  if (!check.ok) {
+    return fail(res, 400, { code: 'BAD_REQUEST', message: 'shipId, itemId, quantity, claimer必填' });
+  }
+  const row = await q('SELECT quantity FROM inventory WHERE ship_id = ? AND item_id = ?', [shipId, itemId]);
+  if (row.length === 0) {
+    return fail(res, 400, { code: 'BAD_REQUEST', message: '对应物资不存在' });
+  }
+  if (quantity > row[0].quantity) {
+    return fail(res, 400, { code: 'BAD_QTY', message: 'quantity必须小于等于库存数量' });
+  }
+
+  try {
+    q('UPDATE inventory SET inventory = ? WHERE ship_id = ? AND item_id = ?', [row[0].quantity - quantity, shipId, itemId]).then(() => {
+      addLog('CLAIM', `${shipId} - ${claimer}`, itemId, quantity, remark);
+
+      return ok(res, { data: true }, { message: '申领物资成功' });
+    })
+  } catch (err) {
+    return fail(res, 500, { code: err?.code || 'DB_ERROR', message: err?.sqlMessage || '数据库错误' });
+  }
 });
 
 // 撤销申领接口
@@ -674,9 +692,9 @@ app.post('/editItemRemark', async (req, res) => {
 
 // 新增日志
 app.post('/addLog', async (req, res) => {
-  const { eventType, note } = req.body || {};
+  const { eventType, operator, object, quantity, note } = req.body || {};
 
-  addLog(eventType, note);
+  addLog(eventType, operator, object, quantity, note);
 
   return ok(res, { data: true }, { message: '新增日志成功' });
 });

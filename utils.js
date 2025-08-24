@@ -40,7 +40,8 @@ export const q = async (sql, params = []) => {
   return rows;
 };
 
-export const addLog = async (eventType, note) => {
-  const insert = await q('INSERT INTO logs (event_type, note, time) VALUES (?, ?, NOW())', [eventType, note]);
+// 新增日志
+export const addLog = async (eventType, operator, object, quantity, note) => {
+  const insert = await q('INSERT INTO logs (event_type, operator, object, quantity, note, time) VALUES (?, ?, ?, ?, ?, NOW())', [eventType, note, operator, object, quantity]);
   return { ok: true }
 }
