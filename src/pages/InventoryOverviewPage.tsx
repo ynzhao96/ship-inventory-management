@@ -43,7 +43,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
       (item.itemId + '').toLowerCase().includes(searchTerm.toLowerCase());
 
     if (activeInventoryTab === 'ALL') return matchesSearch;
-    return item.category === activeInventoryTab && matchesSearch;
+    return item.categoryId === activeInventoryTab && matchesSearch;
   });
 
   const handleItemClick = (item: InboundItemInput) => {
@@ -75,7 +75,9 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">{selectedItem.itemName}</h2>
-                <p className="text-gray-500">物资编号：{selectedItem.category}</p>
+                <p className="text-gray-500">物资编号：{selectedItem.itemId}</p>
+                <p className="text-gray-500">规格：{selectedItem.specification}</p>
+                <p className="text-gray-500">备注：{selectedItem.remark}</p>
               </div>
               <button
                 onClick={() => setShowItemDetail(false)}
@@ -184,17 +186,17 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
       {inventoryView === 'cards' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {filteredItems.map(item => (
+          {filteredItems.map((item, index) => (
             <div
-              key={item.id}
+              key={index}
               className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
               onClick={() => handleItemClick(item)}
             >
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-lg font-semibold">{item.itemName}</h3>
-                <span className="text-sm text-gray-500">{item.category}</span>
+                <span className="text-sm text-gray-500">{item.categoryId}</span>
               </div>
-              <div className="text-sm text-gray-500 mb-2">{item.category}</div>
+              <div className="text-sm text-gray-500 mb-2">{item.categoryId}</div>
               <div className="flex justify-between mb-2">
                 <div>
                   <p className="text-sm text-gray-500">当前库存</p>
@@ -221,15 +223,15 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredItems.map(item => (
+              {filteredItems.map((item, index) => (
                 <tr
-                  key={item.id}
+                  key={index}
                   className="hover:bg-gray-50 cursor-pointer"
                   onClick={() => handleItemClick(item)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">{item.itemId}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.itemName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.category}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.categoryId}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.quantity}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.quantity}</td>
                 </tr>

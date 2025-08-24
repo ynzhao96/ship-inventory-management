@@ -63,14 +63,14 @@ export interface UserInfo {
 }
 
 export type InboundItemInput = {
-  id: string;
   itemId: number | string;
   itemName: string;
   itemNameEn?: string;
-  category: string;
+  categoryId: string;
   quantity: number | string;
   unit: string;
   specification?: string;
+  remark?: string;
 };
 
 export type Category = {
