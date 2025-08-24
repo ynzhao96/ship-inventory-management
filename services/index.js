@@ -15,6 +15,7 @@ import getCrewList from './getCrewList.js';
 import updateCrews from './updateCrews.js';
 import getCategories from './getCategories.js';
 import editItemRemark from './editItemRemark.js';
+import updateItems from './updateItems.js';
 
 const router = Router();
 
@@ -35,5 +36,6 @@ router.use(getCrewList);
 router.use(updateCrews);
 router.use(getCategories);
 router.use(editItemRemark);
+router.use(updateItems);
 
 export default router;
