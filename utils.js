@@ -42,6 +42,6 @@ export const q = async (sql, params = []) => {
 
 // 新增日志
 export const addLog = async (eventType, operator, object, quantity, note) => {
-  const insert = await q('INSERT INTO logs (event_type, operator, object, quantity, note, time) VALUES (?, ?, ?, ?, ?, NOW())', [eventType, note, operator, object, quantity]);
+  const insert = await q('INSERT INTO logs (event_type, operator, object, quantity, note, time) VALUES (?, ?, ?, ?, ?, NOW())', [eventType, operator, object, quantity, note]);
   return { ok: true }
 }
