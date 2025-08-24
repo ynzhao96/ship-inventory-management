@@ -1,15 +1,14 @@
 import express from 'express';
 import { ok, fail, asyncHandler, requireFields, q, addLog } from './utils.js';
 import pool from './db.js';
+import servers from './servers/index.js';
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
 
-app.get('/ping', (req, res) => {
-  res.json({ message: 'pong' });
-});
+app.use('/', servers);
 
 // 管理员登录
 app.post('/adminLogin', asyncHandler(async (req, res) => {
