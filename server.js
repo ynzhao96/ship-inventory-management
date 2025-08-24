@@ -10,20 +10,6 @@ app.use(express.json());
 
 app.use('/', servers);
 
-
-// 获取用户账户密码信息
-app.get('/getUserInfo', async (req, res) => {
-  const { shipId } = req.query || {};
-
-  const check = requireFields(req.query, ['shipId']);
-  if (!check.ok) {
-    return fail(res, 400, { code: 'BAD_REQUEST', message: 'Missing shipId' });
-  }
-
-  const rows = await q('SELECT * FROM users WHERE ship_id = ?', [shipId]);
-  return ok(res, { data: rows?.[0] || {} }, { message: 'User info fetched successfully' });
-});
-
 // 更新用户账号密码信息
 app.post('/updateUserInfo', async (req, res) => {
   const { shipId, username, password } = req.body || {};

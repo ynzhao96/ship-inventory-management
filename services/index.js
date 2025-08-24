@@ -1,13 +1,15 @@
 import { Router } from 'express';
-import pingRouter from './ping.js';
-import adminRouter from './adminLogin.js';
-import loginRouter from './login.js';
+import ping from './ping.js';
+import admin from './adminLogin.js';
+import login from './login.js';
+import getUserInfo from './getUserInfo.js';
 
 const router = Router();
 
 // 你后面可以继续在这里挂更多模块
-router.use(pingRouter);
-router.use(adminRouter);
-router.use(loginRouter);
+router.use(ping);
+router.use(admin);
+router.use(login);
+router.use(getUserInfo);
 
 export default router;
