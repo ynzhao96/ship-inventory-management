@@ -10,16 +10,6 @@ app.use(express.json());
 
 app.use('/', servers);
 
-
-// 获取船舶列表
-app.get('/getShipList', asyncHandler(async (_req, res) => {
-  const rows = await q('SELECT * FROM ships');
-  return ok(res, {
-    totalShips: rows.length,
-    data: rows,
-  }, { message: '获取船舶列表成功' });
-}));
-
 // 获取船舶信息
 app.get('/getShipInfo', asyncHandler(async (req, res) => {
   const { id } = req.query || {};
