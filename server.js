@@ -432,7 +432,7 @@ app.post('/getConfirmLog', (req, res) => {
 // 申领物资接口
 app.post('/claimItem', async (req, res) => {
   const { shipId, itemId, quantity, remark, claimer } = req.body;
-  const check = requireFields(req.body, [shipId, itemId, quantity, claimer]);
+  const check = requireFields(req.body, ['shipId', 'itemId', 'quantity', 'claimer']);
   if (!check.ok) {
     return fail(res, 400, { code: 'BAD_REQUEST', message: 'shipId, itemId, quantity, claimer必填' });
   }
