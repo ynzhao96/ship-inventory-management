@@ -64,15 +64,6 @@ app.post('/getClaimLog', (req, res) => {
   res.json({ code: 200, data: [{ claimID: '330456', itemID: '330456', itemName: '牙刷', quantity: '20', remark: '申领详情', claimer: '大副', date: '2023-07-15 09:30' }] });
 });
 
-// 新增日志
-app.post('/addLog', async (req, res) => {
-  const { eventType, operator, object, quantity, note } = req.body || {};
-
-  addLog(eventType, operator, object, quantity, note);
-
-  return ok(res, { data: true }, { message: '新增日志成功' });
-});
-
 // 启动服务器
 app.listen(port, () => {
   console.log(`服务器正在运行在 http://localhost:${port}`);

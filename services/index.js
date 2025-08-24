@@ -16,6 +16,7 @@ import updateCrews from './updateCrews.js';
 import getCategories from './getCategories.js';
 import editItemRemark from './editItemRemark.js';
 import updateItems from './updateItems.js';
+import addLog from './addLog.js';
 
 const router = Router();
 
@@ -37,5 +38,6 @@ router.use(updateCrews);
 router.use(getCategories);
 router.use(editItemRemark);
 router.use(updateItems);
+router.use(addLog);
 
 export default router;
