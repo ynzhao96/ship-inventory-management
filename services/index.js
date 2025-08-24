@@ -11,6 +11,7 @@ import getInboundList from './getInboundList.js';
 import confirmInbound from './confirmInbound.js';
 import getInventoryList from './getInventoryList.js';
 import claimItem from './claimItem.js';
+import getCrewList from './getCrewList.js';
 
 const router = Router();
 
@@ -27,5 +28,6 @@ router.use(getInboundList);
 router.use(confirmInbound);
 router.use(getInventoryList);
 router.use(claimItem);
+router.use(getCrewList);
 
 export default router;
