@@ -13,6 +13,7 @@ import getInventoryList from './getInventoryList.js';
 import claimItem from './claimItem.js';
 import getCrewList from './getCrewList.js';
 import updateCrews from './updateCrews.js';
+import getCategories from './getCategories.js';
 
 const router = Router();
 
@@ -31,5 +32,6 @@ router.use(getInventoryList);
 router.use(claimItem);
 router.use(getCrewList);
 router.use(updateCrews);
+router.use(getCategories);
 
 export default router;

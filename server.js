@@ -154,17 +154,6 @@ app.post('/updateItems', async (req, res) => {
   }
 });
 
-// 获取库存类型
-app.get('/getCategories', async (req, res) => {
-  const rows = await q(`SELECT 
-    id AS categoryId,
-    name AS categoryName,
-    name_en AS categoryNameEn
-    FROM categories`
-  );
-  return ok(res, { data: rows }, { message: '获取库存类型成功' });
-});
-
 // 查看申领历史接口
 app.post('/getClaimLog', (req, res) => {
   const { shipID, startTime, endTime } = req.body;
