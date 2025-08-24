@@ -8,7 +8,7 @@ const port = 3000;
 
 app.use(express.json());
 
-app.use('/', servers);
+app.use('/api', servers);
 
 // 管理员登录
 app.post('/adminLogin', asyncHandler(async (req, res) => {
