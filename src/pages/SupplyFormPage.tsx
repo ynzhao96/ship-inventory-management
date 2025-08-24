@@ -163,7 +163,6 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                       删除
                     </button>
                   </td>
-                  <span>{index}</span>
                 </tr>
               ))}
             </tbody>
