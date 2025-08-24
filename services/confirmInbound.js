@@ -70,9 +70,17 @@ router.post('/confirmInbound', asyncHandler(async (req, res) => {
 
   // 成功时记一条审计日志（非关键路径，失败不影响响应）
   try {
-    await addLog('INBOUND_CONFIRMED', ship_id, inboundId, qty, remark ?? '');
+    await addLog('INBOUND_CONFIRMED', inbound.ship_id, inboundId, qty, remark ?? '');
   } catch (e) {
     console.warn('addLog failed (INBOUND_CONFIRMED):', e?.message || e);
+  }
+
+  // 事务外写审计（或也可把 addLog 做成可接收 conn 的版本，放进事务）
+  const itemListLog = items.map(it => `${it.itemId}*${it.quantity}`).join(',');
+  try {
+    await addLog('INBOUND_CREATED', 'admin', batchNo, null, `管理员添加物资入库，${itemListLog}`);
+  } catch (e) {
+    console.warn('addLog failed:', e?.message || e);
   }
 
   return ok(res, { data: true }, { message: '确认入库成功' });
