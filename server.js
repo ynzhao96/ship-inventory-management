@@ -10,25 +10,6 @@ app.use(express.json());
 
 app.use('/', servers);
 
-// 获取待入库信息
-app.get('/getInboundList', async (req, res) => {
-  const { shipId } = req.query || {};
-  const rows = await q(`SELECT 
-    inbound_id AS inboundId,
-    batch_no AS batchNumber,
-    item_id AS itemId,
-    quantity,
-    status,
-    created_at AS createdAt
-    FROM inbounds 
-    WHERE ship_id = ? and status = 'PENDING'`,
-    [shipId]
-  );
-  return ok(res, {
-    totalInbounds: rows.length,
-    data: rows,
-  }, { message: '获取待入库信息成功' });
-});
 
 // 确认入库
 app.post('/confirmInbound', async (req, res) => {

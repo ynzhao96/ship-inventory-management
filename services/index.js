@@ -7,6 +7,7 @@ import updateUserInfo from './updateUserInfo.js';
 import getShipList from './getShipList.js';
 import getShipInfo from './getShipInfo.js';
 import createInboundBatch from './createInboundBatch.js';
+import getInboundList from './getInboundList';
 
 const router = Router();
 
@@ -19,5 +20,6 @@ router.use(updateUserInfo);
 router.use(getShipList);
 router.use(getShipInfo);
 router.use(createInboundBatch);
+router.use(getInboundList);
 
 export default router;
