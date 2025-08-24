@@ -445,11 +445,10 @@ app.post('/claimItem', async (req, res) => {
   }
 
   try {
-    q('UPDATE inventory SET inventory = ? WHERE ship_id = ? AND item_id = ?', [row[0].quantity - quantity, shipId, itemId]).then(() => {
-      addLog('CLAIM', `${shipId} - ${claimer}`, itemId, quantity, remark);
+    const upd = await q('UPDATE inventory SET quantity = ? WHERE ship_id = ? AND item_id = ?', [row[0].quantity - quantity, shipId, itemId]);
+    addLog('CLAIM', `${shipId} - ${claimer}`, itemId, quantity, remark);
 
-      return ok(res, { data: true }, { message: '申领物资成功' });
-    })
+    return ok(res, { data: true }, { message: '申领物资成功' });
   } catch (err) {
     return fail(res, 500, { code: err?.code || 'DB_ERROR', message: err?.sqlMessage || '数据库错误' });
   }
