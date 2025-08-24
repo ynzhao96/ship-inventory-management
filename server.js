@@ -48,31 +48,6 @@ app.post('/getConfirmLog', (req, res) => {
   res.json({ code: 200, data: [{ confirmID: '33045ssx6', itemID: '330456', itemName: '电动空气压缩机', quantity: '20', remark: '确认入库备注信息', batchNumber: 'LOT-20230615-001', submitDate: '2023-07-15 09:30', confirmDate: '2023-08-15 09:30' }] });
 });
 
-// 申领物资接口
-app.post('/claimItem', async (req, res) => {
-  const { shipId, itemId, quantity, remark, claimer } = req.body;
-  const check = requireFields(req.body, ['shipId', 'itemId', 'quantity', 'claimer']);
-  if (!check.ok) {
-    return fail(res, 400, { code: 'BAD_REQUEST', message: 'shipId, itemId, quantity, claimer必填' });
-  }
-  const row = await q('SELECT quantity FROM inventory WHERE ship_id = ? AND item_id = ?', [shipId, itemId]);
-  if (row.length === 0) {
-    return fail(res, 400, { code: 'BAD_REQUEST', message: '对应物资不存在' });
-  }
-  if (quantity > row[0].quantity) {
-    return fail(res, 400, { code: 'BAD_QTY', message: 'quantity必须小于等于库存数量' });
-  }
-
-  try {
-    const upd = await q('UPDATE inventory SET quantity = ? WHERE ship_id = ? AND item_id = ?', [row[0].quantity - quantity, shipId, itemId]);
-    addLog('CLAIM', `${shipId} - ${claimer}`, itemId, quantity, remark);
-
-    return ok(res, { data: true }, { message: '申领物资成功' });
-  } catch (err) {
-    return fail(res, 500, { code: err?.code || 'DB_ERROR', message: err?.sqlMessage || '数据库错误' });
-  }
-});
-
 // 撤销申领接口
 app.post('/cancelClaim', (req, res) => {
   const { shipID, claimID, remark } = req.body;
