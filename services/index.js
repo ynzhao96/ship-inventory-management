@@ -3,6 +3,7 @@ import ping from './ping.js';
 import admin from './adminLogin.js';
 import login from './login.js';
 import getUserInfo from './getUserInfo.js';
+import updateUserInfo from './updateUserInfo.js';
 
 const router = Router();
 
@@ -11,5 +12,6 @@ router.use(ping);
 router.use(admin);
 router.use(login);
 router.use(getUserInfo);
+router.use(updateUserInfo);
 
 export default router;
