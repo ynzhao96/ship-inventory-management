@@ -5,6 +5,7 @@ import login from './login.js';
 import getUserInfo from './getUserInfo.js';
 import updateUserInfo from './updateUserInfo.js';
 import getShipList from './getShipList.js';
+import getShipInfo from './getShipInfo.js';
 
 const router = Router();
 
@@ -15,5 +16,6 @@ router.use(login);
 router.use(getUserInfo);
 router.use(updateUserInfo);
 router.use(getShipList);
+router.use(getShipInfo);
 
 export default router;
