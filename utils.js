@@ -34,10 +34,28 @@ export const requireFields = (obj, fields) => {
   return { ok: missing.length === 0, missing };
 };
 
-// DB 查询小封装：返回 rows，出现异常交给 asyncHandler
-export const q = async (sql, params = []) => {
-  const [rows] = await pool.query(sql, params);
-  return rows;
+// 1) 单条查询：可选传入 conn（事务场景）
+// 注意：对于 INSERT/UPDATE，mysql2 的第1个返回值是 ResultSetHeader（含 insertId/affectedRows）
+export const q = async (sql, params = [], conn = null) => {
+  const runner = conn ?? pool;
+  const [result] = await runner.query(sql, params);
+  return result; // SELECT = RowDataPacket[]；INSERT/UPDATE = ResultSetHeader
+};
+
+// 2) 事务辅助：自动 getConnection + begin/commit/rollback + release
+export const withTransaction = async (fn) => {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    const ret = await fn(conn);
+    await conn.commit();
+    return ret;
+  } catch (e) {
+    await conn.rollback();
+    throw e;
+  } finally {
+    conn.release();
+  }
 };
 
 // 新增日志
