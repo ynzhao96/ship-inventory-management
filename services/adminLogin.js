@@ -25,6 +25,7 @@ router.post('/adminLogin', asyncHandler(async (req, res) => {
     return fail(res, 401, { code: 'INVALID_PASSWORD', message: '密码错误' });
   }
 
+  addLog('AUTH_LOGIN', 'admin', '管理端Web', null, '登录管理端Web页面');
   return ok(res, {
     user: { username: user.username, type: user.type },
     // 生产建议返回 JWT：token: 'xxx'
