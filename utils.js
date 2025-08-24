@@ -39,3 +39,8 @@ export const q = async (sql, params = []) => {
   const [rows] = await pool.query(sql, params);
   return rows;
 };
+
+export const addLog = async (eventType, note) => {
+  const insert = await q('INSERT INTO logs (event_type, note, time) VALUES (?, ?, NOW())', [eventType, note]);
+  return { ok: true }
+}

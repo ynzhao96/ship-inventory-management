@@ -1,5 +1,5 @@
 import express from 'express';
-import { ok, fail, asyncHandler, requireFields, q } from './utils.js';
+import { ok, fail, asyncHandler, requireFields, q, addLog } from './utils.js';
 import pool from './db.js';
 
 const app = express();
@@ -655,7 +655,7 @@ app.post('/getClaimLog', (req, res) => {
   res.json({ code: 200, data: [{ claimID: '330456', itemID: '330456', itemName: '牙刷', quantity: '20', remark: '申领详情', claimer: '大副', date: '2023-07-15 09:30' }] });
 });
 
-// 
+// 编辑库存备注
 app.post('/editItemRemark', async (req, res) => {
   const { shipId, itemId, remark } = req.body || {};
 
@@ -670,7 +670,16 @@ app.post('/editItemRemark', async (req, res) => {
   }
   const upd = await q('UPDATE inventory SET remark = ? WHERE ship_id = ? AND item_id = ?', [remark, shipId, itemId]);
   return ok(res, { data: true }, { message: '修改备注成功' });
-})
+});
+
+// 新增日志
+app.post('/addLog', async (req, res) => {
+  const { eventType, note } = req.body || {};
+
+  addLog(eventType, note);
+
+  return ok(res, { data: true }, { message: '新增日志成功' });
+});
 
 // 启动服务器
 app.listen(port, () => {
