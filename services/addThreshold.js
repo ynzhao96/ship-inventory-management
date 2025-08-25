@@ -13,7 +13,7 @@ router.post('/addThreshold', asyncHandler(async (req, res) => {
   }
 
   const rows = await q(
-    'SELECT threshold FROM inventory WHERE ship_id = ? and item_id = 0',
+    'SELECT threshold FROM inventory WHERE ship_id = ? and item_id = ?',
     [shipId, itemId]
   );
   if (rows.length === 0) {
