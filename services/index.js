@@ -18,6 +18,7 @@ import editItemRemark from './editItemRemark.js';
 import updateItems from './updateItems.js';
 import addLog from './addLog.js';
 import addThreshold from './addThreshold.js';
+import getThreshold from './getThreshold.js';
 
 const router = Router();
 
@@ -41,5 +42,6 @@ router.use(editItemRemark);
 router.use(updateItems);
 router.use(addLog);
 router.use(addThreshold);
+router.use(getThreshold);
 
 export default router;
