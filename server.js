@@ -48,22 +48,6 @@ app.post('/getConfirmLog', (req, res) => {
   res.json({ code: 200, data: [{ confirmID: '33045ssx6', itemID: '330456', itemName: '电动空气压缩机', quantity: '20', remark: '确认入库备注信息', batchNumber: 'LOT-20230615-001', submitDate: '2023-07-15 09:30', confirmDate: '2023-08-15 09:30' }] });
 });
 
-// 撤销申领接口
-app.post('/cancelClaim', (req, res) => {
-  const { shipID, claimID, remark } = req.body;
-  console.log(shipID, claimID, remark);
-  // 这里可以添加撤销申领的逻辑
-  res.json({ code: 200, message: '撤销申领成功', data: true });
-});
-
-// 查看申领历史接口
-app.post('/getClaimLog', (req, res) => {
-  const { shipID, startTime, endTime } = req.body;
-  console.log(shipID, startTime, endTime);
-  // 这里可以添加查看申领历史的逻辑
-  res.json({ code: 200, data: [{ claimID: '330456', itemID: '330456', itemName: '牙刷', quantity: '20', remark: '申领详情', claimer: '大副', date: '2023-07-15 09:30' }] });
-});
-
 // 启动服务器
 app.listen(port, () => {
   console.log(`服务器正在运行在 http://localhost:${port}`);
