@@ -1,6 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import Toast from '../components/Toast';
+import { getThreshold } from '../api';
+import { InboundItemInput } from '../types';
 
-const WarningConfigPage = () => {
+interface Props {
+  shipId?: string;
+}
+
+const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
   // 预警配置接口
   interface WarningConfig {
     id: string;
@@ -26,6 +33,30 @@ const WarningConfigPage = () => {
   ];
 
   const [warningConfigs, setWarningConfigs] = useState<WarningConfig[]>(mockWarningConfigs);
+  const [items, setItems] = useState<InboundItemInput[]>([]);
+
+  // Toast
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      const res1 = await getThreshold(shipId);
+      if (!res1.success) {
+        throw new Error(res1.error || '获取物资库存失败');
+      }
+
+      setItems(res1.data);
+      console.log(items);
+    })();
+  }, []);
+
+  const handleSubmit = () => {
+    console.log('submit clicked');
+    setText('nothing happens');
+    setOpen(false);
+    requestAnimationFrame(() => setOpen(true));
+  }
 
   // 添加新的预警配置行
   const handleAddWarningConfig = () => {
@@ -106,6 +137,19 @@ const WarningConfigPage = () => {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="flex justify-end mt-6">
+        <button
+          className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          onClick={handleSubmit}
+        >
+          提交
+        </button>
+        <Toast
+          open={open}
+          message={text}
+          onClose={() => setOpen(false)}
+        />
       </div>
     </div>
   );
