@@ -19,6 +19,7 @@ import updateItems from './updateItems.js';
 import addLog from './addLog.js';
 import updateThreshold from './updateThreshold.js';
 import getThreshold from './getThreshold.js';
+import getClaimLog from './getClaimLog.js';
 
 const router = Router();
 
@@ -43,5 +44,6 @@ router.use(updateItems);
 router.use(addLog);
 router.use(updateThreshold);
 router.use(getThreshold);
+router.use(getClaimLog);
 
 export default router;
