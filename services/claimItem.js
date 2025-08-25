@@ -33,7 +33,11 @@ router.post('/claimItem', asyncHandler(async (req, res) => {
 
   // 记录审计日志
   try {
-    await addLog('CLAIM', `${shipId} - ${claimer}`, itemId, qty, remark ?? '');
+    await q(`INSERT INTO claims 
+      (ship_id, item_id, quantity, status, claimer, claimed_at, claim_remark) 
+      VALUES (?, ?, ?, ?, ?, NOW(), ?)`,
+      [shipId, itemId, quantity, 'CLAIMED', claimer, remark]
+    );
   } catch (e) {
     console.warn('addLog failed (CLAIM):', e?.message || e);
   }
