@@ -26,9 +26,9 @@ router.post('/claimItem', asyncHandler(async (req, res) => {
     // 进一步区分：不存在 vs 库存不足
     const row = await q('SELECT quantity FROM inventory WHERE ship_id = ? AND item_id = ?', [shipId, itemId]);
     if (row.length === 0) {
-      return fail(res, 400, { code: 'NOT_FOUND', message: '对应物资不存在' });
+      return fail(res, 422, { code: 'NOT_FOUND', message: '对应物资不存在' });
     }
-    return fail(res, 400, { code: 'BAD_QTY', message: `库存不足，当前库存=${row[0].quantity}` });
+    return fail(res, 409, { code: 'BAD_QTY', message: `库存不足，当前库存=${row[0].quantity}` });
   }
 
   // 记录审计日志

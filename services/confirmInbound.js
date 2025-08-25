@@ -59,7 +59,7 @@ router.post('/confirmInbound', asyncHandler(async (req, res) => {
   });
 
   if (result?.notFound) {
-    return fail(res, 404, { code: 'NOT_FOUND', message: '入库记录不存在' });
+    return fail(res, 422, { code: 'NOT_FOUND', message: '入库记录不存在' });
   }
   if (result?.conflict) {
     return fail(res, 409, { code: 'ALREADY_CONFIRMED', message: '该入库记录已被确认' });

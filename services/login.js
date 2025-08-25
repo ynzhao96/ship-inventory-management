@@ -17,7 +17,7 @@ router.post('/login', asyncHandler(async (req, res) => {
   );
 
   if (rows.length === 0) {
-    return fail(res, 404, { code: 'USER_NOT_FOUND', message: '账号不存在' });
+    return fail(res, 422, { code: 'USER_NOT_FOUND', message: '账号不存在' });
   }
 
   const user = rows[0];

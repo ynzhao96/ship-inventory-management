@@ -14,7 +14,7 @@ router.post('/editItemRemark', asyncHandler(async (req, res) => {
 
   const rows = await q('SELECT * FROM inventory WHERE ship_id = ? AND item_id = ?', [shipId, itemId]);
   if (rows.length === 0) {
-    return fail(res, 400, { code: 'BAD_ITEMS', message: '未找到对应的记录' });
+    return fail(res, 422, { code: 'BAD_ITEMS', message: '未找到对应的记录' });
   }
   const upd = await q('UPDATE inventory SET remark = ? WHERE ship_id = ? AND item_id = ?', [remark, shipId, itemId]);
   return ok(res, { data: true }, { message: '修改备注成功' });

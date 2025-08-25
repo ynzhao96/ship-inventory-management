@@ -13,7 +13,7 @@ router.get('/getShipInfo', asyncHandler(async (req, res) => {
 
   const rows = await q('SELECT * FROM ships WHERE id = ?', [id]);
   if (rows.length === 0) {
-    return fail(res, 404, { code: 'NOT_FOUND', message: 'Ship not found' });
+    return fail(res, 422, { code: 'NOT_FOUND', message: 'Ship not found' });
   }
 
   return ok(res, { data: rows[0] }, { message: '获取船舶信息成功' });
