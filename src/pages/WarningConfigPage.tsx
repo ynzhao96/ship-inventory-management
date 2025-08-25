@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Toast from '../components/Toast';
-import { getThreshold } from '../api';
+import { getThreshold, updateThreshold } from '../api';
 
 interface Props {
   shipId?: string;
@@ -32,9 +32,12 @@ const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
     })();
   }, []);
 
-  const handleSubmit = () => {
-    console.log('submit clicked');
-    setText('nothing happens');
+  const handleSubmit = async () => {
+    const res = await updateThreshold(shipId ?? '', warningConfigs.map(i => ({
+      itemId: i.itemId,
+      threshold: i.threshold
+    })));
+    setText(res.message);
     setOpen(false);
     requestAnimationFrame(() => setOpen(true));
   }

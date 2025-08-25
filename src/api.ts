@@ -441,11 +441,11 @@ export const getThreshold = async (shipId?: string) => {
 };
 
 // 增加预警值
-export const addThreshold = async (shipId: string, itemId: string, threshold: number) => {
-  const res = await fetch('/api/addThreshold', {
+export const updateThreshold = async (shipId: string, items: { itemId: string, threshold: number }[]) => {
+  const res = await fetch('/api/updateThreshold', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ shipId, itemId, threshold })
+    body: JSON.stringify({ shipId, items })
   });
 
   let json: any = {};
