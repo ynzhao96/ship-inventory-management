@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import Toast from '../components/Toast';
 import { getThreshold } from '../api';
-import { InboundItemInput } from '../types';
 
 interface Props {
   shipId?: string;
@@ -10,30 +9,13 @@ interface Props {
 const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
   // 预警配置接口
   interface WarningConfig {
-    id: string;
-    cargoId: string;
-    cargoName: string;
+    itemId: string;
+    itemName: string;
     threshold: number;
   }
 
   // 模拟预警配置数据
-  const mockWarningConfigs: WarningConfig[] = [
-    {
-      id: 'w001',
-      cargoId: '001',
-      cargoName: '发动机润滑油',
-      threshold: 50
-    },
-    {
-      id: 'w002',
-      cargoId: '002',
-      cargoName: '液压油',
-      threshold: 30
-    }
-  ];
-
-  const [warningConfigs, setWarningConfigs] = useState<WarningConfig[]>(mockWarningConfigs);
-  const [items, setItems] = useState<InboundItemInput[]>([]);
+  const [warningConfigs, setWarningConfigs] = useState<WarningConfig[]>([]);
 
   // Toast
   const [open, setOpen] = useState(false);
@@ -46,8 +28,7 @@ const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
         throw new Error(res1.error || '获取物资库存失败');
       }
 
-      setItems(res1.data);
-      console.log(items);
+      setWarningConfigs(res1.data);
     })();
   }, []);
 
@@ -61,18 +42,17 @@ const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
   // 添加新的预警配置行
   const handleAddWarningConfig = () => {
     const newConfig: WarningConfig = {
-      id: `w${warningConfigs.length + 1}`.padStart(4, '0'),
-      cargoId: '',
-      cargoName: '',
+      itemId: '',
+      itemName: '',
       threshold: 0
     };
     setWarningConfigs([...warningConfigs, newConfig]);
   };
 
   // 更新预警配置
-  const handleUpdateWarningConfig = (id: string, field: keyof WarningConfig, value: string | number) => {
-    setWarningConfigs(warningConfigs.map(config =>
-      config.id === id ? { ...config, [field]: value } : config
+  const handleUpdateWarningConfig = (id: number, field: keyof WarningConfig, value: string | number) => {
+    setWarningConfigs(warningConfigs.map((config, index) =>
+      index === id ? { ...config, [field]: value } : config
     ));
   };
 
@@ -99,22 +79,22 @@ const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {warningConfigs.map(config => (
-              <tr key={config.id}>
+            {warningConfigs.map((config, index) => (
+              <tr key={index}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <input
                     type="text"
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={config.cargoId}
-                    onChange={(e) => handleUpdateWarningConfig(config.id, 'cargoId', e.target.value)}
+                    value={config.itemId}
+                    onChange={(e) => handleUpdateWarningConfig(index, 'itemId', e.target.value)}
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <input
                     type="text"
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={config.cargoName}
-                    onChange={(e) => handleUpdateWarningConfig(config.id, 'cargoName', e.target.value)}
+                    value={config.itemName}
+                    onChange={(e) => handleUpdateWarningConfig(index, 'itemName', e.target.value)}
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -122,13 +102,13 @@ const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
                     type="number"
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={config.threshold}
-                    onChange={(e) => handleUpdateWarningConfig(config.id, 'threshold', Number(e.target.value))}
+                    onChange={(e) => handleUpdateWarningConfig(index, 'threshold', Number(e.target.value))}
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <button
                     className="text-red-600 hover:text-red-900"
-                    onClick={() => setWarningConfigs(warningConfigs.filter(w => w.id !== config.id))}
+                    onClick={() => setWarningConfigs(warningConfigs.filter((_w, idx) => idx !== index))}
                   >
                     删除
                   </button>
