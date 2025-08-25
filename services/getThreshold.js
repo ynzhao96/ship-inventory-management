@@ -16,7 +16,9 @@ router.get('/getThreshold', asyncHandler(async (req, res) => {
     const rows = await q(`SELECT 
       inv.item_id    AS itemId,
       it.item_name   AS itemName,
-      threshold
+      inv.quantity   AS quantity,
+      inv.threshold  AS threshold,
+      it.unit        AS unit
       FROM inventory AS inv
       JOIN items AS it
       ON it.item_id = inv.item_id

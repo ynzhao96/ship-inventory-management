@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Category, InboundItemInput } from '../types';
-import { getInventoryList, getCategories } from '../api';
+import { getInventoryList, getCategories, getInboundList } from '../api';
 
 interface InventoryOverviewPageProps {
   shipId?: string;
@@ -9,7 +9,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
   const [items, setItems] = useState<InboundItemInput[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
-  const [inventoryView, setInventoryView] = useState<'cards' | 'list'>('cards');
+  const [inventoryView, setInventoryView] = useState<'cards' | 'list'>('list');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeInventoryTab, setActiveInventoryTab] = useState('ALL');
   const [selectedItem, setSelectedItem] = useState<InboundItemInput | null>(null);
@@ -32,6 +32,12 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
       setCategories(res2.data as any);
       console.log(categories);
+
+      const res3 = await getInboundList(shipId);
+      if (!res3.success) {
+        throw new Error(res2.error || '获取待入库信息失败');
+      }
+      console.log(res3.data);
     })();
   }, [])
 
@@ -138,16 +144,16 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
         <h2 className="text-xl font-bold">库存总览</h2>
         <div className="flex space-x-4">
           <button
-            className={`px-4 py-2 rounded-md ${inventoryView === 'cards' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            onClick={() => setInventoryView('cards')}
-          >
-            卡片视图
-          </button>
-          <button
             className={`px-4 py-2 rounded-md ${inventoryView === 'list' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
             onClick={() => setInventoryView('list')}
           >
             列表视图
+          </button>
+          <button
+            className={`px-4 py-2 rounded-md ${inventoryView === 'cards' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+            onClick={() => setInventoryView('cards')}
+          >
+            卡片视图
           </button>
         </div>
       </div>

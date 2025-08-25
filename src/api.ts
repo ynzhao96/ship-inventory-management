@@ -212,13 +212,7 @@ export const getShipInfo = async (id?: string | number) => {
 
 // 获取待入库信息 暂时可能不需要
 export const getInboundList = async (shipId?: string) => {
-  const res = await fetch('/api/getInboundList', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      shipId: shipId
-    }),
-  });
+  const res = await fetch(`/api/getInboundList/?shipId=${encodeURIComponent(String(shipId))}`);
 
   let json: any = {};
   try { json = await res.json(); } catch { }
@@ -262,15 +256,6 @@ export const getInventoryList = async (shipId?: string) => {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ shipId })
-  });
-  return response.json();
-};
-
-export const getConfirmList = async (shipID: string) => {
-  const response = await fetch('/api/getConfirmList', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ shipID })
   });
   return response.json();
 };
