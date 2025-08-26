@@ -8,16 +8,9 @@ export function genToken() {
 }
 
 /**
- * 读取请求头的 token：
- * - Authorization: Bearer <token>
- * - 或 X-Token: <token>
+ * 读取请求头的 token：X-Token || x_auth_token: <token>
  */
 function extractToken(req) {
-  const authz = req.headers['authorization'];
-  if (authz && typeof authz === 'string') {
-    const [scheme, token] = authz.split(' ');
-    if (/^Bearer$/i.test(scheme) && token) return token.trim();
-  }
   const xt = req.headers['x-token'] || req.headers['x_auth_token'];
   if (typeof xt === 'string') return xt.trim();
   return null;
