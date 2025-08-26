@@ -20,13 +20,13 @@ router.post('/login', asyncHandler(async (req, res) => {
     [username]
   );
   if (rows.length === 0) {
-    return fail(res, 401, { code: 'LOGIN_FAILED', message: '用户名不存在' });
+    return fail(res, 400, { code: 'LOGIN_FAILED', message: '用户名不存在' });
   }
   const user = rows[0];
 
   // TODO: 使用 bcrypt.compare(password, user.passwordHash) 等安全方式
   if (password !== user.password) {
-    return fail(res, 401, { code: 'LOGIN_FAILED', message: '密码错误' });
+    return fail(res, 400, { code: 'LOGIN_FAILED', message: '密码错误' });
   }
 
   // 2) 生成 token 与过期时间
