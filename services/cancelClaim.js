@@ -3,7 +3,7 @@ import { ok, fail, asyncHandler, q, addLog, withTransaction, requireFields } fro
 
 const router = Router();
 
-// 申领物资接口
+// 撤销申领物资
 router.post('/cancelClaim', asyncHandler(async (req, res) => {
   const { claimId, remark } = req.body ?? {};
 
