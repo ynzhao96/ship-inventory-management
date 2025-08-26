@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { ok, fail, asyncHandler, q, addLog, withTransaction, requireFields } from '../utils.js';
+import { authRequired } from '../auth.js';
 
 const router = Router();
+router.use(authRequired);
 
 // 查询申领历史
 router.post('/getClaimLog', asyncHandler(async (req, res) => {

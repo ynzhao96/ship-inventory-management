@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { ok, fail, asyncHandler, q, withTransaction, addLog } from '../utils.js';
+import { authRequired } from '../auth.js';
 
 const router = Router();
+router.use(authRequired);
 
 // 更新物料信息
 router.post('/updateItems', asyncHandler(async (req, res) => {

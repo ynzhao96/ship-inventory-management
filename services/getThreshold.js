@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { ok, fail, asyncHandler, q, addLog, withTransaction } from '../utils.js';
+import { authRequired } from '../auth.js';
 
 const router = Router();
+router.use(authRequired);
 
 // 获取预警配置
 router.get('/getThreshold', asyncHandler(async (req, res) => {

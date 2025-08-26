@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { ok, fail, asyncHandler, q, addLog, withTransaction, requireFields } from '../utils.js';
+import { authRequired } from '../auth.js';
 
 const router = Router();
+router.use(authRequired);
 
 // 撤销申领物资
 router.post('/cancelClaim', asyncHandler(async (req, res) => {

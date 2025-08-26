@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { ok, fail, asyncHandler, q, withTransaction, addLog, requireFields } from '../utils.js';
+import { authRequired } from '../auth.js';
 
 const router = Router();
+router.use(authRequired);
 
 // 新增日志
 router.post('/updateThreshold', asyncHandler(async (req, res) => {

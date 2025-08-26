@@ -1,8 +1,10 @@
 // servers/inbound.js
 import { Router } from 'express';
 import { ok, fail, asyncHandler, requireFields, q, addLog, withTransaction } from '../utils.js';
+import { authRequired } from '../auth.js';
 
 const router = Router();
+router.use(authRequired);
 
 router.post('/createInboundBatch', asyncHandler(async (req, res) => {
   const { batchNo, shipId, items } = req.body || {};
