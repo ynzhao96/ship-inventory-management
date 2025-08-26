@@ -10,19 +10,6 @@ app.use(express.json());
 
 app.use('/', servers);
 
-// 获取首页信息接口
-app.post('/getHomeInfo', (req, res) => {
-  const { shipID } = req.body;
-  // 假设我们有一个船舶信息列表
-  const ships = [{ shipID: '1233332', shipName: '船名' }];
-  const ship = ships.find(s => s.shipID === shipID);
-  if (ship) {
-    res.json({ data: { userName: 'abcdefg', shipInfo: { shipID: ship.shipID, shipName: ship.shipName }, totalInventory: '1234', totalConfirm: '10' } });
-  } else {
-    res.status(404).json({ code: 404, message: '船舶信息未找到' });
-  }
-});
-
 // 获取低库存预警接口
 app.post('/getLowInventory', (req, res) => {
   const { shipID } = req.body;

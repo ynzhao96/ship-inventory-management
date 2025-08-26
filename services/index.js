@@ -21,6 +21,7 @@ import updateThreshold from './updateThreshold.js';
 import getThreshold from './getThreshold.js';
 import getClaimLog from './getClaimLog.js';
 import cancelClaim from './cancelClaim.js';
+import getHomeInfo from './getHomeInfo.js';
 
 const router = Router();
 
@@ -47,5 +48,6 @@ router.use(updateThreshold);
 router.use(getThreshold);
 router.use(getClaimLog);
 router.use(cancelClaim);
+router.use(getHomeInfo);
 
 export default router;
