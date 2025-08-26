@@ -37,7 +37,7 @@ router.post('/login', asyncHandler(async (req, res) => {
   await q(
     `UPDATE users
         SET token = ?, token_expiration = ?
-      WHERE user_id = ?`,
+      WHERE username = ?`,
     [token, expiration, user.username]
   );
 
