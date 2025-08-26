@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { ok, fail, asyncHandler, q, addLog, withTransaction, requireFields } from '../utils.js';
+import { authRequired } from '../auth.js';
 
 const router = Router();
+router.use(authRequired);
 
 // 获取首页信息
 router.get('/getHomeInfo', asyncHandler(async (req, res) => {
