@@ -10,15 +10,6 @@ app.use(express.json());
 
 app.use('/', servers);
 
-// 获取低库存预警接口
-app.post('/getLowInventory', (req, res) => {
-  const { shipID } = req.body;
-  console.log(shipID);
-  // 假设我们有一个低库存预警信息列表
-  const lowInventoryWarnings = [{ itemID: '330456', itemName: '电动空气压缩机', threshold: 15, quantity: 3 }];
-  res.json({ data: lowInventoryWarnings });
-});
-
 // 撤销入库接口
 app.post('/cancelConfirm', (req, res) => {
   const { shipID, confirmID, remark } = req.body;
