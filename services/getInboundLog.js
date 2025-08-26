@@ -63,7 +63,7 @@ router.post('/getInboundLog', asyncHandler(async (req, res) => {
     // 数据列表
     const listSql = `
       SELECT
-        ibd.batch_no       AS batchNo,
+        ibd.batch_no       AS batchNumber,
         ibd.inbound_id     AS inboundId,
         ibd.item_id        AS itemId,
         it.item_name       AS itemName,
