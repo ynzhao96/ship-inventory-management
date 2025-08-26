@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { ok, fail, asyncHandler, q, addLog, withTransaction } from '../utils.js';
+import { ok, fail, asyncHandler, requireFields, q, addLog } from '../utils.js';
 
 const router = Router();
 
-// 获取预警配置
-router.get('/getThreshold', asyncHandler(async (req, res) => {
+// 获取待入库信息
+router.get('/getWarning', asyncHandler(async (req, res) => {
   const rawShipId = req.query?.shipId;
   const shipId = String(rawShipId ?? '').trim();
 
@@ -22,9 +22,9 @@ router.get('/getThreshold', asyncHandler(async (req, res) => {
       FROM inventory AS inv
       JOIN items AS it
       ON it.item_id = inv.item_id
-      WHERE TRIM(inv.ship_id) = TRIM(?) AND threshold IS NOT NULL`,
+      WHERE TRIM(inv.ship_id) = TRIM(?) AND inv.threshold IS NOT NULL AND inv.quantity < inv.threshold`,
       [shipId]);
-    return ok(res, { data: rows }, { message: '获取预警值成功' });
+    return ok(res, { data: rows }, { message: '获取低库存预警成功' });
   } catch (err) {
     return fail(res, 500, { code: err?.code || 'DB_ERROR', message: err?.sqlMessage || '数据库错误' });
   }
