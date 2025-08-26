@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { ok, fail, asyncHandler, requireFields, q, addLog } from '../utils.js';
+import { genToken, TOKEN_TTL_SECONDS } from '../auth.js';
 
 const router = Router();
 
@@ -25,11 +26,20 @@ router.post('/adminLogin', asyncHandler(async (req, res) => {
     return fail(res, 401, { code: 'INVALID_PASSWORD', message: '密码错误' });
   }
 
+  // 2) 生成 token 与过期时间
+  const token = genToken();
+  const expiration = new Date(Date.now() + TOKEN_TTL_SECONDS * 1000);
+
+  // 3) 更新到 users 表（一个帐号仅保留一个有效 token）
+  await q(
+    `UPDATE users
+        SET token = ?, token_expiration = ?
+      WHERE username = ?`,
+    [token, expiration, user.username]
+  );
+
   addLog('AUTH_LOGIN', 'admin', '管理端Web', null, '登录管理端Web页面');
-  return ok(res, {
-    user: { username: user.username, type: user.type },
-    // 生产建议返回 JWT：token: 'xxx'
-  }, { message: '登录成功' });
+  return ok(res, { data: { token, user: { username: user.username, type: user.type } } }, { message: '登录成功' });
 }));
 
 export default router;

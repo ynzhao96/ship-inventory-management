@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { ok, fail, asyncHandler, q, requireFields } from '../utils.js';
-import { genToken, TOKEN_TTL_SECONDS } from '../auth.js'; // 第2步里的工具
+import { genToken, TOKEN_TTL_SECONDS } from '../auth.js';
 
 const router = Router();
 
