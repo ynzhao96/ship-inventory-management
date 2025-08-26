@@ -37,7 +37,7 @@ router.post('/confirmInbound', asyncHandler(async (req, res) => {
       `UPDATE inbounds
           SET status = 'CONFIRMED',
               actual_quantity = ?,
-              remark = ?,
+              confirm_remark = ?,
               confirmed_at = NOW()
         WHERE inbound_id = ?
           AND status <> 'CONFIRMED'`,
@@ -66,13 +66,6 @@ router.post('/confirmInbound', asyncHandler(async (req, res) => {
   }
   if (result?.idempotent) {
     return ok(res, { data: true }, { message: '该入库记录已确认（幂等返回）' });
-  }
-
-  // 成功时记一条审计日志（非关键路径，失败不影响响应）
-  try {
-    await addLog('INBOUND_CONFIRMED', inbound.ship_id, inboundId, qty, remark ?? '');
-  } catch (e) {
-    console.warn('addLog failed (INBOUND_CONFIRMED):', e?.message || e);
   }
 
   return ok(res, { data: true }, { message: '确认入库成功' });
