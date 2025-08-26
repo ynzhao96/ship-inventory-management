@@ -62,7 +62,7 @@ router.post('/getInboundLog', asyncHandler(async (req, res) => {
     const listSql = `
       SELECT
         ibd.batch_no       AS batchNo,
-        ibd.inbound_id     AS claimId,
+        ibd.inbound_id     AS inboundId,
         ibd.item_id        AS itemId,
         it.item_name       AS itemName,
         it.item_name_en    AS itemNameEn,
