@@ -39,7 +39,7 @@ export async function authRequired(req, res, next) {
 
   try {
     const rows = await q(
-      `SELECT user_id AS userId, username, token_expiration AS tokenExpiration
+      `SELECT username, token_expiration AS tokenExpiration
          FROM users
         WHERE token = ?
         LIMIT 1`,
@@ -58,7 +58,7 @@ export async function authRequired(req, res, next) {
     }
 
     // 注入用户信息，后续接口可直接使用
-    req.user = { userId: user.userId, username: user.username, token };
+    req.user = { username: user.username, token };
     return next();
   } catch (err) {
     return fail(res, 500, { code: err?.code || 'DB_ERROR', message: err?.sqlMessage || '数据库错误' });
