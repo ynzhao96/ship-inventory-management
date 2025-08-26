@@ -1,36 +1,48 @@
 import { Router } from 'express';
-import { ok, fail, asyncHandler, requireFields, q, addLog } from '../utils.js';
+import { ok, fail, asyncHandler, q, requireFields } from '../utils.js';
+import { genToken, TOKEN_TTL_SECONDS } from '../auth.js'; // 第2步里的工具
 
 const router = Router();
 
-// 登录接口
 router.post('/login', asyncHandler(async (req, res) => {
-  const { username, password } = req.body || {};
+  const { username, password } = req.body ?? {};
   const check = requireFields(req.body, ['username', 'password']);
   if (!check.ok) {
-    return fail(res, 400, { code: 'BAD_REQUEST', message: '用户名和密码必填' });
+    return fail(res, 400, { code: 'BAD_REQUEST', message: 'username与password必填' });
   }
 
+  // 1) 查用户与密码（示例用明文对比，实际应是 hash 对比）
   const rows = await q(
-    'SELECT username, password, ship_id, type FROM users WHERE username = ? and type = 1 LIMIT 1',
+    `SELECT user_id AS userId, username, password AS passwordHash, ship_id AS shipId
+       FROM users
+      WHERE username = ? AND type = 1
+      LIMIT 1`,
     [username]
   );
-
   if (rows.length === 0) {
-    return fail(res, 422, { code: 'USER_NOT_FOUND', message: '账号不存在' });
+    return fail(res, 401, { code: 'LOGIN_FAILED', message: '用户名不存在' });
   }
-
   const user = rows[0];
-  // ⚠️ 生产请改为 bcrypt.compare
-  if (user.password !== password) {
-    return fail(res, 401, { code: 'INVALID_PASSWORD', message: '密码错误' });
+
+  // TODO: 使用 bcrypt.compare(password, user.passwordHash) 等安全方式
+  if (password !== user.passwordHash) {
+    return fail(res, 401, { code: 'LOGIN_FAILED', message: '密码错误' });
   }
 
-  addLog('AUTH_LOGIN', user.type, user.ship_id, null, '登录app端页面');
-  return ok(res, {
-    data: { shipId: user.ship_id, type: user.type },
-    // 生产建议返回 JWT：token: 'xxx'
-  }, { message: '登录成功' });
+  // 2) 生成 token 与过期时间
+  const token = genToken();
+  const expiration = new Date(Date.now() + TOKEN_TTL_SECONDS * 1000);
+
+  // 3) 更新到 users 表（一个帐号仅保留一个有效 token）
+  await q(
+    `UPDATE users
+        SET token = ?, token_expiration = ?
+      WHERE user_id = ?`,
+    [token, expiration, user.userId]
+  );
+
+  // 4) 返回 token 与过期时间（ISO 字符串方便前端处理）
+  return ok(res, { data: { token, shipId: user.shipId } }, { message: '登录成功' });
 }));
 
 export default router;
