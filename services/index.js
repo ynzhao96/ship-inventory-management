@@ -23,6 +23,7 @@ import getClaimLog from './getClaimLog.js';
 import cancelClaim from './cancelClaim.js';
 import getHomeInfo from './getHomeInfo.js';
 import getWarning from './getWarning.js';
+import getInboundLog from './getInboundLog.js';
 
 const router = Router();
 
@@ -51,5 +52,6 @@ router.use(getClaimLog);
 router.use(cancelClaim);
 router.use(getHomeInfo);
 router.use(getWarning);
+router.use(getInboundLog);
 
 export default router;
