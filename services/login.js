@@ -13,7 +13,7 @@ router.post('/login', asyncHandler(async (req, res) => {
 
   // 1) 查用户与密码（示例用明文对比，实际应是 hash 对比）
   const rows = await q(
-    `SELECT user_id AS userId, username, password AS passwordHash, ship_id AS shipId
+    `SELECT username, password, ship_id AS shipId
        FROM users
       WHERE username = ? AND type = 1
       LIMIT 1`,
@@ -25,7 +25,7 @@ router.post('/login', asyncHandler(async (req, res) => {
   const user = rows[0];
 
   // TODO: 使用 bcrypt.compare(password, user.passwordHash) 等安全方式
-  if (password !== user.passwordHash) {
+  if (password !== user.password) {
     return fail(res, 401, { code: 'LOGIN_FAILED', message: '密码错误' });
   }
 
@@ -38,7 +38,7 @@ router.post('/login', asyncHandler(async (req, res) => {
     `UPDATE users
         SET token = ?, token_expiration = ?
       WHERE user_id = ?`,
-    [token, expiration, user.userId]
+    [token, expiration, user.username]
   );
 
   // 4) 返回 token 与过期时间（ISO 字符串方便前端处理）
