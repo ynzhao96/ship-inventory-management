@@ -7,7 +7,7 @@ const router = Router();
 router.get('/getHomeInfo', asyncHandler(async (req, res) => {
   const { shipId } = req.query ?? {};
 
-  const check = requireFields(req.body, ['shipId']);
+  const check = requireFields(req.query, ['shipId']);
   if (!check.ok) {
     return fail(res, 400, { code: 'BAD_REQUEST', message: 'shipId必填' });
   }
