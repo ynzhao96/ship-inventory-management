@@ -44,12 +44,14 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
   pageSize = Math.min(100, Math.max(1, parseInt(pageSize, 10) || 10));
   const offset = (page - 1) * pageSize;
 
+  const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+
   // 统计总数
   const countSql = `
       SELECT COUNT(1) AS total
         FROM inventory AS inv
         LEFT JOIN items AS it ON it.item_id = ibd.item_id
-      ${where}
+      ${whereSql}
     `;
   const [{ total }] = await q(countSql, params);
 
@@ -67,7 +69,7 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
     FROM inventory AS inv
     JOIN items AS it
       ON it.item_id = inv.item_id
-    WHERE ${where.join(' AND ')}
+    WHERE ${whereSql}
     ORDER BY it.item_name ASC, it.item_id ASC
     LIMIT ? OFFSET ?
   `;
