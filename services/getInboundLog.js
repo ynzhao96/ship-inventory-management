@@ -92,7 +92,7 @@ router.post('/getInboundLog', asyncHandler(async (req, res) => {
           totalPages: Math.ceil((Number(total) || 0) / pageSize),
         },
       },
-      { message: '查询申领历史成功' },
+      { message: '查询入库历史成功' },
     );
 
   } catch (err) {

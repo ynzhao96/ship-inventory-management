@@ -10,6 +10,8 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
   const rawShipId = req.body?.shipId;
   const searchMatch = req.body?.searchMatch;
   const categoryIdInput = req.body?.categoryId;
+  const page = req.body?.page ?? 1;
+  const pageSize = req.body?.pageSize ?? 10;
 
   const shipId = normalizeId(rawShipId);
   if (!shipId) {
@@ -37,6 +39,20 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
     params.push(...categoryIds);
   }
 
+  // 分页参数兜底/限流
+  page = Math.max(1, parseInt(page, 10) || 1);
+  pageSize = Math.min(100, Math.max(1, parseInt(pageSize, 10) || 10));
+  const offset = (page - 1) * pageSize;
+
+  // 统计总数
+  const countSql = `
+      SELECT COUNT(1) AS total
+        FROM inventory AS inv
+        LEFT JOIN items AS it ON it.item_id = ibd.item_id
+      ${where}
+    `;
+  const [{ total }] = await q(countSql, params);
+
   const sql = `
     SELECT
       inv.ship_id              AS shipId,
@@ -53,11 +69,20 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
       ON it.item_id = inv.item_id
     WHERE ${where.join(' AND ')}
     ORDER BY it.item_name ASC, it.item_id ASC
+    LIMIT ? OFFSET ?
   `;
 
   try {
-    const rows = await q(sql, params);
-    return ok(res, { data: rows }, { message: 'Inventory fetched successfully' });
+    const rows = await q(sql, [...params, pageSize, offset]);
+    return ok(res, {
+      data: {
+        list: rows,
+        page,
+        pageSize,
+        total: Number(total) || 0,
+        totalPages: Math.ceil((Number(total) || 0) / pageSize),
+      },
+    }, { message: 'Inventory fetched successfully' });
   } catch (err) {
     console.error('getInventoryList error:', {
       code: err?.code, errno: err?.errno, message: err?.sqlMessage || err?.message, sql: err?.sql,
