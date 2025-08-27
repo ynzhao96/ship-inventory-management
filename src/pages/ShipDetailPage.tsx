@@ -10,7 +10,7 @@ import InventoryOverviewPage from './InventoryOverviewPage';
 import CrewManagementPage from './CrewManagementPage';
 import { useParams } from 'react-router-dom';
 import { Ship } from '../types';
-import { getShipInfo } from '../api';
+import { getShipInfo } from '../services/getShipInfo.ts';
 
 const ShipDetailPage = ({ onBack }: { onBack: () => void }) => {
   const { shipId } = useParams();
