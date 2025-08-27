@@ -80,29 +80,6 @@ export const cancelClaim = async (shipID: string, claimID: string, remark: strin
   return response.json();
 };
 
-// 获取船员列表接口
-export const getCrewList = async (shipId?: string) => {
-  const res = await fetch(`/api/getCrewList?shipId=${encodeURIComponent(String(shipId))}`);
-
-  let json: any = {};
-  try { json = await res.json(); } catch { }
-
-  if (!res.ok) {
-    // 401/404/500 等都走这里，保持一致
-    return {
-      success: false,
-      error: json?.message || json?.error,
-      code: json?.code || 'ERROR',
-    };
-  }
-
-  return {
-    success: json?.success === true,
-    message: json?.message,
-    data: json?.data,
-  };
-};
-
 // 更新船员接口
 export const updateCrews = async (
   shipId: string | number,
