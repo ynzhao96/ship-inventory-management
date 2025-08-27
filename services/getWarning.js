@@ -20,6 +20,7 @@ router.get('/getWarning', asyncHandler(async (req, res) => {
       it.item_name   AS itemName,
       inv.quantity   AS quantity,
       inv.threshold  AS threshold,
+      it.category_id AS categoryId,
       it.unit        AS unit
       FROM inventory AS inv
       JOIN items AS it
