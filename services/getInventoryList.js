@@ -5,40 +5,10 @@ import { authRequired } from '../auth.js';
 const router = Router();
 router.use(authRequired);
 
-function normalizeId(input) {
-  if (input && typeof input === 'object') {
-    const v = input.shipId ?? input.id ?? input.value ?? input.key;
-    return v != null ? String(v).trim() : '';
-  }
-  return String(input ?? '').trim();
-}
-
-// 统一把 categoryId 规格化为字符串数组：[], ['10'], ['10','12']
-function normalizeCategoryIds(input) {
-  if (input == null) return [];
-  // 如果是对象里套值
-  if (typeof input === 'object' && !Array.isArray(input)) {
-    input = input.categoryId ?? input.id ?? input.value ?? input.key ?? '';
-  }
-  if (Array.isArray(input)) {
-    return input
-      .map(v => String(v ?? '').trim())
-      .filter(Boolean);
-  }
-  // 字符串或数字
-  const s = String(input ?? '').trim();
-  if (!s) return [];
-  // 逗号分隔
-  if (s.includes(',')) {
-    return s.split(',').map(x => x.trim()).filter(Boolean);
-  }
-  return [s];
-}
-
 // 获取全部库存接口（支持 keyword 与 categoryId 过滤）
 router.post('/getInventoryList', asyncHandler(async (req, res) => {
   const rawShipId = req.body?.shipId;
-  const keyword = req.body?.keyword;
+  const searchMatch = req.body?.searchMatch;
   const categoryIdInput = req.body?.categoryId;
 
   const shipId = normalizeId(rawShipId);
@@ -50,6 +20,7 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
   const params = [shipId];
 
   // 关键词模糊匹配
+  const keyword = typeof searchMatch === 'string' ? searchMatch.trim() : '';
   if (keyword && String(keyword).trim() !== '') {
     const kw = `%${String(keyword).trim()}%`;
     where.push('(it.item_id LIKE ? OR it.item_name LIKE ? OR it.item_name_en LIKE ?)');
@@ -94,5 +65,35 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
     return fail(res, 500, { code: err?.code || 'DB_ERROR', message: err?.sqlMessage || '数据库错误' });
   }
 }));
+
+function normalizeId(input) {
+  if (input && typeof input === 'object') {
+    const v = input.shipId ?? input.id ?? input.value ?? input.key;
+    return v != null ? String(v).trim() : '';
+  }
+  return String(input ?? '').trim();
+}
+
+// 统一把 categoryId 规格化为字符串数组：[], ['10'], ['10','12']
+function normalizeCategoryIds(input) {
+  if (input == null) return [];
+  // 如果是对象里套值
+  if (typeof input === 'object' && !Array.isArray(input)) {
+    input = input.categoryId ?? input.id ?? input.value ?? input.key ?? '';
+  }
+  if (Array.isArray(input)) {
+    return input
+      .map(v => String(v ?? '').trim())
+      .filter(Boolean);
+  }
+  // 字符串或数字
+  const s = String(input ?? '').trim();
+  if (!s) return [];
+  // 逗号分隔
+  if (s.includes(',')) {
+    return s.split(',').map(x => x.trim()).filter(Boolean);
+  }
+  return [s];
+}
 
 export default router;
