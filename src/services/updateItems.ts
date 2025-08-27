@@ -1,3 +1,4 @@
+import { getToken } from "../http";
 // 更新物料信息
 export const updateItems = async (items: {
   itemId: string,
@@ -9,9 +10,10 @@ export const updateItems = async (items: {
   const body = {
     items: items
   };
+  const token = getToken();
   const res = await fetch('/api/updateItems', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-token': `${token}` },
     body: JSON.stringify(body),
   });
 
