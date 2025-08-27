@@ -3,7 +3,7 @@ import { Ship } from '../types';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
-import { getShipList } from '../api';
+import { getShipList } from '../services/getShipList';
 
 const ShipListPage = ({ }: { onLogout: () => void }) => {
   const navigate = useNavigate();
