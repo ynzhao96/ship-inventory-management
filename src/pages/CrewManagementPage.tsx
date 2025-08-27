@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { updateCrews } from '../api';
 import { getCrewList } from '../services/getCrewList';
+import { updateCrews } from '../services/updateCrews';
 import Toast from '../components/Toast';
 
 interface Props {
