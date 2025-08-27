@@ -14,8 +14,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     const result = await adminLogin(username, password);
 
     if (result.success) {
-      // 简单持久化登录态（生产建议存 token）
-      localStorage.setItem('auth', '1');
+      localStorage.setItem('a-token', result.data.token);
       onLogin();  // 或者用路由跳转 navigate('/')
     } else {
       alert(result.error || '登录失败');
