@@ -1,8 +1,8 @@
 import { getToken } from "../http";
-// 获取船舶列表接口
-export const getShipList = async () => {
+// 获取库存类型
+export const getCategories = async () => {
   const token = getToken();
-  const res = await fetch('/api/getShipList', {
+  const res = await fetch('/api/getCategories', {
     method: 'GET',
     headers: { 'Content-Type': 'application/json', 'x-token': `${token}` },
   });
@@ -11,17 +11,17 @@ export const getShipList = async () => {
   try { json = await res.json(); } catch { }
 
   if (!res.ok) {
+    // 401/404/500 等都走这里，保持一致
     return {
       success: false,
-      error: json?.message || json?.error || `获取船舶失败(${res.status})`,
+      error: json?.message || json?.error,
       code: json?.code || 'ERROR',
-      data: null,
     };
   }
 
   return {
     success: json?.success === true,
-    message: json?.message || 'OK',
-    data: json?.data ?? [],     // 这里统一返回 data
+    message: json?.message,
+    data: json?.data,
   };
-};
+}

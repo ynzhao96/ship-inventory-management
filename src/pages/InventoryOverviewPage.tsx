@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Category, InboundItemInput } from '../types';
-import { getInventoryList, getCategories } from '../api';
+import { getInventoryList } from '../api';
+import { getCategories } from '../services/getCategories.ts';
 import { getInboundList } from '../services/getInboundList.ts';
 
 interface InventoryOverviewPageProps {

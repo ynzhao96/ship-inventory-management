@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createInboundBatch } from '../services/createInboundBatch.ts';
-import { getCategories } from '../api.ts';
+import { getCategories } from '../services/getCategories.ts';
 import { updateItems } from '../services/updateItems.ts';
 import { InboundItemInput } from '../types';
 
