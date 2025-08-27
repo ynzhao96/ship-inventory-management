@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getUserInfo, updateUserInfo } from '../api';
+import { getUserInfo } from '../services/getUserInfo';
+import { updateUserInfo } from '../api';
 import { UserInfo } from '../types';
 import Toast from '../components/Toast';
 
