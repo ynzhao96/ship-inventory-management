@@ -10,8 +10,8 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
   const rawShipId = req.body?.shipId;
   const searchMatch = req.body?.searchMatch;
   const categoryIdInput = req.body?.categoryId;
-  const page = req.body?.page ?? 1;
-  const pageSize = req.body?.pageSize ?? 10;
+  let page = req.body?.page ?? 1;
+  let pageSize = req.body?.pageSize ?? 10;
 
   const shipId = normalizeId(rawShipId);
   if (!shipId) {
@@ -50,7 +50,7 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
   const countSql = `
       SELECT COUNT(1) AS total
         FROM inventory AS inv
-        LEFT JOIN items AS it ON it.item_id = ibd.item_id
+        LEFT JOIN items AS it ON it.item_id = inv.item_id
       ${whereSql}
     `;
   const [{ total }] = await q(countSql, params);
@@ -69,7 +69,7 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
     FROM inventory AS inv
     JOIN items AS it
       ON it.item_id = inv.item_id
-    WHERE ${whereSql}
+    ${whereSql}
     ORDER BY it.item_name ASC, it.item_id ASC
     LIMIT ? OFFSET ?
   `;
