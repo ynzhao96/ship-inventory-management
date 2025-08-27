@@ -1,6 +1,11 @@
+import { getToken } from "../http";
 // 获取待入库信息
 export const getInboundList = async (shipId?: string) => {
-  const res = await fetch(`/api/getInboundList/?shipId=${encodeURIComponent(String(shipId))}`);
+  const token = getToken();
+  const res = await fetch(`/api/getInboundList/?shipId=${encodeURIComponent(String(shipId))}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', 'x-token': `${token}` },
+  });
 
   let json: any = {};
   try { json = await res.json(); } catch { }
