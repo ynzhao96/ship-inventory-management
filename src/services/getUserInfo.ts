@@ -1,6 +1,11 @@
+import { getToken } from "../http";
 // 获取用户账户密码信息
 export const getUserInfo = async (shipId?: string) => {
-  const res = await fetch(`/api/getUserInfo?shipId=${encodeURIComponent(String(shipId))}`);
+  const token = getToken();
+  const res = await fetch(`/api/getUserInfo?shipId=${encodeURIComponent(String(shipId))}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', 'x-token': `${token}` },
+  });
 
   let json: any = {};
   try { json = await res.json(); } catch { }
