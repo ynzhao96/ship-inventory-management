@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Toast from '../components/Toast';
 import { getThreshold } from '../services/getThreshold';
-import { updateThreshold } from '../api';
+import { updateThreshold } from '../services/updateThreshold';
 
 interface Props {
   shipId?: string;
