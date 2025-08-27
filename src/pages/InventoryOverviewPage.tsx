@@ -25,7 +25,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
         throw new Error(res1.error || '获取物资库存失败');
       }
 
-      setItems(res1.data);
+      setItems(res1.data.list);
 
       const res2 = await getCategories();
       if (!res2.success) {
