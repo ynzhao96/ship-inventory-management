@@ -1,3 +1,4 @@
+import { getToken } from "../http";
 // 更新用户账号密码信息
 export const updateUserInfo = async (shipId: string, username?: string, password?: string) => {
   // 只把有值的字段放进 body
@@ -5,9 +6,10 @@ export const updateUserInfo = async (shipId: string, username?: string, password
   if (username !== undefined) body.username = username;
   if (password !== undefined) body.password = password;
 
+  const token = getToken();
   const res = await fetch('/api/updateUserInfo', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-token': `${token}` },
     body: JSON.stringify(body),
   });
 
