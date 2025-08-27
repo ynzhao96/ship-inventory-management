@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Category, InboundItemInput } from '../types';
-import { getInventoryList } from '../api';
+import { getInventoryList } from '../services/getInventoryList.ts';
 import { getCategories } from '../services/getCategories.ts';
 import { getInboundList } from '../services/getInboundList.ts';
 

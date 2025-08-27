@@ -26,16 +26,6 @@ export const getLowInventory = async (shipID: string) => {
   return response.json();
 };
 
-// 获取全部库存接口
-export const getInventoryList = async (shipId?: string) => {
-  const response = await fetch('/api/getInventoryList', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ shipId })
-  });
-  return response.json();
-};
-
 export const changeItemRemark = async (shipID: string, itemID: string, remark: string) => {
   const response = await fetch('/api/changeItemRemark', {
     method: 'POST',
