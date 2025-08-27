@@ -1,6 +1,11 @@
+import { getToken } from "../http";
 // 获取船舶信息接口
 export const getShipInfo = async (id?: string | number) => {
-  const res = await fetch(`/api/getShipInfo?id=${encodeURIComponent(String(id))}`);
+  const token = getToken();
+  const res = await fetch(`/api/getShipInfo?id=${encodeURIComponent(String(id))}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json', 'x-token': `${token}` },
+  });
 
   let json: any = {};
   try { json = await res.json(); } catch { }

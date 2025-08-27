@@ -1,5 +1,6 @@
+import { getToken } from "../http";
 // 获取船舶列表接口
-const token = localStorage.getItem('a-token');
+const token = getToken();
 export const getShipList = async () => {
   const res = await fetch('/api/getShipList', {
     method: 'GET',
