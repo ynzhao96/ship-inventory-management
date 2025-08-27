@@ -68,6 +68,7 @@ router.post('/getInboundLog', asyncHandler(async (req, res) => {
         ibd.item_id        AS itemId,
         it.item_name       AS itemName,
         it.item_name_en    AS itemNameEn,
+        it.category_id     AS categoryId,
         it.unit            AS unit,
         ibd.quantity       AS quantity,
         ibd.confirmed_at   AS confirmedAt,

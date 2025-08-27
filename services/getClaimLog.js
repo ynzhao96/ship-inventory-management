@@ -67,6 +67,7 @@ router.post('/getClaimLog', asyncHandler(async (req, res) => {
         clm.item_id        AS itemId,
         it.item_name       AS itemName,
         it.item_name_en    AS itemNameEn,
+        it.category_id     AS categoryId,
         it.unit            AS unit,
         clm.quantity       AS quantity,
         clm.claimer        AS claimer,
