@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { createInboundBatch } from '../services/createInboundBatch.ts';
 import { getCategories } from '../services/getCategories.ts';
 import { updateItems } from '../services/updateItems.ts';
-import { InboundItemInput } from '../types';
+import { Category, InboundItemInput } from '../types';
 
 interface Props {
   shipId?: string;
@@ -11,7 +11,7 @@ interface Props {
 const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   const [batchNumber, setBatchNumber] = useState('');
   const [supplyItems, setSupplyItems] = useState<InboundItemInput[]>([{ itemId: '', itemName: '', categoryId: '', quantity: 0, unit: '' }]);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   useEffect(() => {
     (async () => {
       const result = await getCategories();
@@ -150,7 +150,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                       type="text"
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       disabled
-                      value={item.categoryId}
+                      value={categories.find(c => c.categoryId === item.categoryId)?.categoryName ?? ''}
                     >
                     </input>
                   </td>
