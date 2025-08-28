@@ -1,4 +1,5 @@
 import { InboundItemInput } from "../types";
+import { getToken } from "../http";
 
 // 批量添加入库
 export const createInboundBatch = async (params: {
@@ -14,9 +15,10 @@ export const createInboundBatch = async (params: {
       quantity: Number(it.quantity ?? 0),
     })),
   };
+  const token = getToken();
   const res = await fetch('/api/createInboundBatch', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-token': `${token}` },
     body: JSON.stringify(body),
   });
 
