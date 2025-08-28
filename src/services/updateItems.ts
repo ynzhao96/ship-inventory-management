@@ -4,6 +4,7 @@ export const updateItems = async (items: {
   itemId: string,
   itemName?: string,
   itemNameEn?: string,
+  categoryId?: string,
   unit?: string,
   specification?: string
 }[]) => {

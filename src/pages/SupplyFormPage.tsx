@@ -71,6 +71,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
       itemId: i.itemId + '',
       itemName: i.itemName,
       itemNameEn: i.itemNameEn,
+      categoryId: i.categoryId,
       unit: i.unit,
       specification: i.specification
     }));

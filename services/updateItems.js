@@ -29,6 +29,7 @@ router.post('/updateItems', asyncHandler(async (req, res) => {
       item_name: trimOrNull(raw?.itemName ?? raw?.item_name),
       item_name_en: trimOrNull(raw?.itemNameEn ?? raw?.item_name_en),
       unit: trimOrNull(raw?.unit),
+      category_id: trimOrNull(raw?.categoryId),
       specification: trimOrNull(raw?.specification),
     };
   };
@@ -46,12 +47,12 @@ router.post('/updateItems', asyncHandler(async (req, res) => {
   }
 
   // 4) 批量 UPSERT SQL
-  const cols = ['item_id', 'item_name', 'item_name_en', 'unit', 'specification'];
+  const cols = ['item_id', 'item_name', 'item_name_en', 'unit', 'category_id', 'specification'];
   const rowPH = `(${cols.map(() => '?').join(', ')})`;
   const placeholders = rows.map(() => rowPH).join(', ');
   const params = [];
   for (const r of rows) {
-    params.push(r.item_id, r.item_name, r.item_name_en, r.unit, r.specification);
+    params.push(r.item_id, r.item_name, r.item_name_en, r.unit, r.category_id, r.specification);
   }
 
   const insertSql = `
@@ -61,6 +62,7 @@ router.post('/updateItems', asyncHandler(async (req, res) => {
       item_name     = COALESCE(VALUES(item_name), item_name),
       item_name_en  = COALESCE(VALUES(item_name_en), item_name_en),
       unit          = COALESCE(VALUES(unit), unit),
+      category_id   = COALESCE(VALUES(category_id), category_id),
       specification = COALESCE(VALUES(specification), specification)
   `;
 
@@ -76,6 +78,7 @@ router.post('/updateItems', asyncHandler(async (req, res) => {
               item_name AS itemName,
               item_name_en AS itemNameEn,
               unit,
+              category_id,
               specification
        FROM items
        WHERE item_id IN (${inPH})
