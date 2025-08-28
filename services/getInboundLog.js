@@ -34,7 +34,7 @@ router.post('/getInboundLog', asyncHandler(async (req, res) => {
     const kw = typeof searchMatch === 'string' ? searchMatch.trim() : '';
     if (kw) {
       where.push(`(
-        idb.item_id LIKE ?
+        ibd.item_id LIKE ?
         OR it.item_name LIKE ?
         OR it.item_name_en LIKE ?
         OR ibd.batch_no LIKE ?
