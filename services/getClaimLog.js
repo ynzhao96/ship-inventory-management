@@ -30,17 +30,15 @@ router.post('/getClaimLog', asyncHandler(async (req, res) => {
     const where = [`TRIM(clm.ship_id) = ? AND status = 'CLAIMED'`];
     const params = [shipId];
 
-    // 关键字模糊匹配（itemId / itemName / 英文名 / 备注 / 申请人）
+    // 关键字模糊匹配（itemId / itemName）
     const kw = typeof searchMatch === 'string' ? searchMatch.trim() : '';
     if (kw) {
       where.push(`(
         clm.item_id LIKE ?
         OR it.item_name LIKE ?
-        OR it.item_name_en LIKE ?
-        OR clm.claimer LIKE ?
       )`);
       const like = `%${kw}%`;
-      params.push(like, like, like, like);
+      params.push(like, like);
     }
 
     // 时间区间（含端点）
