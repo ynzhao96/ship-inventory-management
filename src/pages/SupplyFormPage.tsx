@@ -30,7 +30,27 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   };
 
   const handleUpdateSupplyItem = (id: string | number, field: string, value: string | number) => {
-    setSupplyItems(supplyItems.map((item, index) => index === id ? { ...item, [field]: value } : item));
+    // setSupplyItems(supplyItems.map((item, index) => index === id ? { ...item, [field]: value } : item));
+
+    setSupplyItems(prev =>
+      prev.map((item, idx) => {
+        const isTarget =
+          typeof id === 'number'
+            ? idx === id
+            : String(idx) === String(id);
+
+        if (!isTarget) return item;
+
+        const next = { ...item, [field]: value };
+
+        if (field === 'itemId') {
+          const cat = deriveCategoryIdFromItemId(value);
+          next.categoryId = cat || '';
+        }
+
+        return next;
+      })
+    );
   };
 
   const handleDeleteSupplyItem = (id: string | number) => {
@@ -49,6 +69,11 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
     }));
     updateItems(items);
     createInboundBatch({ batchNo: batchNumber, shipId: shipId, items: supplyItems });
+  };
+
+  const deriveCategoryIdFromItemId = (v: string | number): string => {
+    const m = String(v ?? '').trim().match(/^\d{2}/); // 只取前两位数字
+    return m ? m[0] : '';
   };
 
   return (
