@@ -1,8 +1,8 @@
 import { getToken } from "../http";
 // 获取物资信息接口
-export const getItemById = async (itemId: string) => {
+export const getItemInfo = async (itemId: string) => {
   const token = getToken();
-  const res = await fetch(`/api/getItemById?itemId=${encodeURIComponent(String(itemId))}`, {
+  const res = await fetch(`/api/getItemInfo?itemId=${encodeURIComponent(String(itemId))}`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json', 'x-token': `${token}` },
   });
