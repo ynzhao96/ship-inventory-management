@@ -67,16 +67,16 @@ router.post('/getInboundLog', asyncHandler(async (req, res) => {
     // 数据列表
     const listSql = `
       SELECT
-        ibd.batch_no       AS batchNumber,
-        ibd.inbound_id     AS inboundId,
-        ibd.item_id        AS itemId,
-        it.item_name       AS itemName,
-        it.item_name_en    AS itemNameEn,
-        it.category_id     AS categoryId,
-        it.unit            AS unit,
-        ibd.quantity       AS quantity,
-        ibd.confirmed_at   AS confirmedAt,
-        ibd.confirm_remark   AS confirmRemark
+        ibd.batch_no                                     AS batchNumber,
+        ibd.inbound_id                                   AS inboundId,
+        ibd.item_id                                      AS itemId,
+        it.item_name                                     AS itemName,
+        it.item_name_en                                  AS itemNameEn,
+        it.category_id                                   AS categoryId,
+        it.unit                                          AS unit,
+        ibd.quantity                                     AS quantity,
+        CONVERT_TZ(ibd.confirmed_at, '+00:00', '+08:00') AS confirmedAt,
+        ibd.confirm_remark                               AS confirmRemark
       FROM inbounds AS ibd
       LEFT JOIN items AS it ON it.item_id = ibd.item_id
       ${whereSql}

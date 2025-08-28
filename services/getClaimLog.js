@@ -66,16 +66,16 @@ router.post('/getClaimLog', asyncHandler(async (req, res) => {
     // 数据列表
     const listSql = `
       SELECT
-        clm.claim_id       AS claimId,
-        clm.item_id        AS itemId,
-        it.item_name       AS itemName,
-        it.item_name_en    AS itemNameEn,
-        it.category_id     AS categoryId,
-        it.unit            AS unit,
-        clm.quantity       AS quantity,
-        clm.claimer        AS claimer,
-        clm.claimed_at     AS claimedAt,
-        clm.claim_remark   AS claimRemark
+        clm.claim_id                                   AS claimId,
+        clm.item_id                                    AS itemId,
+        it.item_name                                   AS itemName,
+        it.item_name_en                                AS itemNameEn,
+        it.category_id                                 AS categoryId,
+        it.unit                                        AS unit,
+        clm.quantity                                   AS quantity,
+        clm.claimer                                    AS claimer,
+        CONVERT_TZ(clm.claimed_at, '+00:00', '+08:00') AS claimedAt,
+        clm.claim_remark                               AS claimRemark
       FROM claims AS clm
       LEFT JOIN items AS it ON it.item_id = clm.item_id
       ${whereSql}

@@ -64,7 +64,7 @@ export const addLog = async (eventType, operator, object, quantity, note) => {
   return { ok: true }
 }
 
-// 日期处理
+// 处理时间段
 export function toDayBoundary(val, which /* 'start' | 'end' */) {
   const s = String(val ?? '').trim();
   // 支持 YYYY-MM-DD / YYYY/MM/DD，允许后面带时间
