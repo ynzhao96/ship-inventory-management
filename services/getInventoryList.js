@@ -70,7 +70,7 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
     JOIN items AS it
       ON it.item_id = inv.item_id
     ${whereSql}
-    ORDER BY it.item_name ASC, it.item_id ASC
+    ORDER BY it.item_id ASC
     LIMIT ? OFFSET ?
   `;
 
