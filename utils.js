@@ -63,3 +63,17 @@ export const addLog = async (eventType, operator, object, quantity, note) => {
   const insert = await q('INSERT INTO logs (event_type, operator, object, quantity, note, time) VALUES (?, ?, ?, ?, ?, NOW())', [eventType, operator, object, quantity, note]);
   return { ok: true }
 }
+
+// 日期处理
+export function toDayBoundary(val, which /* 'start' | 'end' */) {
+  const s = String(val ?? '').trim();
+  // 支持 YYYY-MM-DD / YYYY/MM/DD，允许后面带时间
+  const m = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (!m) return null; // 兜底：入参不是日期，返回 null 让调用处决定如何处理
+  const [_, y, mo, d] = m;
+  const mm = mo.padStart(2, '0');
+  const dd = d.padStart(2, '0');
+  return which === 'start'
+    ? `${y}-${mm}-${dd} 00:00:00`
+    : `${y}-${mm}-${dd} 23:59:59`;
+}

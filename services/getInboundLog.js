@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ok, fail, asyncHandler, q, addLog, withTransaction, requireFields } from '../utils.js';
+import { ok, fail, asyncHandler, q, addLog, withTransaction, requireFields, toDayBoundary } from '../utils.js';
 import { authRequired } from '../auth.js';
 
 const router = Router();
@@ -45,8 +45,13 @@ router.post('/getInboundLog', asyncHandler(async (req, res) => {
 
     // 时间区间（含端点）
     if (startTime && endTime) {
+      const startStr = toDayBoundary(startTime, 'start');
+      const endStr = toDayBoundary(endTime, 'end');
+      if (!startStr || !endStr) {
+        return fail(res, 400, { code: 'BAD_REQUEST', message: '时间格式无效' });
+      }
       where.push(`ibd.confirmed_at BETWEEN ? AND ?`);
-      params.push(startTime, endTime);
+      params.push(startStr, endStr);
     }
 
     const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
