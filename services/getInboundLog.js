@@ -30,17 +30,16 @@ router.post('/getInboundLog', asyncHandler(async (req, res) => {
     const where = [`TRIM(ibd.ship_id) = ? AND status = 'CONFIRMED'`];
     const params = [shipId];
 
-    // 关键字模糊匹配（itemId / itemName / 英文名 / batchNumber）
+    // 关键字模糊匹配（itemId / itemName / batchNumber）
     const kw = typeof searchMatch === 'string' ? searchMatch.trim() : '';
     if (kw) {
       where.push(`(
         ibd.item_id LIKE ?
         OR it.item_name LIKE ?
-        OR it.item_name_en LIKE ?
         OR ibd.batch_no LIKE ?
       )`);
       const like = `%${kw}%`;
-      params.push(like, like, like, like);
+      params.push(like, like, like);
     }
 
     // 时间区间（含端点）
