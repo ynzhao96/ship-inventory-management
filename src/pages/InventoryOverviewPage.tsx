@@ -46,7 +46,6 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
       }
 
       setCategories(res2.data as Category[]);
-      console.log(categories);
 
       const res3 = await getInboundList(shipId);
       if (!res3.success) {
@@ -222,9 +221,9 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
             >
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-lg font-semibold">{item.itemName}</h3>
-                <span className="text-sm text-gray-500">{item.categoryId}</span>
+                <span className="text-sm text-gray-500">{item.itemId}</span>
               </div>
-              <div className="text-sm text-gray-500 mb-2">{item.categoryId}</div>
+              <div className="text-sm text-gray-500 mb-2">{categories.find(category => category.categoryId === item.categoryId)?.categoryName || ''}</div>
               <div className="flex justify-between mb-2">
                 <div>
                   <p className="text-sm text-gray-500">当前库存</p>
@@ -259,7 +258,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
                 >
                   <td className="px-6 py-4 whitespace-nowrap">{item.itemId}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.itemName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.categoryId}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{categories.find(category => category.categoryId === item.categoryId)?.categoryName || ''}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.quantity}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.inboundQuantity ?? ''}</td>
                 </tr>
