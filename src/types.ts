@@ -78,3 +78,27 @@ export type Category = {
   categoryName: string;
   categoryNameEn: string;
 }
+
+export type Inbound = {
+  batchNumber?: string;
+  createdAt?: string;
+  inboundId?: number;
+  itemId?: string;
+  itemName?: string;
+  quantity?: number;
+  status?: string;
+  unit?: string;
+}
+
+export type InventoryItem = {
+  itemId: number | string;
+  itemName: string;
+  itemNameEn?: string;
+  categoryId: string;
+  categoryName?: string;
+  quantity: number | string;
+  inboundQuantity: number;
+  unit: string;
+  specification?: string;
+  remark?: string;
+}

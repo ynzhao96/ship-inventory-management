@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Category, InboundItemInput } from '../types';
+import { Category, InventoryItem, Inbound } from '../types';
 import { getInventoryList } from '../services/getInventoryList.ts';
 import { getCategories } from '../services/getCategories.ts';
 import { getInboundList } from '../services/getInboundList.ts';
@@ -8,13 +8,14 @@ interface InventoryOverviewPageProps {
   shipId?: string;
 }
 const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId }) => {
-  const [items, setItems] = useState<InboundItemInput[]>([]);
+  const [items, setItems] = useState<InventoryItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [inbounds, setInbounds] = useState<Inbound[]>([]);
 
   const [inventoryView, setInventoryView] = useState<'cards' | 'list'>('list');
   const [searchTerm, setSearchTerm] = useState('');
   const [activeInventoryTab, setActiveInventoryTab] = useState('ALL');
-  const [selectedItem, setSelectedItem] = useState<InboundItemInput | null>(null);
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [showItemDetail, setShowItemDetail] = useState(false);
   const [activeTab, setActiveTab] = useState('入库提交');
 
@@ -25,7 +26,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
   // const { data, isLoading } = useQuery(['inv', page, pageSize, filters], () =>
   //   getInventoryList({ page, pageSize, ...filters })
   // );
-  const totalPages = Math.max(1, total / pageSize);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const canPrev = page > 1;
   const canNext = page < totalPages;
 
@@ -44,14 +45,21 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
         throw new Error(res2.error || '获取物资种类失败');
       }
 
-      setCategories(res2.data as any);
+      setCategories(res2.data as Category[]);
       console.log(categories);
 
       const res3 = await getInboundList(shipId);
       if (!res3.success) {
         throw new Error(res2.error || '获取待入库信息失败');
       }
-      console.log(res3.data);
+      setInbounds(res3.data);
+      inbounds.forEach(inbound => {
+        const item = items.find(x => x.itemId === inbound.itemId);
+        if (item) {
+          item.inboundQuantity ??= 0;
+          item.inboundQuantity += Number(inbound.quantity) || 0;
+        }
+      })
     })();
   }, [])
 
@@ -66,7 +74,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
     return item.categoryId === activeInventoryTab && matchesSearch;
   });
 
-  const handleItemClick = (item: InboundItemInput) => {
+  const handleItemClick = (item: InventoryItem) => {
     setSelectedItem(item);
     setShowItemDetail(true);
   };
@@ -224,7 +232,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">待入库</p>
-                  <p className="text-lg font-bold">{item.quantity}</p>
+                  <p className="text-lg font-bold">{item.inboundQuantity ?? ''}</p>
                 </div>
               </div>
             </div>
@@ -253,7 +261,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
                   <td className="px-6 py-4 whitespace-nowrap">{item.itemName}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.categoryId}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.quantity}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.quantity}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.inboundQuantity ?? ''}</td>
                 </tr>
               ))}
             </tbody>
