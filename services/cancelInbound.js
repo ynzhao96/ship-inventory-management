@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ok, fail, asyncHandler, q, addLog, withTransaction, requireFields } from '../utils.js';
+import { ok, fail, asyncHandler, q, addLog, withTransaction, requireFields, isToday } from '../utils.js';
 import { authRequired } from '../auth.js';
 
 const router = Router();
@@ -16,12 +16,12 @@ router.post('/cancelInbound', asyncHandler(async (req, res) => {
 
   try {
     const rows = await q(`SELECT 
-      ship_id         AS shipId, 
-      item_id         AS itemId, 
+      ship_id                                      AS shipId, 
+      item_id                                      AS itemId, 
       status, 
       quantity,
-      confirmed_at    AS confirmedAT,
-      actual_quantity AS acqualQuantity
+      CONVERT_TZ(confirmed_at, '+00:00', '+08:00') AS confirmedAt,
+      actual_quantity                              AS acqualQuantity
       FROM inbounds WHERE inbound_id = ? limit 1`, [inboundId]);
     if (rows.length === 0) {
       return fail(res, 422, { code: 'NOT_FOUND', message: '对应入库记录不存在' });
@@ -29,6 +29,9 @@ router.post('/cancelInbound', asyncHandler(async (req, res) => {
     const inbound = rows[0];
     if (inbound.status !== 'CONFIRMED') {
       return fail(res, 409, { code: 'BAD_STATUS', message: '该入库记录不可被取消' });
+    }
+    if (!isToday(inbound.confirmedAt)) {
+      return fail(res, 409, { code: 'NOT_TODAY', message: '仅可取消当天的入库记录' });
     }
     const rows2 = await q(`SELECT item_id AS itemId, quantity FROM inventory WHERE ship_id = ? AND item_id = ?`, [inbound.shipId, inbound.itemId]);
     const inventory = rows2[0];

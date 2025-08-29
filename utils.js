@@ -77,3 +77,21 @@ export function toDayBoundary(val, which /* 'start' | 'end' */) {
     ? `${y}-${mm}-${dd} 00:00:00`
     : `${y}-${mm}-${dd} 23:59:59`;
 }
+
+// 判断是否当日
+export function isToday(daytime) {
+  // 在 JS 里判断是否是当天（以北京时间为准）
+  const confirmedDate = new Date(daytime);
+  const now = new Date();
+
+  // 把当前时间也转成北京时间的年月日
+  const nowUTC = now.getTime() + now.getTimezoneOffset() * 60000;  // 统一成 UTC
+  const nowBeijing = new Date(nowUTC + 8 * 60 * 60000);
+
+  // 比较年月日是否一致
+  return (
+    confirmedDate.getFullYear() === nowBeijing.getFullYear() &&
+    confirmedDate.getMonth() === nowBeijing.getMonth() &&
+    confirmedDate.getDate() === nowBeijing.getDate()
+  );
+}
