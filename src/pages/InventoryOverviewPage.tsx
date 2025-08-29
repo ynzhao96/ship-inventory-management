@@ -18,6 +18,17 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
   const [showItemDetail, setShowItemDetail] = useState(false);
   const [activeTab, setActiveTab] = useState('入库提交');
 
+  // 分页相关
+  const [total, setTotal] = useState<number>(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  // const { data, isLoading } = useQuery(['inv', page, pageSize, filters], () =>
+  //   getInventoryList({ page, pageSize, ...filters })
+  // );
+  const totalPages = Math.max(1, total / pageSize);
+  const canPrev = page > 1;
+  const canNext = page < totalPages;
+
   useEffect(() => {
     (async () => {
       const res1 = await getInventoryList(shipId);
@@ -26,6 +37,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
       }
 
       setItems(res1.data.list);
+      setTotal(res1.data.total);
 
       const res2 = await getCategories();
       if (!res2.success) {
@@ -248,6 +260,17 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
           </table>
         </div>
       )}
+      <div className="flex items-center justify-end gap-3 py-3">
+        <span className="text-sm text-gray-500">
+          显示 {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total || 0)} / 共 {total || 0}
+        </span>
+        <select value={pageSize} onChange={e => { setPage(1); setPageSize(Number(e.target.value)); }}>
+          {[10, 25, 50, 100].map(n => <option key={n} value={n}>{n}/页</option>)}
+        </select>
+        <button disabled={!canPrev} onClick={() => setPage(p => p - 1)}>上一页</button>
+        <span>{page} / {totalPages}</span>
+        <button disabled={!canNext} onClick={() => setPage(p => p + 1)}>下一页</button>
+      </div>
       {showItemDetail && renderItemDetail()}
     </div>
   )
