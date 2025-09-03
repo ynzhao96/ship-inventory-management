@@ -59,7 +59,7 @@ const CrewManagementPage: React.FC<Props> = ({ shipId }) => {
         const r = await updateCrews(shipId, crewMembers);
         if (!r.success) { setError(r.message || '保存失败'); return; }
         setCrewMembers(r.data || []); // 覆盖为后端回写（含新生成的 id）
-        setText(r.message);
+        setText(r.message || '');
         setOpen(false);
         requestAnimationFrame(() => setOpen(true));
     };
