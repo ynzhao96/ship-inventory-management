@@ -32,7 +32,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
   useEffect(() => {
     (async () => {
-      const res1 = await getInventoryList(shipId);
+      const res1 = await getInventoryList(shipId, undefined, page, pageSize);
       if (!res1.success) {
         throw new Error(res1.error || '获取物资库存失败');
       }
@@ -61,8 +61,6 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
       })
     })();
   }, [])
-
-
 
   // 过滤显示的货物
   const filteredItems = items.filter(item => {
@@ -269,7 +267,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
       )}
       <div className="flex items-center justify-end gap-3 py-3">
         <span className="text-sm text-gray-500">
-          显示 {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total || 0)} / 共 {total || 0}
+          显示 {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, total || 0)} / 共 {total || 0}
         </span>
         <select value={pageSize} onChange={e => { setPage(1); setPageSize(Number(e.target.value)); }}>
           {[10, 25, 50, 100].map(n => <option key={n} value={n}>{n}/页</option>)}
