@@ -37,18 +37,19 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
         throw new Error(res.error || '获取物资库存失败');
       }
       setItems(res.data.list);
+      setTotal(res.data.total);
     })();
   }, [page, pageSize, category]);
 
   useEffect(() => {
     (async () => {
-      const res1 = await getInventoryList(shipId, undefined, page, pageSize);
-      if (!res1.success) {
-        throw new Error(res1.error || '获取物资库存失败');
-      }
+      // const res1 = await getInventoryList(shipId, undefined, page, pageSize);
+      // if (!res1.success) {
+      //   throw new Error(res1.error || '获取物资库存失败');
+      // }
 
-      setItems(res1.data.list);
-      setTotal(res1.data.total);
+      // setItems(res1.data.list);
+      // setTotal(res1.data.total);
 
       const res2 = await getCategories();
       if (!res2.success) {
