@@ -61,6 +61,9 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
       }
       setInbounds(res3.data);
     })();
+  }, []);
+
+  useEffect(() => {
     inbounds.forEach(inbound => {
       console.log('inbound: ', inbound);
       const item = items.find(x => x.itemId === inbound.itemId);
@@ -71,7 +74,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
       console.log('item: ', item);
     })
     console.log('items: ', items);
-  }, [])
+  }, [items, inbounds]);
 
   const handleItemClick = (item: InventoryItem) => {
     setSelectedItem(item);
