@@ -1,27 +1,35 @@
-import { getToken } from "../http";
+import { http } from "../http";
 // 获取船舶列表接口
 export const getShipList = async () => {
-  const token = getToken();
-  const res = await fetch('/api/getShipList', {
+  return await http('/api/getInventoryList', {
     method: 'GET',
-    headers: { 'Content-Type': 'application/json', 'x-token': `${token}` },
   });
-
-  let json: any = {};
-  try { json = await res.json(); } catch { }
-
-  if (!res.ok) {
-    return {
-      success: false,
-      error: json?.message || json?.error || `获取船舶失败(${res.status})`,
-      code: json?.code || 'ERROR',
-      data: null,
-    };
-  }
-
-  return {
-    success: json?.success === true,
-    message: json?.message || 'OK',
-    data: json?.data ?? [],     // 这里统一返回 data
-  };
 };
+
+// import { getToken } from "../http";
+// // 获取船舶列表接口
+// export const getShipList = async () => {
+//   const token = getToken();
+//   const res = await fetch('/api/getShipList', {
+//     method: 'GET',
+//     headers: { 'Content-Type': 'application/json', 'x-token': `${token}` },
+//   });
+
+//   let json: any = {};
+//   try { json = await res.json(); } catch { }
+
+//   if (!res.ok) {
+//     return {
+//       success: false,
+//       error: json?.message || json?.error || `获取船舶失败(${res.status})`,
+//       code: json?.code || 'ERROR',
+//       data: null,
+//     };
+//   }
+
+//   return {
+//     success: json?.success === true,
+//     message: json?.message || 'OK',
+//     data: json?.data ?? [],     // 这里统一返回 data
+//   };
+// };
