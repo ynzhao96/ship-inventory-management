@@ -14,7 +14,6 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
   const [inventoryView, setInventoryView] = useState<'cards' | 'list'>('list');
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeInventoryTab, setActiveInventoryTab] = useState('ALL');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [showItemDetail, setShowItemDetail] = useState(false);
   const [activeTab, setActiveTab] = useState('入库提交');
@@ -23,6 +22,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
   const [total, setTotal] = useState<number>(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [category, setCategory] = useState('');
   // const { data, isLoading } = useQuery(['inv', page, pageSize, filters], () =>
   //   getInventoryList({ page, pageSize, ...filters })
   // );
@@ -32,13 +32,13 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
   useEffect(() => {
     (async () => {
-      const res = await getInventoryList(shipId, undefined, page, pageSize);
+      const res = await getInventoryList(shipId, category, page, pageSize);
       if (!res.success) {
         throw new Error(res.error || '获取物资库存失败');
       }
       setItems(res.data.list);
     })();
-  }, [page, pageSize]);
+  }, [page, pageSize, category]);
 
   useEffect(() => {
     (async () => {
@@ -73,13 +73,13 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
   }, [])
 
   // 过滤显示的货物
-  const filteredItems = items.filter(item => {
-    const matchesSearch = item.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (item.itemId + '').toLowerCase().includes(searchTerm.toLowerCase());
+  // const filteredItems = items.filter(item => {
+  //   const matchesSearch = item.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     (item.itemId + '').toLowerCase().includes(searchTerm.toLowerCase());
 
-    if (activeInventoryTab === 'ALL') return matchesSearch;
-    return item.categoryId === activeInventoryTab && matchesSearch;
-  });
+  //   if (activeInventoryTab === 'ALL') return matchesSearch;
+  //   return item.categoryId === activeInventoryTab && matchesSearch;
+  // });
 
   const handleItemClick = (item: InventoryItem) => {
     setSelectedItem(item);
@@ -204,14 +204,14 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
       <div className="border-b border-gray-200 mb-6">
         <nav className="-mb-px flex flex-wrap space-x-8">
-          {[{ categoryId: 'ALL', categoryName: '全部' }, ...categories].map(tab => (
+          {[{ categoryId: '', categoryName: '全部' }, ...categories].map(tab => (
             <button
               key={tab.categoryId}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeInventoryTab === tab.categoryId
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${category === tab.categoryId
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
-              onClick={() => setActiveInventoryTab(tab.categoryId)}
+              onClick={() => setCategory(tab.categoryId)}
             >
               {tab.categoryName}
             </button>
@@ -221,7 +221,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
       {inventoryView === 'cards' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {filteredItems.map((item, index) => (
+          {items.map((item, index) => (
             <div
               key={index}
               className="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
@@ -258,7 +258,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredItems.map((item, index) => (
+              {items.map((item, index) => (
                 <tr
                   key={index}
                   className="hover:bg-gray-50 cursor-pointer"
