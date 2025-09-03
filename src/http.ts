@@ -5,6 +5,7 @@ export function getToken() {
 let isRedirecting = false;
 
 interface HttpResponse<T = any> {
+  error?: any;
   success: boolean;
   status: number;
   data: T;
@@ -48,6 +49,7 @@ export async function http<T = any>(
     };
   } catch (err: any) {
     return {
+      error: err,
       success: false,
       status: 0,
       data: null as any,
