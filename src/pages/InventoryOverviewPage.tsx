@@ -66,7 +66,9 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
           item.inboundQuantity ??= 0;
           item.inboundQuantity += Number(inbound.quantity) || 0;
         }
+        console.log(item);
       })
+      console.log(items);
     })();
   }, [])
 
