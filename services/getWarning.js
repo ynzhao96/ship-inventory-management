@@ -18,7 +18,7 @@ router.get('/getWarning', asyncHandler(async (req, res) => {
     const rows = await q(`SELECT 
       inv.item_id     AS itemId,
       it.item_name    AS itemName,
-      it.item_name_en AS itemNameEN,
+      it.item_name_en AS itemNameEn,
       inv.quantity    AS quantity,
       inv.threshold   AS threshold,
       it.category_id  AS categoryId,
