@@ -1,4 +1,4 @@
-import { getToken } from "../http";
+import { http } from "../http";
 // 更新物料信息
 export const updateItems = async (items: {
   itemId: string,
@@ -11,27 +11,8 @@ export const updateItems = async (items: {
   const body = {
     items: items
   };
-  const token = getToken();
-  const res = await fetch('/api/updateItems', {
+  return await http('/api/updateItems', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-token': `${token}` },
     body: JSON.stringify(body),
   });
-
-  let json: any = {};
-  try { json = await res.json(); } catch { }
-
-  if (!res.ok || json?.success !== true) {
-    return {
-      success: false,
-      error: json?.message || json?.error || `更新失败(${res.status})`,
-      code: json?.code || 'ERROR',
-    };
-  }
-
-  return {
-    success: true,
-    data: json?.data,
-    message: json?.message || '更新物料信息成功',
-  };
 };
