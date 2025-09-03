@@ -15,7 +15,7 @@ function useAuth() {
 }
 
 function RequireAuth({ children }: { children: JSX.Element }) {
-  const authed = localStorage.getItem('auth') === '1';
+  const authed = !!localStorage.getItem('a-token');
   return authed ? children : <Navigate to="/login" replace />;
 }
 
@@ -24,13 +24,12 @@ export default function App() {
   const navigate = useNavigate();
 
   const handleLoggedIn = () => {
-    localStorage.setItem('auth', '1');
     setAuthed(true);
     navigate('/', { replace: true });
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('auth');
+    localStorage.removeItem('a-token');
     setAuthed(false);
     navigate('/login', { replace: true });
   };
