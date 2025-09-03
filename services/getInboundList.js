@@ -13,6 +13,7 @@ router.get('/getInboundList', asyncHandler(async (req, res) => {
       ibd.batch_no                                       AS batchNumber,
       ibd.item_id                                        AS itemId,
       it.item_name                                       AS itemName,
+      it.item_name_en                                    AS itemNameEN,
       it.unit                                            AS unit,
       ibd.quantity                                       AS quantity,
       ibd.status                                         AS status,

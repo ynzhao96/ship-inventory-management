@@ -16,12 +16,13 @@ router.get('/getThreshold', asyncHandler(async (req, res) => {
 
   try {
     const rows = await q(`SELECT 
-      inv.item_id    AS itemId,
-      it.item_name   AS itemName,
-      inv.quantity   AS quantity,
-      inv.threshold  AS threshold,
-      it.unit        AS unit
-      FROM inventory AS inv
+      inv.item_id     AS itemId,
+      it.item_name    AS itemName,
+      it.item_name_en AS itemNameEN,
+      inv.quantity    AS quantity,
+      inv.threshold   AS threshold,
+      it.unit         AS unit
+      FROM inventory  AS inv
       JOIN items AS it
       ON it.item_id = inv.item_id
       WHERE TRIM(inv.ship_id) = TRIM(?) AND threshold IS NOT NULL`,
