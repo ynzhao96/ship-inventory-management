@@ -74,7 +74,7 @@ router.post('/getInboundLog', asyncHandler(async (req, res) => {
         it.item_name_en                                  AS itemNameEn,
         it.category_id                                   AS categoryId,
         it.unit                                          AS unit,
-        ibd.quantity                                     AS quantity,
+        ibd.actual_quantity                              AS quantity,
         CONVERT_TZ(ibd.confirmed_at, '+00:00', '+08:00') AS confirmedAt,
         ibd.confirm_remark                               AS confirmRemark
       FROM inbounds AS ibd
