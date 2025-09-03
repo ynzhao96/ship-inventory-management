@@ -5,10 +5,10 @@ export function getToken() {
 let isRedirecting = false;
 
 interface HttpResponse<T = any> {
-  error?: any;
   success: boolean;
-  status: number;
-  data: T;
+  error?: any;
+  code?: any;
+  data?: T;
   message?: string;
 }
 
@@ -32,26 +32,32 @@ export async function http<T = any>(
       window.location.href = '/login';
       return Promise.reject({
         success: false,
-        status: 401,
         data: null,
         message: 'Unauthorized',
       });
     }
 
     // 尝试解析 JSON
-    const data = await res.json().catch(() => ({}));
+    const json = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      return {
+        success: false,
+        error: json?.message || json?.error || `获取船舶失败(${res.status})`,
+        code: json?.code || 'ERROR',
+        data: null as any,
+      };
+    }
 
     return {
-      success: res.ok,
-      status: res.status,
-      data,
-      message: (data as any)?.message,
+      success: json?.success === true,
+      data: json.data,
+      message: json?.message || 'OK',
     };
   } catch (err: any) {
     return {
       error: err,
       success: false,
-      status: 0,
       data: null as any,
       message: err?.message || 'Network error',
     };
