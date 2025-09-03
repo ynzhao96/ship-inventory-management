@@ -40,13 +40,13 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
   useEffect(() => {
     (async () => {
-      const res1 = await getInventoryList(shipId, category, page, pageSize);
-      if (!res1.success) {
-        throw new Error(res1.error || '获取物资库存失败');
-      }
+      // const res1 = await getInventoryList(shipId, category, page, pageSize);
+      // if (!res1.success) {
+      //   throw new Error(res1.error || '获取物资库存失败');
+      // }
 
-      setItems(res1.data.list);
-      setTotal(res1.data.total);
+      // setItems(res1.data.list);
+      // setTotal(res1.data.total);
 
       const res2 = await getCategories();
       if (!res2.success) {
@@ -65,15 +65,12 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
   useEffect(() => {
     inbounds.forEach(inbound => {
-      console.log('inbound: ', inbound);
       const item = items.find(x => x.itemId === inbound.itemId);
       if (item) {
         item.inboundQuantity ??= 0;
         item.inboundQuantity += Number(inbound.quantity) || 0;
       }
-      console.log('item: ', item);
     })
-    console.log('items: ', items);
   }, [items, inbounds]);
 
   const handleItemClick = (item: InventoryItem) => {
