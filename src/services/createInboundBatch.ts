@@ -1,5 +1,5 @@
 import { InboundItemInput } from "../types";
-import { getToken } from "../http";
+import { http } from "../http";
 
 // 批量添加入库
 export const createInboundBatch = async (params: {
@@ -15,29 +15,11 @@ export const createInboundBatch = async (params: {
       quantity: Number(it.quantity ?? 0),
     })),
   };
-  const token = getToken();
-  const res = await fetch('/api/createInboundBatch', {
+
+  return await http('/api/createInboundBatch', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-token': `${token}` },
     body: JSON.stringify(body),
   });
-
-  let json: any = {};
-  try { json = await res.json(); } catch { }
-
-  if (!res.ok || json?.success !== true) {
-    return {
-      success: false,
-      error: json?.message || json?.error || `创建失败(${res.status})`,
-      code: json?.code || 'ERROR',
-    };
-  }
-
-  return {
-    success: true,
-    data: json?.data,
-    message: json?.message || '创建入库批次成功',
-  };
 };
 
 function normalizeId(input: any): string {
