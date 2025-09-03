@@ -38,7 +38,7 @@ const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
       itemId: i.itemId,
       threshold: i.threshold
     })));
-    setText(res.message);
+    setText(res.message || '');
     setOpen(false);
     requestAnimationFrame(() => setOpen(true));
   }

@@ -49,7 +49,7 @@ const AccountManagementPage: React.FC<Props> = ({ shipId }) => {
     const r = await updateUserInfo(shipId, accountInfo?.username, accountInfo?.password);
     if (!r.success) { setError(r.message || '保存失败'); return; }
 
-    setText(r.message);
+    setText(r.message || '');
     setOpen(false);
     requestAnimationFrame(() => setOpen(true));
   };
