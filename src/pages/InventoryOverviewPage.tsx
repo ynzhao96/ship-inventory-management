@@ -61,14 +61,15 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
       }
       setInbounds(res3.data);
       inbounds.forEach(inbound => {
+        console.log('inbound: ', inbound);
         const item = items.find(x => x.itemId === inbound.itemId);
         if (item) {
           item.inboundQuantity ??= 0;
           item.inboundQuantity += Number(inbound.quantity) || 0;
         }
-        console.log(item);
+        console.log('item: ', item);
       })
-      console.log(items);
+      console.log('items: ', items);
     })();
   }, [])
 
