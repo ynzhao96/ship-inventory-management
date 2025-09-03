@@ -23,9 +23,6 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [category, setCategory] = useState('');
-  // const { data, isLoading } = useQuery(['inv', page, pageSize, filters], () =>
-  //   getInventoryList({ page, pageSize, ...filters })
-  // );
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const canPrev = page > 1;
   const canNext = page < totalPages;
@@ -43,13 +40,13 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
   useEffect(() => {
     (async () => {
-      // const res1 = await getInventoryList(shipId, undefined, page, pageSize);
-      // if (!res1.success) {
-      //   throw new Error(res1.error || '获取物资库存失败');
-      // }
+      const res1 = await getInventoryList(shipId, category, page, pageSize);
+      if (!res1.success) {
+        throw new Error(res1.error || '获取物资库存失败');
+      }
 
-      // setItems(res1.data.list);
-      // setTotal(res1.data.total);
+      setItems(res1.data.list);
+      setTotal(res1.data.total);
 
       const res2 = await getCategories();
       if (!res2.success) {
@@ -72,15 +69,6 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
       })
     })();
   }, [])
-
-  // 过滤显示的货物
-  // const filteredItems = items.filter(item => {
-  //   const matchesSearch = item.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     (item.itemId + '').toLowerCase().includes(searchTerm.toLowerCase());
-
-  //   if (activeInventoryTab === 'ALL') return matchesSearch;
-  //   return item.categoryId === activeInventoryTab && matchesSearch;
-  // });
 
   const handleItemClick = (item: InventoryItem) => {
     setSelectedItem(item);
