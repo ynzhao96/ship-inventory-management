@@ -18,7 +18,7 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
     return fail(res, 400, { code: 'BAD_REQUEST', message: 'Missing shipId' });
   }
 
-  const where = ['TRIM(inv.ship_id) = ?'];
+  const where = ['TRIM(inv.ship_id) = ?', 'inv.quantity > 0'];
   const params = [shipId];
 
   // 关键词模糊匹配
