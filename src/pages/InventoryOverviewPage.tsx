@@ -60,17 +60,17 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
         throw new Error(res2.error || '获取待入库信息失败');
       }
       setInbounds(res3.data);
-      inbounds.forEach(inbound => {
-        console.log('inbound: ', inbound);
-        const item = items.find(x => x.itemId === inbound.itemId);
-        if (item) {
-          item.inboundQuantity ??= 0;
-          item.inboundQuantity += Number(inbound.quantity) || 0;
-        }
-        console.log('item: ', item);
-      })
-      console.log('items: ', items);
     })();
+    inbounds.forEach(inbound => {
+      console.log('inbound: ', inbound);
+      const item = items.find(x => x.itemId === inbound.itemId);
+      if (item) {
+        item.inboundQuantity ??= 0;
+        item.inboundQuantity += Number(inbound.quantity) || 0;
+      }
+      console.log('item: ', item);
+    })
+    console.log('items: ', items);
   }, [])
 
   const handleItemClick = (item: InventoryItem) => {
