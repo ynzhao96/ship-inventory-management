@@ -13,7 +13,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
   const [inbounds, setInbounds] = useState<Inbound[]>([]);
 
   const [inventoryView, setInventoryView] = useState<'cards' | 'list'>('list');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchMatch, setSearchTerm] = useState('');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [showItemDetail, setShowItemDetail] = useState(false);
   const [activeTab, setActiveTab] = useState('入库提交');
@@ -29,25 +29,17 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
   useEffect(() => {
     (async () => {
-      const res = await getInventoryList(shipId, category, page, pageSize);
+      const res = await getInventoryList(shipId, category, page, pageSize, searchMatch);
       if (!res.success) {
         throw new Error(res.error || '获取物资库存失败');
       }
       setItems(res.data.list);
       setTotal(res.data.total);
     })();
-  }, [page, pageSize, category]);
+  }, [page, pageSize, category, searchMatch]);
 
   useEffect(() => {
     (async () => {
-      // const res1 = await getInventoryList(shipId, category, page, pageSize);
-      // if (!res1.success) {
-      //   throw new Error(res1.error || '获取物资库存失败');
-      // }
-
-      // setItems(res1.data.list);
-      // setTotal(res1.data.total);
-
       const res2 = await getCategories();
       if (!res2.success) {
         throw new Error(res2.error || '获取物资种类失败');
@@ -184,7 +176,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
           type="text"
           placeholder="搜索物资编号或名称"
           className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
-          value={searchTerm}
+          value={searchMatch}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
