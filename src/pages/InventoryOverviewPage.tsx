@@ -3,6 +3,7 @@ import { Category, InventoryItem, Inbound } from '../types';
 import { getInventoryList } from '../services/getInventoryList.ts';
 import { getCategories } from '../services/getCategories.ts';
 import { getInboundList } from '../services/getInboundList.ts';
+import { getItemLogs } from '../services/getItemLogs.ts';
 
 interface InventoryOverviewPageProps {
   shipId?: string;
@@ -66,6 +67,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
   }, [items, inbounds]);
 
   const handleItemClick = (item: InventoryItem) => {
+    getItemLogs(String(item.itemId), shipId || '');
     setSelectedItem(item);
     setShowItemDetail(true);
   };
