@@ -41,7 +41,7 @@ router.get('/getItemLogs', asyncHandler(async (req, res) => {
       confirms: rows2,
       claims: rows3
     }
-  }, { message: '获取物资信息成功' });
+  }, { message: '获取物资日志记录成功' });
 }));
 
 export default router;

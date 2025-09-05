@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Category, InventoryItem, Inbound } from '../types';
+import { Category, InventoryItem, Inbound, ItemLog } from '../types';
 import { getInventoryList } from '../services/getInventoryList.ts';
 import { getCategories } from '../services/getCategories.ts';
 import { getInboundList } from '../services/getInboundList.ts';
@@ -18,6 +18,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [showItemDetail, setShowItemDetail] = useState(false);
   const [activeTab, setActiveTab] = useState('入库提交');
+  const [itemLogs, setItemLogs] = useState<ItemLog>({} as ItemLog);
 
   // 分页相关
   const [total, setTotal] = useState<number>(0);
@@ -66,8 +67,9 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
     })
   }, [items, inbounds]);
 
-  const handleItemClick = (item: InventoryItem) => {
-    getItemLogs(String(item.itemId), shipId || '');
+  const handleItemClick = async (item: InventoryItem) => {
+    const res = await getItemLogs(String(item.itemId), shipId || '');
+    setItemLogs(res.data);
     setSelectedItem(item);
     setShowItemDetail(true);
   };
@@ -76,18 +78,18 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
   const renderItemDetail = () => {
     if (!selectedItem) return null;
 
-    const mockRecords = [
-      { id: '1', type: '入库提交', date: '2024-03-20 14:30:00', quantity: 100 },
-      { id: '2', type: '入库确认', date: '2024-03-19 09:15:00', quantity: 50 },
-      { id: '3', type: '申领记录', date: '2024-03-18 16:45:00', quantity: 30 },
-      { id: '4', type: '入库提交', date: '2024-03-17 11:20:00', quantity: 200 },
-      { id: '5', type: '入库确认', date: '2024-03-16 10:00:00', quantity: 150 },
-    ];
-
-    const filteredRecords = mockRecords.filter(record => {
-      if (activeTab === '全部') return true;
-      return record.type === activeTab;
-    });
+    let filteredRecords: any[] = [];
+    switch (activeTab) {
+      case '入库提交':
+        filteredRecords = itemLogs.inbounds;
+        return;
+      case '入库确认':
+        filteredRecords = itemLogs.confirms;
+        return;
+      case '申领记录':
+        filteredRecords = itemLogs.claims;
+        return;
+    }
 
     return (
       <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
@@ -130,20 +132,59 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
             <div className="overflow-auto max-h-[60vh]">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50 sticky top-0">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">类型</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日期</th>
-                  </tr>
+                  {activeTab === '入库提交' && (
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">批次号</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日期</th>
+                    </tr>
+                  )}
+                  {activeTab === '入库确认' && (
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">批次号</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">实际数量</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日期</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">备注</th>
+                    </tr>
+                  )}
+                  {activeTab === '申领记录' && (
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">申领人</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日期</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">备注</th>
+                    </tr>
+                  )}
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredRecords.map(record => (
-                    <tr key={record.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-left">{record.type}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-left">{record.quantity}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-left">{record.date}</td>
-                    </tr>
-                  ))}
+                  {activeTab === '入库提交' && (
+                    filteredRecords.map(record =>
+                      <tr key={record.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-left">{record.batchNumber}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-left">{record.quantity}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-left">{record.createdAt}</td>
+                      </tr>)
+                  )}
+                  {activeTab === '入库确认' && (
+                    filteredRecords.map(record =>
+                      <tr key={record.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-left">{record.batchNumber}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-left">{record.quantity}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-left">{record.actualQuantity}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-left">{record.confirmedAt}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-left">{record.confirmRemark}</td>
+                      </tr>)
+                  )}
+                  {activeTab === '申领记录' && (
+                    filteredRecords.map(record =>
+                      <tr key={record.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-left">{record.claimer}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-left">{record.quantity}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-left">{record.claimAt}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-left">{record.claimRemark}</td>
+                      </tr>)
+                  )}
                 </tbody>
               </table>
             </div>

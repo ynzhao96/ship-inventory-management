@@ -102,3 +102,24 @@ export type InventoryItem = {
   specification?: string;
   remark?: string;
 }
+
+export type ItemLog = {
+  inbounds: {
+    batchNumber?: string;
+    quantity?: number;
+    createdAt?: string;
+  }[];
+  confirms: {
+    batchNumber?: string;
+    quantity?: number;
+    actualQuantity?: number;
+    confirmedAt?: string;
+    confirmRemark?: string;
+  }[];
+  claims: {
+    quantity?: number;
+    claimer?: string;
+    claimedAt?: string;
+    claimRemark?: string;
+  }[];
+}
