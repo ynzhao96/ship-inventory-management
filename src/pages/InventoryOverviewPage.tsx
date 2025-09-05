@@ -79,16 +79,19 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
     if (!selectedItem) return null;
 
     let filteredRecords: any[] = [];
-    switch (activeTab) {
-      case '入库提交':
-        filteredRecords = itemLogs.inbounds;
-        return;
-      case '入库确认':
-        filteredRecords = itemLogs.confirms;
-        return;
-      case '申领记录':
-        filteredRecords = itemLogs.claims;
-        return;
+    if (activeTab === '入库提交') {
+      filteredRecords = itemLogs?.inbounds || [];
+    } else if (activeTab === '入库确认') {
+      filteredRecords = itemLogs?.confirms || [];
+    } else if (activeTab === '申领记录') {
+      filteredRecords = itemLogs?.claims || [];
+    } else {
+      // 全部：合并并打上来源标签，便于区分
+      filteredRecords = [
+        ...(itemLogs?.inbounds || []).map(r => ({ ...r, __type: '入库提交' })),
+        ...(itemLogs?.confirms || []).map(r => ({ ...r, __type: '入库确认' })),
+        ...(itemLogs?.claims || []).map(r => ({ ...r, __type: '申领记录' })),
+      ];
     }
 
     return (
