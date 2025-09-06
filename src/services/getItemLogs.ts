@@ -19,17 +19,17 @@ export const getItemLogs = async (itemId: string, shipId: string) => {
 
   const claims = data.claims?.map(c => ({
     ...c,
-    claimedAtText: c.claimedAt ? formatTime(c.claimedAt) : '',
+    claimedAt: c.claimedAt ? formatTime(c.claimedAt) : '',
   })) ?? [];
 
   const confirms = data.confirms?.map(c => ({
     ...c,
-    confirmedAtText: c.confirmedAt ? formatTime(c.confirmedAt) : '',
+    confirmedAt: c.confirmedAt ? formatTime(c.confirmedAt) : '',
   })) ?? [];
 
   const inbounds = data.inbounds?.map(i => ({
     ...i,
-    createdAtText: i.createdAt ? formatTime(i.createdAt) : '',
+    createdAt: i.createdAt ? formatTime(i.createdAt) : '',
   })) ?? [];
 
   return {
