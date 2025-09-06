@@ -24,6 +24,12 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   const [showToast, setShowToast] = useState(false);
   const [toastText, setToastText] = useState('');
 
+  // 清空页面所有信息
+  const clearAll = () => {
+    setBatchNumber('');
+    setSupplyItems([]);
+  };
+
   useEffect(() => {
     (async () => {
       const result = await getCategories();
@@ -87,6 +93,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
 
     setToastText(res.message || '');
     requestAnimationFrame(() => setShowToast(true));
+    clearAll();
   };
 
   const deriveCategoryIdFromItemId = (v: string | number): string => {
