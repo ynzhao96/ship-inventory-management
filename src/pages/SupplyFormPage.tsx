@@ -285,7 +285,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
           title="确认提交"
           message="确定提交这批物资吗？此操作不可恢复。"
           confirmText="提交"
-          onConfirm={() => { handleSubmitSupply; setShowModal(false); }}
+          onConfirm={() => { handleSubmitSupply(); setShowModal(false); }}
           onCancel={() => setShowModal(false)}
         />
 
