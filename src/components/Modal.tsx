@@ -10,7 +10,7 @@ type ModalProps = {
   footer?: React.ReactNode; // 自定义底部（按钮区）
 };
 
-export const Modal: React.FC<ModalProps> = ({ open, onClose, title, children, footer }) => {
+const Modal: React.FC<ModalProps> = ({ open, onClose, title, children, footer }) => {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -37,3 +37,5 @@ export const Modal: React.FC<ModalProps> = ({ open, onClose, title, children, fo
 
   return createPortal(el, document.body);
 };
+
+export default Modal;

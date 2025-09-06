@@ -1,6 +1,6 @@
 // src/components/ConfirmModal.tsx
 import React from "react";
-import { Modal } from "./Modal";
+import Modal from "./Modal";
 
 type ConfirmModalProps = {
   open: boolean;
@@ -12,7 +12,7 @@ type ConfirmModalProps = {
   onCancel: () => void;
 };
 
-export const ConfirmModal: React.FC<ConfirmModalProps> = ({
+const ConfirmModal: React.FC<ConfirmModalProps> = ({
   open,
   title = "请确认",
   message,
@@ -47,3 +47,5 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     {message && <p>{message}</p>}
   </Modal>
 );
+
+export default ConfirmModal;

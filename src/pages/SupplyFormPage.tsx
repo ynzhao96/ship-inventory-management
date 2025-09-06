@@ -4,7 +4,8 @@ import { createInboundBatch } from '../services/createInboundBatch.ts';
 import { getCategories } from '../services/getCategories.ts';
 import { updateItems } from '../services/updateItems.ts';
 import { getItemInfo } from '../services/getItemInfo.ts';
-import { ConfirmModal } from '../components/ConfirmModal.tsx';
+import ConfirmModal from '../components/ConfirmModal.tsx';
+import Toast from '../components/Toast.tsx';
 
 interface Props {
   shipId?: string;
@@ -19,7 +20,9 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   const rowVersionRef = useRef<number[]>([]);
 
   // 弹窗状态
-  const [open, setOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastText, setToastText] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -70,7 +73,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   };
 
   // 提交
-  const handleSubmitSupply = () => {
+  const handleSubmitSupply = async () => {
     const items = supplyItems.map((i) => ({
       itemId: i.itemId + '',
       itemName: i.itemName,
@@ -80,7 +83,10 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
       specification: i.specification
     }));
     updateItems(items);
-    createInboundBatch({ batchNo: batchNumber, shipId: shipId, items: supplyItems });
+    const res = await createInboundBatch({ batchNo: batchNumber, shipId: shipId, items: supplyItems });
+
+    setToastText(res.message || '');
+    requestAnimationFrame(() => setShowToast(true));
   };
 
   const deriveCategoryIdFromItemId = (v: string | number): string => {
@@ -269,18 +275,24 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
       <div className="flex justify-end">
         <button
           className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-          onClick={() => setOpen(true)}
+          onClick={() => setShowModal(true)}
         >
           提交
         </button>
 
         <ConfirmModal
-          open={open}
+          open={showModal}
           title="确认提交"
           message="确定提交这批物资吗？此操作不可恢复。"
           confirmText="提交"
-          onConfirm={() => { handleSubmitSupply; setOpen(false); }}
-          onCancel={() => setOpen(false)}
+          onConfirm={() => { handleSubmitSupply; setShowModal(false); }}
+          onCancel={() => setShowModal(false)}
+        />
+
+        <Toast
+          open={showToast}
+          message={toastText}
+          onClose={() => setShowToast(false)}
         />
       </div>
     </div>
