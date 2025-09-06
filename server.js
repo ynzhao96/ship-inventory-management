@@ -24,9 +24,6 @@ app.use(cors({
   credentials: true,               // 若需要发送 cookie/凭证
 }));
 
-// 可选：手动处理预检响应头（cors 已处理多数情况）
-app.options('(.*)', cors());
-
 app.use(express.json());
 
 app.use('/', services);
