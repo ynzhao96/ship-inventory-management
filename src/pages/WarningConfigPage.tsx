@@ -54,7 +54,7 @@ const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
   };
 
   // 更新预警配置
-  const handleUpdateWarningConfig = (id: number, field: keyof WarningConfig, value: string | number) => {
+  const handleUpdateWarningConfig = (id: number, field: keyof WarningConfig, value: string) => {
     setWarningConfigs(warningConfigs.map((config, index) =>
       index === id ? { ...config, [field]: value } : config
     ));
@@ -106,7 +106,7 @@ const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
                     type="number"
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={config.threshold}
-                    onChange={(e) => handleUpdateWarningConfig(index, 'threshold', Number(e.target.value))}
+                    onChange={(e) => handleUpdateWarningConfig(index, 'threshold', e.target.value)}
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
