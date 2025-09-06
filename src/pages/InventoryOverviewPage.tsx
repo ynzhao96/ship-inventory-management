@@ -184,7 +184,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
                       <tr key={record.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-left">{record.claimer}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-left">{record.quantity}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-left">{record.claimAt}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-left">{record.claimedAt}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-left">{record.claimRemark}</td>
                       </tr>)
                   )}
