@@ -4,6 +4,7 @@ import { createInboundBatch } from '../services/createInboundBatch.ts';
 import { getCategories } from '../services/getCategories.ts';
 import { updateItems } from '../services/updateItems.ts';
 import { getItemInfo } from '../services/getItemInfo.ts';
+import { ConfirmModal } from '../components/ConfirmModal.tsx';
 
 interface Props {
   shipId?: string;
@@ -16,6 +17,9 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   // 缓存 & 竞态版本号
   const itemCacheRef = useRef<Map<string, any>>(new Map());
   const rowVersionRef = useRef<number[]>([]);
+
+  // 弹窗状态
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -265,10 +269,19 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
       <div className="flex justify-end">
         <button
           className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-          onClick={handleSubmitSupply}
+          onClick={() => setOpen(true)}
         >
           提交
         </button>
+
+        <ConfirmModal
+          open={open}
+          title="确认提交"
+          message="确定提交这批物资吗？此操作不可恢复。"
+          confirmText="提交"
+          onConfirm={() => { handleSubmitSupply; setOpen(false); }}
+          onCancel={() => setOpen(false)}
+        />
       </div>
     </div>
   );
