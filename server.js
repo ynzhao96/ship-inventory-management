@@ -25,7 +25,7 @@ app.use(cors({
 }));
 
 // 可选：手动处理预检响应头（cors 已处理多数情况）
-app.options('*', cors());
+app.options('(.*)', cors());
 
 app.use(express.json());
 
