@@ -53,15 +53,16 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
   // —— claims: 创建（CLAIM） & 取消（CANCEL_CLAIM）
   const claimCreateSQL = `
     SELECT
-      'CLAIM'                                      AS eventType,
-      CONVERT_TZ(clm.claimed_at, ${TZ}, ${TZ_OUT}) AS eventTime,
-      TRIM(clm.ship_id)                            AS shipId,
-      clm.item_id                                  AS itemId,
-      it.item_name                                 AS itemName,
-      it.category_id                               AS categoryId,
-      clm.quantity                                 AS quantity,
-      clm.claimer                                  AS actor,
-      clm.claim_remark                             AS remark
+      'CLAIM'                                        AS eventType,
+      NULL                                           AS batchNumber,
+      CONVERT_TZ(clm.claimed_at, '+00:00', '+08:00') AS eventTime,
+      TRIM(clm.ship_id)                              AS shipId,
+      clm.item_id                                    AS itemId,
+      it.item_name                                   AS itemName,
+      it.category_id                                 AS categoryId,
+      clm.quantity                                   AS quantity,
+      clm.claimer                                    AS actor,
+      clm.claim_remark                               AS remark
     FROM claims AS clm
     LEFT JOIN items AS it ON it.item_id = clm.item_id
     WHERE TRIM(clm.ship_id) = ?
@@ -70,14 +71,16 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
 
   const claimCancelSQL = `
     SELECT
-      'CANCEL_CLAIM'                                AS eventType,
-      CONVERT_TZ(clm.canceled_at, ${TZ}, ${TZ_OUT}) AS eventTime,
-      TRIM(clm.ship_id)                             AS shipId,
-      clm.item_id                                   AS itemId,
-      it.item_name                                  AS itemName,
-      it.category_id                                AS categoryId,
-      clm.quantity                                  AS quantity,
-      clm.cancel_remark                             AS remark
+      'CANCEL_CLAIM'                                  AS eventType,
+      NULL                                            AS batchNumber,
+      CONVERT_TZ(clm.canceled_at, '+00:00', '+08:00') AS eventTime,
+      TRIM(clm.ship_id)                               AS shipId,
+      clm.item_id                                     AS itemId,
+      it.item_name                                    AS itemName,
+      it.category_id                                  AS categoryId,
+      clm.quantity                                    AS quantity,
+      NULL                                            AS actor,
+      clm.cancel_remark                               AS remark
     FROM claims AS clm
     LEFT JOIN items AS it ON it.item_id = clm.item_id
     WHERE TRIM(clm.ship_id) = ?
@@ -88,15 +91,16 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
   // —— inbounds: 创建（INBOUND_CREATE）/ 确认（INBOUND_CONFIRM）/ 取消（INBOUND_CANCEL）
   const inboundCreateSQL = `
     SELECT
-      'INBOUND_CREATE'                             AS eventType,
-      batch_no                                     AS batchNumber,
-      CONVERT_TZ(ibd.created_at, ${TZ}, ${TZ_OUT}) AS eventTime,
-      TRIM(ibd.ship_id)                            AS shipId,
-      ibd.item_id                                  AS itemId,
-      it.item_name                                 AS itemName,
-      it.category_id                               AS categoryId,
-      ibd.quantity                                 AS quantity,
-      'Administrator'                              AS actor
+      'INBOUND_CREATE'                               AS eventType,
+      ibd.batch_no                                   AS batchNumber,
+      CONVERT_TZ(ibd.created_at, '+00:00', '+08:00') AS eventTime,
+      TRIM(ibd.ship_id)                              AS shipId,
+      ibd.item_id                                    AS itemId,
+      it.item_name                                   AS itemName,
+      it.category_id                                 AS categoryId,
+      ibd.quantity                                   AS quantity,
+      'Administrator'                                AS actor,
+      NULL                                           AS remark
     FROM inbounds AS ibd
     LEFT JOIN items AS it ON it.item_id = ibd.item_id
     WHERE TRIM(ibd.ship_id) = ?
@@ -105,15 +109,16 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
 
   const inboundConfirmSQL = `
     SELECT
-      'INBOUND_CONFIRM'                              AS eventType,
-      batch_no                                       AS batchNumber,
-      CONVERT_TZ(ibd.confirmed_at, ${TZ}, ${TZ_OUT}) AS eventTime,
-      TRIM(ibd.ship_id)                              AS shipId,
-      ibd.item_id                                    AS itemId,
-      it.item_name                                   AS itemName,
-      it.category_id                                 AS categoryId,
-      ibd.actual_quantity                            AS quantity,
-      ibd.confirm_remark                             AS remark
+      'INBOUND_CONFIRM'                                AS eventType,
+      ibd.batch_no                                     AS batchNumber,
+      CONVERT_TZ(ibd.confirmed_at, '+00:00', '+08:00') AS eventTime,
+      TRIM(ibd.ship_id)                                AS shipId,
+      ibd.item_id                                      AS itemId,
+      it.item_name                                     AS itemName,
+      it.category_id                                   AS categoryId,
+      ibd.actual_quantity                              AS quantity,
+      NULL                                             AS actor,
+      ibd.confirm_remark                               AS remark
     FROM inbounds AS ibd
     LEFT JOIN items AS it ON it.item_id = ibd.item_id
     WHERE TRIM(ibd.ship_id) = ?
@@ -123,15 +128,16 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
 
   const inboundCancelSQL = `
     SELECT
-      'INBOUND_CANCEL'                              AS eventType,
-      batch_no                                      AS batchNumber,
-      CONVERT_TZ(ibd.canceled_at, ${TZ}, ${TZ_OUT}) AS eventTime,
-      TRIM(ibd.ship_id)                             AS shipId,
-      ibd.item_id                                   AS itemId,
-      it.item_name                                  AS itemName,
-      it.category_id                                AS categoryId,
-      ibd.actual_quantity                           AS quantity,
-      ibd.cancel_remark                             AS remark
+      'INBOUND_CANCEL'                                AS eventType,
+      ibd.batch_no                                    AS batchNumber,
+      CONVERT_TZ(ibd.canceled_at, '+00:00', '+08:00') AS eventTime,
+      TRIM(ibd.ship_id)                               AS shipId,
+      ibd.item_id                                     AS itemId,
+      it.item_name                                    AS itemName,
+      it.category_id                                  AS categoryId,
+      ibd.actual_quantity                             AS quantity,
+      NULL                                            AS actor,
+      ibd.cancel_remark                               AS remark
     FROM inbounds AS ibd
     LEFT JOIN items AS it ON it.item_id = ibd.item_id
     WHERE TRIM(ibd.ship_id) = ?
