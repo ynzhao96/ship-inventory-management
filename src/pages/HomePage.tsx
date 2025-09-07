@@ -7,6 +7,7 @@ import DataReportPage from './DataReportPage';
 import InventoryOverviewPage from './InventoryOverviewPage';
 import { useParams } from 'react-router-dom';
 import ShipListPage from './ShipListPage.tsx';
+import SystemLogPage from './SystemLogPage.tsx';
 
 const HomePage = ({ }: { onBack: () => void }) => {
   const { shipId } = useParams();
@@ -73,7 +74,7 @@ const HomePage = ({ }: { onBack: () => void }) => {
                 ) : activePage === 'inventory-storage' ? (
                   <InventoryOverviewPage shipId={shipId} />
                 ) : activePage === 'data-report' ? (
-                  <DataReportPage shipId={shipId} />
+                  <SystemLogPage />
                 ) : null}
               </div>
             </div>
