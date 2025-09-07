@@ -67,7 +67,7 @@ const DataReportPage: React.FC<Props> = ({ shipId: shipIdProp }) => {
   const shipId = shipIdProp || params.shipId || '';
 
   const [page, setPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(10);
+  const [pageSize, setPageSize] = useState<number>(25);
 
   const [logType, setLogType] = useState<LogType>('ALL');
   const [startDate, setStartDate] = useState<string>(''); // YYYY-MM-DD
