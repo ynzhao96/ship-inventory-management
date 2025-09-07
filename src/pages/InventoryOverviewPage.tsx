@@ -308,17 +308,6 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
           </table>
         </div>
       )}
-      {/* <div className="flex items-center justify-end gap-3 py-3">
-        <span className="text-sm text-gray-500">
-          显示 {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, total || 0)} / 共 {total || 0}
-        </span>
-        <select value={pageSize} onChange={e => { setPage(1); setPageSize(Number(e.target.value)); }}>
-          {[10, 25, 50, 100].map(n => <option key={n} value={n}>{n}/页</option>)}
-        </select>
-        <button disabled={!canPrev} onClick={() => { setPage(p => p - 1); }}>上一页</button>
-        <span>{page} / {totalPages}</span>
-        <button disabled={!canNext} onClick={() => { setPage(p => p + 1); }}>下一页</button>
-      </div> */}
       <Pagination
         page={page}
         pageSize={pageSize}
