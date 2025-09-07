@@ -2,7 +2,7 @@
 import { JSX, useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
-import ShipListPage from './pages/ShipListPage';
+import HomePage from './pages/HomePage';
 import ShipDetailPage from './pages/ShipDetailPage';
 
 // 简单的登录态读取
@@ -49,7 +49,7 @@ export default function App() {
         path="/"
         element={
           <RequireAuth>
-            <ShipListPage onLogout={handleLogout} />
+            <HomePage onBack={handleLogout} />
           </RequireAuth>
         }
       />

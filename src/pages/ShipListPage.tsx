@@ -5,7 +5,7 @@ import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
 import { getShipList } from '../services/getShipList';
 
-const ShipListPage = ({ }: { onLogout: () => void }) => {
+const ShipListPage = () => {
   const navigate = useNavigate();
 
   // 数据状态
