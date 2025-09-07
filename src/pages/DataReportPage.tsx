@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-// import { useParams } from 'react-router-dom';
 import { getShipLogs } from '../services/getShipLogs.ts';
 import Pagination from '../components/Pagination.tsx';
 
@@ -64,9 +63,6 @@ const labelByType: Record<Exclude<LogType, 'ALL'>, string> = {
 
 
 const DataReportPage: React.FC<Props> = ({ shipId }) => {
-  // const params = useParams<{ shipId: string }>();
-  // const shipId = shipIdProp || params.shipId || '';
-
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(25);
 
