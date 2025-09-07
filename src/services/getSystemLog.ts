@@ -4,7 +4,7 @@ export const getSystemLog = async (page?: number, pageSize?: number, startTime?:
   const body = {
     page, pageSize, startTime, endTime
   };
-  return await http('/api/getShipList', {
+  return await http('/api/getSystemLog', {
     method: 'POST',
     body: JSON.stringify(body),
   });
