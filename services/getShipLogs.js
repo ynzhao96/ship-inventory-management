@@ -15,10 +15,6 @@ const LOG_TYPES = new Set([
   'ALL',
 ]);
 
-// 统一时区转换
-const TZ = `'+00:00'`;
-const TZ_OUT = `'+08:00'`;
-
 router.post('/getShipLogs', asyncHandler(async (req, res) => {
   let { shipId, page = 1, pageSize = 10, startTime, endTime, logType = 'ALL' } = req.body ?? {};
 
