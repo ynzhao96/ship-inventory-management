@@ -27,6 +27,7 @@ import getInboundLog from './getInboundLog.js';
 import cancelInbound from './cancelInbound.js';
 import getItemInfo from './getItemInfo.js';
 import getItemLogs from './getItemLogs.js';
+import getShipLogs from './getShipLogs.js';
 
 const router = Router();
 
@@ -59,5 +60,6 @@ router.use(getInboundLog);
 router.use(cancelInbound);
 router.use(getItemInfo);
 router.use(getItemLogs);
+router.use(getShipLogs);
 
 export default router;
