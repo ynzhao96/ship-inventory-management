@@ -37,9 +37,12 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
       }
       setItems(res.data.list);
       setTotal(res.data.total);
-      setPage(1);
     })();
   }, [page, pageSize, category, searchMatch]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [category, searchMatch]);
 
   useEffect(() => {
     (async () => {
