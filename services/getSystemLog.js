@@ -6,8 +6,8 @@ const router = Router();
 router.use(authRequired);
 
 // 获取系统日志
-router.get('/getSystemLog', asyncHandler(async (req, res) => {
-  let { page = 1, pageSize = 10, startTime, endTime } = req.query ?? {};
+router.post('/getSystemLog', asyncHandler(async (req, res) => {
+  let { page = 1, pageSize = 10, startTime, endTime } = req.body ?? {};
 
   if ((startTime && !endTime) || (!startTime && endTime)) {
     return fail(res, 400, { code: 'BAD_REQUEST', message: '时间信息无效' });
