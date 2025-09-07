@@ -10,7 +10,7 @@ import ShipListPage from './ShipListPage.tsx';
 
 const HomePage = ({ }: { onBack: () => void }) => {
   const { shipId } = useParams();
-  const [activePage, setActivePage] = useState('ship-info');
+  const [activePage, setActivePage] = useState('ship-list');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
 
