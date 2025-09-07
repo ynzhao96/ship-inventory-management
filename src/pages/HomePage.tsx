@@ -3,7 +3,6 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import SupplyFormPage from './SupplyFormPage';
 import WarningConfigPage from './WarningConfigPage';
-import DataReportPage from './DataReportPage';
 import InventoryOverviewPage from './InventoryOverviewPage';
 import { useParams } from 'react-router-dom';
 import ShipListPage from './ShipListPage.tsx';
