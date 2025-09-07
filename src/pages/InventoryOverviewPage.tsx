@@ -4,6 +4,7 @@ import { getInventoryList } from '../services/getInventoryList.ts';
 import { getCategories } from '../services/getCategories.ts';
 import { getInboundList } from '../services/getInboundList.ts';
 import { getItemLogs } from '../services/getItemLogs.ts';
+import Pagination from '../components/Pagination.tsx';
 
 interface InventoryOverviewPageProps {
   shipId?: string;
@@ -26,8 +27,6 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
   const [pageSize, setPageSize] = useState(25);
   const [category, setCategory] = useState('');
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const canPrev = page > 1;
-  const canNext = page < totalPages;
 
   useEffect(() => {
     (async () => {
@@ -309,7 +308,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
           </table>
         </div>
       )}
-      <div className="flex items-center justify-end gap-3 py-3">
+      {/* <div className="flex items-center justify-end gap-3 py-3">
         <span className="text-sm text-gray-500">
           显示 {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, total || 0)} / 共 {total || 0}
         </span>
@@ -319,7 +318,17 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
         <button disabled={!canPrev} onClick={() => { setPage(p => p - 1); }}>上一页</button>
         <span>{page} / {totalPages}</span>
         <button disabled={!canNext} onClick={() => { setPage(p => p + 1); }}>下一页</button>
-      </div>
+      </div> */}
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        total={total}
+        totalPages={totalPages}
+        canPrev={page > 1}
+        canNext={page < totalPages}
+        onChangePage={setPage}
+        onChangePageSize={setPageSize}
+      />
       {showItemDetail && renderItemDetail()}
     </div>
   )
