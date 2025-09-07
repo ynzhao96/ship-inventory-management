@@ -39,8 +39,8 @@ interface Props {
 
 const LOG_TYPE_OPTIONS: { value: LogType; label: string }[] = [
   { value: 'ALL', label: '全部' },
-  { value: 'CLAIM', label: '领取' },
-  { value: 'CANCEL_CLAIM', label: '取消领取' },
+  { value: 'CLAIM', label: '申领' },
+  { value: 'CANCEL_CLAIM', label: '取消申领' },
   { value: 'INBOUND_CREATE', label: '创建入库' },
   { value: 'INBOUND_CONFIRM', label: '确认入库' },
   { value: 'INBOUND_CANCEL', label: '取消入库' },
@@ -55,8 +55,8 @@ const badgeStyleByType: Record<Exclude<LogType, 'ALL'>, string> = {
 };
 
 const labelByType: Record<Exclude<LogType, 'ALL'>, string> = {
-  CLAIM: '领取',
-  CANCEL_CLAIM: '取消领取',
+  CLAIM: '申领',
+  CANCEL_CLAIM: '取消申领',
   INBOUND_CREATE: '创建入库',
   INBOUND_CONFIRM: '确认入库',
   INBOUND_CANCEL: '取消入库',
