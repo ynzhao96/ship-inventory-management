@@ -66,7 +66,7 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
       it.category_id             AS categoryId,
       it.unit                    AS unit,
       it.specification           AS specification,
-      COALESCE(p.pending_qty, 0) AS inboundQuantity
+      COALESCE(p.pendingQuantity, 0) AS inboundQuantity
     FROM inventory AS inv
     JOIN items AS it
       ON it.item_id = inv.item_id
