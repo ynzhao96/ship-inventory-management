@@ -17,7 +17,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center">
           <button
             onClick={onBack}
-            className="mr-3 hover:bg-blue-800 p-1 rounded"
+            className="mr-3 bg-inherit hover:bg-blue-800 p-1 rounded"
             style={{ visibility: onBack ? 'visible' : 'hidden' }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
