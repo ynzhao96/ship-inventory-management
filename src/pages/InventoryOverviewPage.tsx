@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Category, InventoryItem, Inbound, ItemLog } from '../types';
 import { getInventoryList } from '../services/getInventoryList.ts';
 import { getCategories } from '../services/getCategories.ts';
-import { getInboundList } from '../services/getInboundList.ts';
 import { getItemLogs } from '../services/getItemLogs.ts';
 import Pagination from '../components/Pagination.tsx';
 
@@ -12,7 +11,6 @@ interface InventoryOverviewPageProps {
 const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId }) => {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [inbounds, setInbounds] = useState<Inbound[]>([]);
 
   const [inventoryView, setInventoryView] = useState<'cards' | 'list'>('list');
   const [searchMatch, setSearchTerm] = useState('');
@@ -51,24 +49,8 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
       }
 
       setCategories(res2.data as Category[]);
-
-      const res3 = await getInboundList(shipId);
-      if (!res3.success) {
-        throw new Error(res2.error || '获取待入库信息失败');
-      }
-      setInbounds(res3.data);
     })();
   }, []);
-
-  useEffect(() => {
-    inbounds.forEach(inbound => {
-      const item = items.find(x => x.itemId === inbound.itemId);
-      if (item) {
-        item.inboundQuantity ??= 0;
-        item.inboundQuantity += Number(inbound.quantity) || 0;
-      }
-    })
-  }, [items, inbounds]);
 
   const handleItemClick = async (item: InventoryItem) => {
     const res = await getItemLogs(String(item.itemId), shipId || '');
@@ -272,7 +254,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">待入库</p>
-                  <p className="text-lg font-bold">{item.inboundQuantity ?? ''}</p>
+                  <p className="text-lg font-bold">{item.inboundQuantity || ''}</p>
                 </div>
               </div>
             </div>
@@ -301,7 +283,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
                   <td className="px-6 py-4 whitespace-nowrap">{item.itemName}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{categories.find(category => category.categoryId === item.categoryId)?.categoryName || ''}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.quantity}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.inboundQuantity ?? ''}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.inboundQuantity || ''}</td>
                 </tr>
               ))}
             </tbody>
