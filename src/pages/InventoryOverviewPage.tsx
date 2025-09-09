@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Category, InventoryItem, Inbound, ItemLog } from '../types';
+import { Category, InventoryItem, ItemLog } from '../types';
 import { getInventoryList } from '../services/getInventoryList.ts';
 import { getCategories } from '../services/getCategories.ts';
 import { getItemLogs } from '../services/getItemLogs.ts';
