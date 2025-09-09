@@ -69,13 +69,21 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
     FROM inventory AS inv
     JOIN items AS it
       ON it.item_id = inv.item_id
+    LEFT JOIN (
+      SELECT 
+        item_id, 
+        SUM(quantity) AS pendingQuantity
+      FROM inbounds
+      WHERE ship_id = ? AND status = 'PENDING'
+      GROUP BY item_id
+    ) p ON p.item_id = it.item_id 
     ${whereSql}
     ORDER BY it.item_id ASC
     LIMIT ? OFFSET ?
   `;
 
   try {
-    const rows = await q(sql, [...params, pageSize, offset]);
+    const rows = await q(sql, [shipId, ...params, pageSize, offset]);
     return ok(res, {
       data: {
         list: rows,
