@@ -57,15 +57,16 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
 
   const sql = `
     SELECT
-      inv.ship_id              AS shipId,
-      inv.item_id              AS itemId,
-      inv.quantity             AS quantity,
-      inv.remark               AS remark,
-      it.item_name             AS itemName,
-      it.item_name_en          AS itemNameEn,
-      it.category_id           AS categoryId,
-      it.unit                  AS unit,
-      it.specification         AS specification
+      inv.ship_id                AS shipId,
+      inv.item_id                AS itemId,
+      inv.quantity               AS quantity,
+      inv.remark                 AS remark,
+      it.item_name               AS itemName,
+      it.item_name_en            AS itemNameEn,
+      it.category_id             AS categoryId,
+      it.unit                    AS unit,
+      it.specification           AS specification,
+      COALESCE(p.pending_qty, 0) AS inboundQuantity
     FROM inventory AS inv
     JOIN items AS it
       ON it.item_id = inv.item_id
