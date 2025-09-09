@@ -254,7 +254,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">待入库</p>
-                  <p className="text-lg font-bold">{item.inboundQuantity || ''}</p>
+                  <p className="text-lg font-bold">{item.inboundQuantity === '0' ? '' : item.inboundQuantity}</p>
                 </div>
               </div>
             </div>
@@ -283,7 +283,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
                   <td className="px-6 py-4 whitespace-nowrap">{item.itemName}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{categories.find(category => category.categoryId === item.categoryId)?.categoryName || ''}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.quantity}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{item.inboundQuantity || ''}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.inboundQuantity === '0' ? '' : item.inboundQuantity}</td>
                 </tr>
               ))}
             </tbody>

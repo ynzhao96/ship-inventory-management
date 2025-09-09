@@ -97,7 +97,7 @@ export type InventoryItem = {
   categoryId: string;
   categoryName?: string;
   quantity: number | string;
-  inboundQuantity: number;
+  inboundQuantity: string;
   unit: string;
   specification?: string;
   remark?: string;
