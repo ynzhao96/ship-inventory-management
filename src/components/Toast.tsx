@@ -23,7 +23,7 @@ const Toast = ({
         role="status"
         aria-live="polite"
         className={[
-          "mt-4 max-w-sm w-[90%] rounded-lg bg-gray-900 text-white shadow-lg pointer-events-auto",
+          "mt-4 max-w-sm w-[90%] rounded-lg bg-white text-gray-700 shadow-lg dark:bg-neutral-800 dark:border-neutral-700 pointer-events-auto",
           "px-4 py-2 flex items-center gap-3",
           "transform transition-all duration-300 ease-out",
           open ? "translate-y-0 opacity-100" : "-translate-y-6 opacity-0",

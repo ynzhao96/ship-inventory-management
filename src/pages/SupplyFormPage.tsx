@@ -13,6 +13,7 @@ interface Props {
 }
 
 const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
+
   const [batchNumber, setBatchNumber] = useState('');
   const [supplyItems, setSupplyItems] = useState<InboundItemInput[]>([{ itemId: '', itemName: '', categoryId: '', quantity: 0, unit: '' }]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -38,6 +39,20 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
       setCategories(result.data as Category[]);
     })();
   }, []);
+
+  const validateSupplyForm = (): string | null => {
+    if (!batchNumber) return '请填写批次号';
+    if (!supplyItems.length) return '请添加物资';
+    for (const item of supplyItems) {
+      if (!item.itemId) return '物资编号不能为空';
+      if (!item.itemName) return '物资名称不能为空';
+      if (!item.categoryId) return '物资类别不能为空';
+      if (!item.unit) return '单位不能为空';
+      const qty = typeof item.quantity === 'string' ? Number(item.quantity) : item.quantity;
+      if (!qty || qty <= 0) return '数量必须大于0';
+    }
+    return null;
+  };
 
   // 增加
   const handleAddSupplyItem = () => {
@@ -86,6 +101,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
     }));
     updateItems(items);
     const res = await createInboundBatch({ batchNo: batchNumber, shipId: shipId, items: supplyItems });
+    console.log('res.message: ', res);
 
     setToastText(res.message || '');
     requestAnimationFrame(() => setShowToast(true));
@@ -123,6 +139,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
         return next;
       }));
     } catch (e) {
+      console.log('e: ', e);
       // 静默失败即可；可按需 toast
     }
   };
@@ -257,7 +274,15 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
       <div className="flex justify-end">
         <button
           className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            const err = validateSupplyForm();
+            if (err) {
+              setToastText(err);
+              setShowToast(true);
+              return;
+            }
+            setShowModal(true)
+          }}
         >
           提交
         </button>
