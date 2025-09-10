@@ -11,11 +11,11 @@ const ShipInfoPage: React.FC<ShipInfoPageProps> = ({ ship }) => {
       <div className="bg-white shadow rounded-lg p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">{ship?.name}</h2>
-          <div className="space-x-2">
+          {/* <div className="space-x-2">
             <button className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
               编辑信息
             </button>
-          </div>
+          </div> */}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
