@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Category, InboundItemInput } from '../types';
 import { createInboundBatch } from '../services/createInboundBatch.ts';
 import { getCategories } from '../services/getCategories.ts';
