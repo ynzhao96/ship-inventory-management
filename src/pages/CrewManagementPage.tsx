@@ -49,9 +49,7 @@ const CrewManagementPage: React.FC<Props> = ({ shipId }) => {
     };
 
     const handleDeleteCrewMember = (index: number) => {
-        if (crewMembers.length > 1) {
-            setCrewMembers(crewMembers.filter((_, i) => i !== index));
-        }
+        setCrewMembers(crewMembers.filter((_, i) => i !== index));
     };
 
     const handleSubmitCrewMembers = async () => {
@@ -113,7 +111,6 @@ const CrewManagementPage: React.FC<Props> = ({ shipId }) => {
                                             <button
                                                 className="text-red-600 hover:text-red-900"
                                                 onClick={() => handleDeleteCrewMember(index)}
-                                                disabled={crewMembers.length === 1}
                                             >
                                                 删除
                                             </button>
