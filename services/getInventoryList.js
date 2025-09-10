@@ -60,6 +60,7 @@ router.post('/getInventoryList', asyncHandler(async (req, res) => {
       inv.ship_id                AS shipId,
       inv.item_id                AS itemId,
       inv.quantity               AS quantity,
+      inv.threshold              AS threshold,
       inv.remark                 AS remark,
       it.item_name               AS itemName,
       it.item_name_en            AS itemNameEn,
