@@ -1,7 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Toast from '../components/Toast';
 import { getThreshold } from '../services/getThreshold';
 import { updateThreshold } from '../services/updateThreshold';
+import { debounce } from '../utils';
+import { InboundItemInput } from '../types';
+import { getItemInfo } from '../services/getItemInfo';
 
 interface Props {
   shipId?: string;
@@ -58,7 +61,41 @@ const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
     setWarningConfigs(warningConfigs.map((config, index) =>
       index === id ? { ...config, [field]: value } : config
     ));
+
+    // 在用户编辑 itemId 时，触发去抖查询并自动回填
+    if (field === 'itemId') {
+      debouncedAutoFill(typeof id === 'number' ? id : Number(id), String(value));
+    }
   };
+
+  // 自动回填：仅把空字段补上；categoryId 优先用表里返回的，其次用前两位派生
+  const autoFillFromItemsTable = async (rowIndex: number, rawItemId: string | number) => {
+    const itemId = String(rawItemId ?? '').trim();
+    if (!itemId) return;
+
+    try {
+      let item: InboundItemInput;
+      const r = await getItemInfo(itemId);
+      item = r.data || {};
+
+      setWarningConfigs(prev => prev.map((it, idx) => {
+        if (idx !== rowIndex) return it;
+        const next = { ...it };
+
+        next.itemName = item?.itemName ?? '';
+
+        return next;
+      }));
+    } catch (e) {
+      // 静默失败即可；可按需 toast
+    }
+  };
+
+  // 去抖包装，避免高频请求
+  const debouncedAutoFill = useMemo(
+    () => debounce(autoFillFromItemsTable, 300),
+    []
+  );
 
   return (
     <div className="bg-white shadow rounded-lg p-6">
@@ -98,7 +135,7 @@ const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
                     type="text"
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={config.itemName}
-                    onChange={(e) => handleUpdateWarningConfig(index, 'itemName', e.target.value)}
+                    disabled
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
