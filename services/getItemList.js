@@ -26,7 +26,7 @@ router.post('/getItemList', asyncHandler(async (req, res) => {
       SELECT
         it.item_id                           AS itemId,
         it.item_name                         AS itemName,
-        it.item_id_en                        AS itemNameEn,
+        it.item_name_en                        AS itemNameEn,
         it.unit                              AS unit,
         it.specification                     AS specification,
         cat.name                             AS categoryName
