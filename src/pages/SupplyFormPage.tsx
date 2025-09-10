@@ -73,9 +73,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
 
   // 删除
   const handleDeleteSupplyItem = (id: string | number) => {
-    if (supplyItems.length > 1) {
-      setSupplyItems(supplyItems.filter((_item, index) => index !== id));
-    }
+    setSupplyItems(supplyItems.filter((_item, index) => index !== id));
   };
 
   // 提交
@@ -195,6 +193,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">单位</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">规格</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -267,7 +266,6 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                     <button
                       className="text-red-600 hover:text-red-900"
                       onClick={() => handleDeleteSupplyItem(index)}
-                      disabled={supplyItems.length === 1}
                     >
                       删除
                     </button>
