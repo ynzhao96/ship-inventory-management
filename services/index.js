@@ -29,6 +29,7 @@ import getItemInfo from './getItemInfo.js';
 import getItemLogs from './getItemLogs.js';
 import getShipLogs from './getShipLogs.js';
 import getSystemLog from './getSystemLog.js';
+import getItemList from './getItemList.js';
 
 const router = Router();
 
@@ -63,5 +64,6 @@ router.use(getItemInfo);
 router.use(getItemLogs);
 router.use(getShipLogs);
 router.use(getSystemLog);
+router.use(getItemList);
 
 export default router;

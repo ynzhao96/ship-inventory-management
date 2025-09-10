@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import SupplyFormPage from './SupplyFormPage';
-import WarningConfigPage from './WarningConfigPage';
 import InventoryOverviewPage from './InventoryOverviewPage';
 import { useParams } from 'react-router-dom';
 import ShipListPage from './ShipListPage.tsx';
 import SystemLogPage from './SystemLogPage.tsx';
+import ItemListPage from './ItemListPage.tsx';
 
 const HomePage = ({ }: { onBack: () => void }) => {
   const { shipId } = useParams();
@@ -69,7 +69,7 @@ const HomePage = ({ }: { onBack: () => void }) => {
                 ) : activePage === 'anomaly' ? (
                   <SupplyFormPage shipId={shipId} />
                 ) : activePage === 'item-dictionary' ? (
-                  <WarningConfigPage shipId={shipId} />
+                  <ItemListPage />
                 ) : activePage === 'inventory-storage' ? (
                   <InventoryOverviewPage shipId={shipId} />
                 ) : activePage === 'data-report' ? (
