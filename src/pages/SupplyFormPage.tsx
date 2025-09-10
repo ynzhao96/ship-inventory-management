@@ -112,12 +112,8 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
 
     try {
       let item: InboundItemInput;
-      if (itemId.length === 6) {
-        const r = await getItemInfo(itemId);
-        item = r.data || {};
-      } else {
-        return;
-      }
+      const r = await getItemInfo(itemId);
+      item = r.data || {};
 
       setSupplyItems(prev => prev.map((it, idx) => {
         if (idx !== rowIndex) return it;
