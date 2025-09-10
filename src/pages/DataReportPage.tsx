@@ -141,7 +141,6 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
     <div className="p-4">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold">船舶日志</h1>
-        {shipId && <span className="text-sm text-gray-500">Ship ID: {shipId}</span>}
       </div>
 
       {/* 筛选栏 */}
