@@ -15,9 +15,6 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   const [batchNumber, setBatchNumber] = useState('');
   const [supplyItems, setSupplyItems] = useState<InboundItemInput[]>([{ itemId: '', itemName: '', categoryId: '', quantity: 0, unit: '' }]);
   const [categories, setCategories] = useState<Category[]>([]);
-  // 缓存 & 竞态版本号
-  const itemCacheRef = useRef<Map<string, any>>(new Map());
-  const rowVersionRef = useRef<number[]>([]);
 
   // 弹窗状态
   const [showModal, setShowModal] = useState(false);
@@ -113,31 +110,23 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
     const itemId = String(rawItemId ?? '').trim();
     if (!itemId) return;
 
-    // 为该行递增一次版本号，用于竞态保护
-    rowVersionRef.current[rowIndex] = (rowVersionRef.current[rowIndex] || 0) + 1;
-    const ver = rowVersionRef.current[rowIndex];
-
     try {
-      let item = itemCacheRef.current.get(itemId);
-      if (!item) {
+      let item: InboundItemInput;
+      if (itemId.length === 6) {
         const r = await getItemInfo(itemId);
-        if (!r.success || !r.data) return;
-        item = r.data;
-        itemCacheRef.current.set(itemId, item);
+        item = r.data || {};
+      } else {
+        return;
       }
-
-      // 如果期间用户又改了 itemId，这里旧请求就忽略
-      if (rowVersionRef.current[rowIndex] !== ver) return;
 
       setSupplyItems(prev => prev.map((it, idx) => {
         if (idx !== rowIndex) return it;
         const next = { ...it };
 
-        // 只在这些字段为空时回填，避免覆盖用户手动输入
-        if (!next.itemName) next.itemName = item.itemName ?? next.itemName;
-        if (!next.itemNameEn) next.itemNameEn = item.itemNameEn ?? next.itemNameEn;
-        if (!next.unit) next.unit = item.unit ?? next.unit;
-        if (!next.specification) next.specification = item.specification ?? next.specification;
+        next.itemName = item?.itemName ?? '';
+        next.itemNameEn = item?.itemNameEn ?? '';
+        next.unit = item?.unit ?? '';
+        next.specification = item?.specification ?? '';
 
         // categoryId 优先用表中值，否则用前两位派生
         const derivedCat = deriveCategoryIdFromItemId(itemId);
