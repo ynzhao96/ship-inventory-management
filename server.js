@@ -11,6 +11,7 @@ const allowlist = [
   'https://www.yzkerun.cn',
   'https://admin.yzkerun.cn',
   'https://ship.yzkerun.cn',
+  'http://localhost:5173'
 ];
 
 app.use(cors({
