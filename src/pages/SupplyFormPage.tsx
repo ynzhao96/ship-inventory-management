@@ -6,6 +6,7 @@ import { updateItems } from '../services/updateItems.ts';
 import { getItemInfo } from '../services/getItemInfo.ts';
 import ConfirmModal from '../components/ConfirmModal.tsx';
 import Toast from '../components/Toast.tsx';
+import { debounce } from '../utils.ts';
 
 interface Props {
   shipId?: string;
@@ -95,15 +96,6 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
     const m = String(v ?? '').trim().match(/^\d{2}/); // 只取前两位数字
     return m ? m[0] : '';
   };
-
-  // 简易防抖
-  function debounce<F extends (...args: any[]) => void>(fn: F, wait = 300) {
-    let t: any;
-    return (...args: Parameters<F>) => {
-      clearTimeout(t);
-      t = setTimeout(() => fn(...args), wait);
-    };
-  }
 
   // 自动回填：仅把空字段补上；categoryId 优先用表里返回的，其次用前两位派生
   const autoFillFromItemsTable = async (rowIndex: number, rawItemId: string | number) => {
