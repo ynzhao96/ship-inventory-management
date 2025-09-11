@@ -20,18 +20,16 @@ router.post('/getItemList', asyncHandler(async (req, res) => {
     `;
   const [{ total }] = await q(countSql);
 
-  specification
-  category_id
   const listSql = `
       SELECT
         it.item_id                           AS itemId,
         it.item_name                         AS itemName,
-        it.item_name_en                        AS itemNameEn,
+        it.item_name_en                      AS itemNameEn,
         it.unit                              AS unit,
         it.specification                     AS specification,
         cat.name                             AS categoryName
       FROM items AS it
-      JOIN categories AS cat
+      LEFT JOIN categories AS cat
         ON it.category_id = cat.id
       LIMIT ? OFFSET ?
     `;
