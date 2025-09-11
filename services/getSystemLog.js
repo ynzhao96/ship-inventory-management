@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ok, fail, asyncHandler, requireFields, q, addLog } from '../utils.js';
+import { ok, fail, asyncHandler, requireFields, q, addLog, toDayBoundary } from '../utils.js';
 import { authRequired } from '../auth.js';
 
 const router = Router();
@@ -30,7 +30,7 @@ router.post('/getSystemLog', asyncHandler(async (req, res) => {
       return fail(res, 400, { code: 'BAD_REQUEST', message: '时间格式无效' });
     }
     where.push(`time BETWEEN ? AND ?`);
-    params.push([startStr, endStr]);
+    params.push(startStr, endStr);
   }
 
   const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
