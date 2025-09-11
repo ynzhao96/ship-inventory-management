@@ -17,6 +17,9 @@ router.post('/getSystemLog', asyncHandler(async (req, res) => {
   pageSize = Math.min(100, Math.max(1, parseInt(pageSize, 10) || 10));
   const offset = (page - 1) * pageSize;
 
+  const where = [];
+  const params = [];
+
   // 预处理时间
   let startStr;
   let endStr;
@@ -26,14 +29,10 @@ router.post('/getSystemLog', asyncHandler(async (req, res) => {
     if (!startStr || !endStr) {
       return fail(res, 400, { code: 'BAD_REQUEST', message: '时间格式无效' });
     }
-  }
-
-  const where = [];
-  const params = [];
-  if (startStr) {
     where.push(`time BETWEEN ? AND ?`);
     params.push([startStr, endStr]);
   }
+
   const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
   // 统计总数
