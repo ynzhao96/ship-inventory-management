@@ -87,6 +87,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
     setLoading(true);
     setErrorMsg('');
     try {
+      if ((!startDate && endDate) || (startDate && !endDate)) return;
       const resp: ApiResp = await getShipLogs(
         shipId,
         page,
