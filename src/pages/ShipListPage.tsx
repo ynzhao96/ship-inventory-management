@@ -24,13 +24,11 @@ const ShipListPage = () => {
         setError('');
 
         const result = await getShipList();
-        // 如果你没改 api.ts，这里用 result.user；改了就用 result.data
+
         if (!result.success) {
           throw new Error(result.error || '获取船舶失败');
         }
 
-        // 假设后端返回的每条数据字段与你的 Ship 类型一致；
-        // 如果不一致，在这里做一次映射转换为 Ship 类型。
         setShips(result.data as Ship[]);
       } catch (e: any) {
         if (e?.name !== 'AbortError') {
@@ -111,21 +109,11 @@ const ShipListPage = () => {
                 <div className="flex justify-between mb-2">
                   <div>
                     <p className="text-sm text-gray-500">总库存</p>
-                    <p className="text-lg font-bold">{(ship as any).currentLoad ?? '--'}</p>
+                    <p className="text-lg font-bold">{(ship as any).inventoryQuantity ?? '--'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">待入库</p>
-                    <p className="text-lg font-bold">
-                      {
-                        (() => {
-                          const capacity = (ship as any).capacity ?? 0;
-                          const current = (ship as any).currentLoad ?? 0;
-                          if (!capacity) return '--';
-                          const diff = capacity - current;
-                          return diff > 100 ? 100 : diff;
-                        })()
-                      }
-                    </p>
+                    <p className="text-lg font-bold">{(ship as any).pendingInbounds ?? '--'}</p>
                   </div>
                 </div>
               </div>

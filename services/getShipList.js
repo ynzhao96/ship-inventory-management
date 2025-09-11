@@ -7,7 +7,32 @@ router.use(authRequired);
 
 // 获取船舶列表
 router.get('/getShipList', asyncHandler(async (_req, res) => {
-  const rows = await q('SELECT * FROM ships');
+  const sql = `
+  SELECT 
+    s.*,
+    COALESCE(inv.totalQuantity, 0)   AS inventoryQuantity,
+    COALESCE(ibd.pendingCount, 0)    AS pendingInbounds
+  FROM ships AS s
+  LEFT JOIN (
+    SELECT 
+        ship_id,
+        COUNT(*) AS totalQuantity
+    FROM inventory
+    GROUP BY ship_id
+  ) AS inv
+    ON s.id = inv.ship_id
+  LEFT JOIN (
+    SELECT 
+        ship_id,
+        COUNT(*) AS pendingCount
+    FROM inbounds
+    WHERE status = 'PENDING'
+    GROUP BY ship_id
+  ) AS ibd
+    ON s.id = ibd.ship_id
+  ORDER BY s.id;
+`
+  const rows = await q(sql);
   return ok(res, {
     totalShips: rows.length,
     data: rows,
