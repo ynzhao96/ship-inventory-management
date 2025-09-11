@@ -28,6 +28,8 @@ const SystemLogPage = () => {
     setLoading(true);
     setErrorMsg('');
     try {
+      // 仅选一个时间时不调用接口
+      if ((!startDate && endDate) || (startDate && !endDate)) return;
       const resp = await getSystemLog(
         page,
         pageSize,
@@ -61,6 +63,11 @@ const SystemLogPage = () => {
     fetchLogs();
   }, [page, pageSize, startDate, endDate]);
 
+  const resetFilters = () => {
+    setStartDate('');
+    setEndDate('');
+  }
+
   return (
     <div className="p-4">
       {/* 时间筛选 */}
@@ -85,6 +92,16 @@ const SystemLogPage = () => {
             onChange={(e) => setEndDate(e.target.value)}
             disabled={loading}
           />
+        </div>
+
+        <div className="flex items-end gap-2">
+          <button
+            className="px-4 py-2 rounded-md border disabled:opacity-50"
+            onClick={resetFilters}
+            disabled={loading}
+          >
+            重置
+          </button>
         </div>
       </div>
 
