@@ -44,7 +44,21 @@ const AccountManagementPage: React.FC<Props> = ({ shipId }) => {
     setAccountInfo({ ...accountInfo, [field]: value });
   };
 
+  // 校验
+  const validateRow = (accountInfo: UserInfo): string | null => {
+    if (!accountInfo.username?.trim()) return "账号不能为空";
+    if (!accountInfo.password?.trim()) return "密码不能为空";
+    return null;
+  };
+
   const handleSaveAccountInfo = async () => {
+    const err = validateRow(accountInfo);
+    if (err) {
+      setText(err);
+      setOpen(true);
+      return;
+    }
+
     if (!shipId) return;
     const r = await updateUserInfo(shipId, accountInfo?.username, accountInfo?.password);
     if (!r.success) { setError(r.message || '保存失败'); return; }
