@@ -6,6 +6,7 @@ import { getCategories } from "../services/getCategories";
 import { debounce, deriveCategoryIdFromItemId } from "../utils";
 import { updateItem } from "../services/updateItem";
 import ConfirmModal from "../components/ConfirmModal";
+import Toast from "../components/Toast";
 
 const ItemListPage = () => {
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -23,6 +24,8 @@ const ItemListPage = () => {
 
   // 弹窗/Toast
   const [showModal, setShowModal] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastText, setToastText] = useState('');
 
   useEffect(() => {
     setPage(1);
@@ -70,8 +73,8 @@ const ItemListPage = () => {
     );
   };
 
-  const handleSubmit = (item: InventoryItem) => {
-    updateItem({
+  const handleSubmit = async (item: InventoryItem) => {
+    const res = await updateItem({
       itemId: String(item.itemId),
       itemName: item.itemName,
       itemNameEn: item.itemNameEn,
@@ -79,6 +82,8 @@ const ItemListPage = () => {
       unit: item.unit,
       specification: item.specification,
     }, 'UPDATE');
+    setToastText(res.message || '');
+    requestAnimationFrame(() => setShowToast(true));
   }
 
   return (
@@ -189,6 +194,12 @@ const ItemListPage = () => {
         confirmText="提交"
         onConfirm={() => { handleSubmit(item); setShowModal(false); }}
         onCancel={() => setShowModal(false)}
+      />
+
+      <Toast
+        open={showToast}
+        message={toastText}
+        onClose={() => setShowToast(false)}
       />
 
       <div className="flex justify-end mt-6">
