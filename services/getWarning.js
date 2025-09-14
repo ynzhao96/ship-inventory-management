@@ -5,7 +5,7 @@ import { authRequired } from '../auth.js';
 const router = Router();
 router.use(authRequired);
 
-// 获取待入库信息
+// 获取低库存预警信息
 router.get('/getWarning', asyncHandler(async (req, res) => {
   const rawShipId = req.query?.shipId;
   const shipId = String(rawShipId ?? '').trim();
