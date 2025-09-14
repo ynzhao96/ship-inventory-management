@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { ok, fail, asyncHandler, requireFields, q, addLog, normalizeCategoryIds } from '../utils.js';
+import { ok, fail, asyncHandler, requireFields, q, addLog } from '../utils.js';
 import { authRequired } from '../auth.js';
 
 const router = Router();
@@ -10,7 +10,7 @@ router.post('/getItemList', asyncHandler(async (req, res) => {
   let page = req.body?.page ?? 1;
   let pageSize = req.body?.pageSize ?? 10;
   const searchMatch = req.body?.searchMatch;
-  const categoryIdInput = req.body?.categoryId;
+  const categoryId = req.body?.categoryId;
 
   page = Math.max(1, parseInt(page, 10) || 1);
   pageSize = Math.min(100, Math.max(1, parseInt(pageSize, 10) || 10));
@@ -28,7 +28,6 @@ router.post('/getItemList', asyncHandler(async (req, res) => {
   }
 
   // 类别过滤（仅当有效时才追加）
-  const categoryId = normalizeCategoryIds?.(categoryIdInput);
   if (categoryId !== undefined && categoryId !== null && categoryId !== '' && categoryId !== 'ALL') {
     where.push('it.category_id = ?');
     params.push(categoryId);
