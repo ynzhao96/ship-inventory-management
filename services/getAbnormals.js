@@ -8,7 +8,8 @@ router.use(authRequired);
 // 获取异常信息
 router.get('/getAbnormals', asyncHandler(async (req, res) => {
   try {
-    const rows = await q(`SELECT 
+    const rows = await q(`SELECT
+      inv.ship_id     AS shipId, 
       inv.item_id     AS itemId,
       it.item_name    AS itemName,
       it.item_name_en AS itemNameEn,
