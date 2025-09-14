@@ -52,7 +52,23 @@ const CrewManagementPage: React.FC<Props> = ({ shipId }) => {
     setCrewMembers(crewMembers.filter((_, i) => i !== index));
   };
 
+  // 校验
+  const validateRow = (crewMembers: { position: string; name: string }[]): string | null => {
+    for (const crewMember of crewMembers) {
+      if (!crewMember.position) return '职位不能为空';
+      if (!crewMember.name) return '姓名不能为空';
+    }
+    return null;
+  };
+
   const handleSubmitCrewMembers = async () => {
+    const err = validateRow(crewMembers);
+    if (err) {
+      setText(err);
+      setOpen(true);
+      return;
+    }
+
     if (!shipId) return;
     const r = await updateCrews(shipId, crewMembers);
     if (!r.success) { setError(r.message || '保存失败'); return; }
@@ -75,8 +91,10 @@ const CrewManagementPage: React.FC<Props> = ({ shipId }) => {
 
       {!loading && !error && (
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-xl font-bold mb-6">船员管理</h2>
-          <button onClick={handleAddCrewMember} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">添加船员</button>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold mb-6">船员管理</h2>
+            <button onClick={handleAddCrewMember} className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">添加船员</button>
+          </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
