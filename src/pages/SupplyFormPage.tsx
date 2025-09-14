@@ -2,7 +2,6 @@ import { useEffect, useState, useMemo } from 'react';
 import { Category, InboundItemInput } from '../types';
 import { createInboundBatch } from '../services/createInboundBatch.ts';
 import { getCategories } from '../services/getCategories.ts';
-import { updateItems } from '../services/updateItems.ts';
 import { getItemInfo } from '../services/getItemInfo.ts';
 import ConfirmModal from '../components/ConfirmModal.tsx';
 import Toast from '../components/Toast.tsx';
@@ -12,13 +11,17 @@ interface Props {
   shipId?: string;
 }
 
-const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
+// 在本组件中扩展一位标记：existsInItems
+type SupplyRow = InboundItemInput & { existsInItems?: boolean };
 
+const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   const [batchNumber, setBatchNumber] = useState('');
-  const [supplyItems, setSupplyItems] = useState<InboundItemInput[]>([{ itemId: '', itemName: '', categoryId: '', quantity: 0, unit: '' }]);
+  const [supplyItems, setSupplyItems] = useState<SupplyRow[]>([
+    { itemId: '', itemName: '', categoryId: '', quantity: 0, unit: '' }
+  ]);
   const [categories, setCategories] = useState<Category[]>([]);
 
-  // 弹窗状态
+  // 弹窗/Toast
   const [showModal, setShowModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastText, setToastText] = useState('');
@@ -32,10 +35,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   useEffect(() => {
     (async () => {
       const result = await getCategories();
-      if (!result.success) {
-        throw new Error(result.error || '获取物资种类失败');
-      }
-
+      if (!result.success) throw new Error(result.error || '获取物资种类失败');
       setCategories(result.data as Category[]);
     })();
   }, []);
@@ -54,101 +54,126 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
     return null;
   };
 
-  // 增加
-  const handleAddSupplyItem = () => {
-    const newItem = { id: (supplyItems.length + 1).toString(), itemId: '', itemName: '', categoryId: '', quantity: 0, unit: '' };
-    setSupplyItems([...supplyItems, newItem]);
+  const deriveCategoryIdFromItemId = (v: string | number): string => {
+    const m = String(v ?? '').trim().match(/^\d{2}/); // 前两位数字
+    return m ? m[0] : '';
   };
 
-  // 编辑
-  const handleUpdateSupplyItem = (id: string | number, field: string, value: string | number) => {
-    setSupplyItems(prev =>
-      prev.map((item, idx) => {
-        const isTarget = typeof id === 'number' ? idx === id : String(idx) === String(id);
-        if (!isTarget) return item;
+  // 行新增
+  const handleAddSupplyItem = () => {
+    const newItem: SupplyRow = { itemId: '', itemName: '', categoryId: '', quantity: 0, unit: '' };
+    setSupplyItems(prev => [...prev, newItem]);
+  };
 
-        const next = { ...item, [field]: value };
+  // 行编辑
+  const handleUpdateSupplyItem = (id: string | number, field: string, value: string | number) => {
+    const idx = Number(id);
+    setSupplyItems(prev =>
+      prev.map((item, i) => {
+        if (i !== idx) return item;
+        const next: SupplyRow = { ...item, [field]: value } as SupplyRow;
 
         if (field === 'itemId') {
-          const cat = deriveCategoryIdFromItemId(value);
-          next.categoryId = cat || '';
+          const v = String(value ?? '').trim();
+          next.categoryId = deriveCategoryIdFromItemId(v) || '';
+          // 清空时去掉“未找到”标记
+          if (!v) next.existsInItems = undefined;
         }
-
         return next;
       })
     );
 
-    // 在用户编辑 itemId 时，触发去抖查询并自动回填
+    // 输入 itemId 时触发去抖查询
     if (field === 'itemId') {
-      debouncedAutoFill(typeof id === 'number' ? id : Number(id), String(value));
+      debouncedAutoFill(idx, String(value));
     }
   };
 
-  // 删除
+  // 行删除
   const handleDeleteSupplyItem = (id: string | number) => {
-    setSupplyItems(supplyItems.filter((_item, index) => index !== id));
+    const idx = Number(id);
+    setSupplyItems(prev => prev.filter((_item, i) => i !== idx));
   };
 
-  // 提交
-  const handleSubmitSupply = async () => {
-    const items = supplyItems.map((i) => ({
-      itemId: i.itemId + '',
-      itemName: i.itemName,
-      itemNameEn: i.itemNameEn,
-      categoryId: i.categoryId,
-      unit: i.unit,
-      specification: i.specification
-    }));
-    updateItems(items);
-    const res = await createInboundBatch({ batchNo: batchNumber, shipId: shipId, items: supplyItems });
-    console.log('res.message: ', res);
-
-    setToastText(res.message || '');
-    requestAnimationFrame(() => setShowToast(true));
-    clearAll();
-  };
-
-  const deriveCategoryIdFromItemId = (v: string | number): string => {
-    const m = String(v ?? '').trim().match(/^\d{2}/); // 只取前两位数字
-    return m ? m[0] : '';
-  };
-
-  // 自动回填：仅把空字段补上；categoryId 优先用表里返回的，其次用前两位派生
+  // 自动回填 + 是否存在标记
   const autoFillFromItemsTable = async (rowIndex: number, rawItemId: string | number) => {
     const itemId = String(rawItemId ?? '').trim();
     if (!itemId) return;
 
     try {
-      let item: InboundItemInput;
       const r = await getItemInfo(itemId);
-      item = r.data || {};
+      const found = !!(r && r.success && r.data && Object.keys(r.data || {}).length > 0);
+      const item = (r?.data || {}) as Partial<InboundItemInput>;
 
-      setSupplyItems(prev => prev.map((it, idx) => {
-        if (idx !== rowIndex) return it;
-        const next = { ...it };
+      setSupplyItems(prev => {
+        // 避免陈旧响应污染：只在当前值仍然是这个 itemId 时才落库
+        if (prev[rowIndex]?.itemId !== itemId) return prev;
 
-        next.itemName = item?.itemName ?? '';
-        next.itemNameEn = item?.itemNameEn ?? '';
-        next.unit = item?.unit ?? '';
-        next.specification = item?.specification ?? '';
+        return prev.map((it, idx) => {
+          if (idx !== rowIndex) return it;
+          const next: SupplyRow = { ...it, existsInItems: found };
 
-        // categoryId 优先用表中值，否则用前两位派生
-        const derivedCat = deriveCategoryIdFromItemId(itemId);
-        next.categoryId = item.categoryId ?? derivedCat ?? next.categoryId;
+          if (found) {
+            // 只补“空字段”，不覆盖用户已经输入的
+            next.itemName = next.itemName || (item.itemName ?? '');
+            next.itemNameEn = next.itemNameEn || (item.itemNameEn ?? '');
+            next.unit = next.unit || (item.unit ?? '');
+            next.specification = next.specification || (item.specification ?? '');
 
-        return next;
-      }));
-    } catch (e) {
-      console.log('e: ', e);
-      // 静默失败即可；可按需 toast
+            const derivedCat = deriveCategoryIdFromItemId(itemId);
+            next.categoryId = next.categoryId || (item.categoryId ?? derivedCat ?? '');
+          }
+          return next;
+        });
+      });
+    } catch (_e) {
+      // 查询失败时也标记为未找到
+      setSupplyItems(prev =>
+        prev.map((it, idx) =>
+          idx === rowIndex && String(it.itemId).trim() === itemId
+            ? { ...it, existsInItems: false }
+            : it
+        )
+      );
     }
   };
 
-  // 去抖包装，避免高频请求
+  // 去抖
   const debouncedAutoFill = useMemo(
     () => debounce(autoFillFromItemsTable, 300),
     []
   );
+
+  const cn = (...c: Array<string | false | undefined>) => c.filter(Boolean).join(' ');
+
+  // 是否存在“未在物料指南中找到”的行
+  const hasMissing = useMemo(
+    () => supplyItems.some(it => it.existsInItems === false),
+    [supplyItems]
+  );
+
+  const formError = useMemo(() => validateSupplyForm(), [batchNumber, supplyItems]);
+  const disableSubmit = !!formError || hasMissing;
+
+  // 提交
+  const handleSubmitSupply = async () => {
+    // 双保险：若按钮被意外点击，仍阻止
+    if (disableSubmit) {
+      setToastText(formError || '存在未在物料指南中的记录，请先添加后再提交');
+      setShowToast(true);
+      return;
+    }
+
+    const res = await createInboundBatch({
+      batchNo: batchNumber,
+      shipId: shipId,
+      items: supplyItems
+    });
+
+    setToastText(res.message || '');
+    requestAnimationFrame(() => setShowToast(true));
+    clearAll();
+  };
 
   return (
     <div className="bg-white shadow rounded-lg p-6">
@@ -196,10 +221,16 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
                       type="text"
-                      className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={item.itemId}
                       onChange={(e) => handleUpdateSupplyItem(index, 'itemId', e.target.value)}
                       placeholder="请输入物资编号"
+                      className={cn(
+                        "w-full px-2 py-1 border rounded-md focus:outline-none focus:ring-2",
+                        // 正常态
+                        !item.existsInItems === false && "border-gray-300 focus:border-blue-500 focus:ring-blue-500",
+                        // 错误态
+                        item.existsInItems === false && "border-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50"
+                      )}
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -208,16 +239,16 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={item.itemName}
                       onChange={(e) => handleUpdateSupplyItem(index, 'itemName', e.target.value)}
-                      placeholder="请输入物资名称"
+                      placeholder="物资名称"
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
                       type="text"
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={item.itemNameEn}
+                      value={item.itemNameEn || ''}
                       onChange={(e) => handleUpdateSupplyItem(index, 'itemNameEn', e.target.value)}
-                      placeholder="请输入物资名称(英文)"
+                      placeholder="物资名称(英文)"
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -226,8 +257,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       disabled
                       value={categories.find(c => c.categoryId === item.categoryId)?.categoryName ?? ''}
-                    >
-                    </input>
+                    />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
@@ -244,16 +274,16 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={item.unit}
                       onChange={(e) => handleUpdateSupplyItem(index, 'unit', e.target.value)}
-                      placeholder="请输入单位名称"
+                      placeholder="单位名称"
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
                       type="text"
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      value={item.specification}
+                      value={item.specification || ''}
                       onChange={(e) => handleUpdateSupplyItem(index, 'specification', e.target.value)}
-                      placeholder="请输入规格"
+                      placeholder="规格"
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -269,11 +299,18 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
             </tbody>
           </table>
         </div>
+
+        {hasMissing && (
+          <div className="mt-3 text-sm text-red-600">
+            存在未在物料指南中的记录，请先在“物料指南”添加后再提交。
+          </div>
+        )}
       </div>
 
       <div className="flex justify-end">
         <button
-          className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          className={`px-6 py-2 rounded-md text-white ${disableSubmit ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'}`}
+          disabled={disableSubmit}
           onClick={() => {
             const err = validateSupplyForm();
             if (err) {
@@ -281,7 +318,12 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
               setShowToast(true);
               return;
             }
-            setShowModal(true)
+            if (hasMissing) {
+              setToastText('存在未在物料指南中的记录，请先添加后再提交');
+              setShowToast(true);
+              return;
+            }
+            setShowModal(true);
           }}
         >
           提交
@@ -306,4 +348,4 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   );
 };
 
-export default SupplyFormPage; 
+export default SupplyFormPage;
