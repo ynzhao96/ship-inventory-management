@@ -220,8 +220,7 @@ const ItemListPage = () => {
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="text"
+                  <textarea
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={row.itemName}
                     onChange={(e) => handleEdit(index, "itemName", e.target.value)}
@@ -234,7 +233,7 @@ const ItemListPage = () => {
                     onChange={(e) => handleEdit(index, "itemNameEn", e.target.value)}
                   />
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-2 py-4 whitespace-nowrap">
                   <input
                     type="text"
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

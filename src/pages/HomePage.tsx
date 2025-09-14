@@ -1,15 +1,12 @@
 import { useEffect, useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
-import InventoryOverviewPage from './InventoryOverviewPage';
-import { useParams } from 'react-router-dom';
 import ShipListPage from './ShipListPage.tsx';
 import SystemLogPage from './SystemLogPage.tsx';
 import ItemListPage from './ItemListPage.tsx';
 import AbnormalInformationPage from './AbnormalInformationPage.tsx';
 
 const HomePage = ({ }: { onBack: () => void }) => {
-  const { shipId } = useParams();
   const [activePage, setActivePage] = useState('ship-list');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
