@@ -18,10 +18,12 @@ const ItemListPage = () => {
   // 弹窗/Toast
   const [showModal, setShowModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [modalText, setModalText] = useState("");
   const [toastText, setToastText] = useState("");
 
   // 选中行（用于确认弹窗）
   const [selectedItem, setSelectedItem] = useState<ItemRow | null>(null);
+  const [operation, setOperation] = useState("");
 
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(25);
@@ -108,7 +110,7 @@ const ItemListPage = () => {
       return;
     }
 
-    const op = row._isNew ? "INSERT" : "UPDATE";
+    const op = operation === 'SUBMIT' ? (row._isNew ? "INSERT" : "UPDATE") : 'DELETE';
     const payload = {
       itemId: String(row.itemId),
       itemName: row.itemName,
@@ -252,12 +254,22 @@ const ItemListPage = () => {
                     className="px-3 py-1 rounded-md text-white bg-blue-500 hover:bg-blue-600"
                     onClick={() => {
                       setSelectedItem(row);
+                      setModalText("确定提交这次修改吗？此操作不可恢复。");
+                      setOperation("SUBMIT");
                       setShowModal(true);
                     }}
                   >
                     {row._isNew ? "创建" : "提交"}
                   </button>
-                  <button className="px-3 py-1 rounded-md text-white bg-red-500/80 hover:bg-red-600">
+                  <button
+                    className="px-3 py-1 rounded-md text-white bg-red-500/80 hover:bg-red-600"
+                    onClick={() => {
+                      setSelectedItem(row);
+                      setModalText("确定删除这条记录吗？此操作不可恢复。");
+                      setOperation("DELETE");
+                      setShowModal(true);
+                    }}
+                  >
                     删除
                   </button>
                 </td>
@@ -270,7 +282,7 @@ const ItemListPage = () => {
       <ConfirmModal
         open={showModal}
         title="确认提交"
-        message="确定提交这次修改吗？此操作不可恢复。"
+        message={modalText}
         confirmText="提交"
         onConfirm={() => {
           if (selectedItem) handleSubmit(selectedItem);
