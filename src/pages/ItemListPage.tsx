@@ -92,6 +92,7 @@ const ItemListPage = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资英文名称</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">单位</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">规格</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -129,6 +130,10 @@ const ItemListPage = () => {
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={item.specification}
                   />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <button>提交</button>
+                  <button>删除</button>
                 </td>
               </tr>
             ))}
