@@ -21,42 +21,46 @@ router.post('/getItemList', asyncHandler(async (req, res) => {
 
   // 关键词模糊匹配
   const keyword = typeof searchMatch === 'string' ? searchMatch.trim() : '';
-  if (keyword && String(keyword).trim() !== '') {
-    const kw = `%${String(keyword).trim()}%`;
+  if (keyword) {
+    const kw = `%${keyword}%`;
     where.push('(it.item_id LIKE ? OR it.item_name LIKE ? OR it.item_name_en LIKE ?)');
     params.push(kw, kw, kw);
   }
 
-  // 类别过滤
-  const categoryId = normalizeCategoryIds(categoryIdInput);
-  where.push('it.category_id = ?');
-  params.push(categoryId);
+  // 类别过滤（仅当有效时才追加）
+  const categoryId = normalizeCategoryIds?.(categoryIdInput);
+  if (categoryId !== undefined && categoryId !== null && categoryId !== '' && categoryId !== 'ALL') {
+    where.push('it.category_id = ?');
+    params.push(categoryId);
+  }
 
   const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
 
-  // 统计总数
+  // 统计总数 
   const countSql = `
-      SELECT COUNT(1) AS total
-        FROM items
-      ${whereSql}
-    `;
-  const [{ total }] = await q(countSql);
+    SELECT COUNT(1) AS total
+    FROM items AS it
+    ${whereSql}
+  `;
+  const [{ total }] = await q(countSql, params);
 
+  // 列表查询 —— 先放 params，再放分页参数
   const listSql = `
-      SELECT
-        it.item_id                           AS itemId,
-        it.item_name                         AS itemName,
-        it.item_name_en                      AS itemNameEn,
-        it.unit                              AS unit,
-        it.specification                     AS specification,
-        cat.name                             AS categoryName
-      FROM items AS it
-      LEFT JOIN categories AS cat
-        ON it.category_id = cat.id
-      ${whereSql}
-      LIMIT ? OFFSET ?
-    `;
-  const rows = await q(listSql, [pageSize, offset]);
+    SELECT
+      it.item_id       AS itemId,
+      it.item_name     AS itemName,
+      it.item_name_en  AS itemNameEn,
+      it.unit          AS unit,
+      it.specification AS specification,
+      cat.name         AS categoryName
+    FROM items AS it
+    LEFT JOIN categories AS cat
+      ON it.category_id = cat.id
+    ${whereSql}
+    ORDER BY it.item_id ASC
+    LIMIT ? OFFSET ?
+  `;
+  const rows = await q(listSql, [...params, pageSize, offset]);
 
   return ok(
     res,
