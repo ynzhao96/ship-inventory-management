@@ -46,8 +46,8 @@ router.post('/updateItem', asyncHandler(async (req, res) => {
 
   if (op === 'INSERT') {
     // 必填校验
-    if (!itemId || !itemName || !unit || categoryId === undefined || categoryId === null || categoryId === '') {
-      return fail(res, 400, { code: 'BAD_REQUEST', message: 'INSERT 需要提供 itemId、itemName、unit、categoryId' });
+    if (!itemId || !itemName || categoryId === undefined || categoryId === null || categoryId === '') {
+      return fail(res, 400, { code: 'BAD_REQUEST', message: 'INSERT 需要提供 itemId、itemName、categoryId' });
     }
 
     // 事务：避免并发插入问题
