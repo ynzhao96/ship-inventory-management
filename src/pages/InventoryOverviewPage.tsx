@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Category, InventoryItem, ItemLog } from '../types';
 import { getInventoryList } from '../services/getInventoryList.ts';
 import { getCategories } from '../services/getCategories.ts';
 import { getItemLogs } from '../services/getItemLogs.ts';
 import Pagination from '../components/Pagination.tsx';
+import { debounce } from '../utils.ts';
 
 interface InventoryOverviewPageProps {
   shipId?: string;
@@ -26,16 +27,18 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
   const [category, setCategory] = useState('');
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  useEffect(() => {
-    (async () => {
-      const res = await getInventoryList(shipId, category, page, pageSize, searchMatch);
-      if (!res.success) {
-        throw new Error(res.error || '获取物资库存失败');
-      }
+  const fetchList = useMemo(() =>
+    debounce(async (shipId: string | undefined, category: string, page: number, pageSize: number, kw: string) => {
+      const res = await getInventoryList(shipId, category, page, pageSize, kw);
+      if (!res.success) throw new Error(res.error || '获取物资库存失败');
       setItems(res.data.list);
       setTotal(res.data.total);
-    })();
-  }, [page, pageSize, category, searchMatch]);
+    }, 300)
+    , []); // 仅创建一次
+
+  useEffect(() => {
+    fetchList(shipId, category, page, pageSize, searchMatch);
+  }, [shipId, category, page, pageSize, searchMatch, fetchList]);
 
   useEffect(() => {
     setPage(1);
