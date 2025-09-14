@@ -10,6 +10,7 @@ router.get('/getAbnormals', asyncHandler(async (req, res) => {
   try {
     const rows = await q(`SELECT
       inv.ship_id     AS shipId, 
+      shp.name        AS shipName,
       inv.item_id     AS itemId,
       it.item_name    AS itemName,
       it.item_name_en AS itemNameEn,
@@ -20,6 +21,8 @@ router.get('/getAbnormals', asyncHandler(async (req, res) => {
       FROM inventory  AS inv
       JOIN items AS it
       ON it.item_id = inv.item_id
+      JOIN ships AS shp
+      ON inv.ship_id = shp.id
       WHERE inv.threshold IS NOT NULL AND inv.quantity < inv.threshold
     `);
     return ok(res, { data: rows }, { message: '获取异常信息成功' });

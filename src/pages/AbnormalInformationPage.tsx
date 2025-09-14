@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { getAbnormals } from "../services/getAbnormals";
-import Pagination from "../components/Pagination";
+// import Pagination from "../components/Pagination";
 
 interface Abnormal {
   shipId?: string,
+  shipName?: string,
   categoryId?: string,
   itemId?: string,
   itemName?: string,
@@ -23,10 +24,10 @@ const AbnormalInformationPage = () => {
 
   const [abnormals, setAbnormals] = useState<Abnormal[]>([]);
 
-  const [page, setPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(25);
-  const [total, setTotal] = useState<number>(0);
-  const [totalPages, setTotalPages] = useState<number>(1);
+  // const [page, setPage] = useState<number>(1);
+  // const [pageSize, setPageSize] = useState<number>(25);
+  // const [total, setTotal] = useState<number>(0);
+  // const [totalPages, setTotalPages] = useState<number>(1);
 
   // useEffect(() => {
   //   (async () => {
@@ -46,7 +47,8 @@ const AbnormalInformationPage = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">船舶</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">船舶名称</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">船舶编号</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资编号</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资名称</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资英文名称</th>
@@ -57,6 +59,9 @@ const AbnormalInformationPage = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {abnormals.map((item, index) => (
               <tr key={index}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {item.shipName}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {item.shipId}
                 </td>
@@ -83,7 +88,7 @@ const AbnormalInformationPage = () => {
 
       <div className="flex justify-end mt-6">
         {/* 分页 */}
-        <div className="border-t">
+        {/* <div className="border-t">
           <Pagination
             page={page}
             pageSize={pageSize}
@@ -94,7 +99,7 @@ const AbnormalInformationPage = () => {
             onChangePage={(p) => setPage(p)}
             onChangePageSize={(size) => { setPage(1); setPageSize(size); }}
           />
-        </div>
+        </div> */}
       </div>
     </div>
   )
