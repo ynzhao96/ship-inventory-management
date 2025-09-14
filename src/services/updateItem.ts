@@ -14,7 +14,7 @@ export const updateItem = async (
     item: item,
     operation: operation
   };
-  return await http('/api/updateItems', {
+  return await http('/api/updateItem', {
     method: 'POST',
     body: JSON.stringify(body),
   });

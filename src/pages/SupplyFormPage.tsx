@@ -5,7 +5,7 @@ import { getCategories } from '../services/getCategories.ts';
 import { getItemInfo } from '../services/getItemInfo.ts';
 import ConfirmModal from '../components/ConfirmModal.tsx';
 import Toast from '../components/Toast.tsx';
-import { debounce } from '../utils.ts';
+import { debounce, deriveCategoryIdFromItemId } from '../utils.ts';
 
 interface Props {
   shipId?: string;
@@ -52,11 +52,6 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
       if (!qty || qty <= 0) return '数量必须大于0';
     }
     return null;
-  };
-
-  const deriveCategoryIdFromItemId = (v: string | number): string => {
-    const m = String(v ?? '').trim().match(/^\d{2}/); // 前两位数字
-    return m ? m[0] : '';
   };
 
   // 行新增

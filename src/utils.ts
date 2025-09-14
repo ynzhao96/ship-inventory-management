@@ -9,3 +9,8 @@ export function debounce<F extends (...args: any[]) => void>(fn: F, wait = 300) 
     t = setTimeout(() => fn(...args), wait);
   };
 }
+
+export const deriveCategoryIdFromItemId = (v: string | number): string => {
+  const m = String(v ?? '').trim().match(/^\d{2}/); // 前两位数字
+  return m ? m[0] : '';
+};

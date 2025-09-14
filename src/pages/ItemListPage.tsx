@@ -3,18 +3,26 @@ import { getItemList } from "../services/getItemList";
 import { Category, InventoryItem } from "../types";
 import Pagination from "../components/Pagination";
 import { getCategories } from "../services/getCategories";
-import { debounce } from "../utils";
+import { debounce, deriveCategoryIdFromItemId } from "../utils";
+import { updateItem } from "../services/updateItem";
+import ConfirmModal from "../components/ConfirmModal";
 
 const ItemListPage = () => {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchMatch, setSearchTerm] = useState('');
 
+  // 提交的item
+  const [item, setItem] = useState<InventoryItem>({} as InventoryItem);
+
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(25);
   const [category, setCategory] = useState('');
   const [total, setTotal] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(1);
+
+  // 弹窗/Toast
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     setPage(1);
@@ -44,6 +52,34 @@ const ItemListPage = () => {
   useEffect(() => {
     fetchList(category, page, pageSize, searchMatch);
   }, [category, page, pageSize, searchMatch, fetchList]);
+
+  // 行编辑
+  const handleEdit = (id: string | number, field: string, value: string | number) => {
+    const idx = Number(id);
+    setItems(prev =>
+      prev.map((item, i) => {
+        if (i !== idx) return item;
+        const next = { ...item, [field]: value };
+
+        if (field === 'itemId') {
+          const v = String(value ?? '').trim();
+          next.categoryId = deriveCategoryIdFromItemId(v) || '';
+        }
+        return next;
+      })
+    );
+  };
+
+  const handleSubmit = (item: InventoryItem) => {
+    updateItem({
+      itemId: String(item.itemId),
+      itemName: item.itemName,
+      itemNameEn: item.itemNameEn,
+      categoryId: item.categoryId,
+      unit: item.unit,
+      specification: item.specification,
+    }, 'UPDATE');
+  }
 
   return (
     <div className="bg-white shadow rounded-lg p-6">
@@ -103,6 +139,7 @@ const ItemListPage = () => {
                     type="text"
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={item.itemId}
+                    onChange={(e) => handleEdit(index, 'itemId', e.target.value)}
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -110,12 +147,14 @@ const ItemListPage = () => {
                     type="text"
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={item.itemName}
+                    onChange={(e) => handleEdit(index, 'itemName', e.target.value)}
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <textarea
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={item.itemNameEn}
+                    value={item.itemNameEn || ''}
+                    onChange={(e) => handleEdit(index, 'itemNameEn', e.target.value)}
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -123,16 +162,18 @@ const ItemListPage = () => {
                     type="text"
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={item.unit}
+                    onChange={(e) => handleEdit(index, 'unit', e.target.value)}
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <textarea
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={item.specification}
+                    value={item.specification || ''}
+                    onChange={(e) => handleEdit(index, 'specification', e.target.value)}
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <button>提交</button>
+                  <button onClick={() => { setItem(item); setShowModal(true); }}>提交</button>
                   <button>删除</button>
                 </td>
               </tr>
@@ -140,6 +181,15 @@ const ItemListPage = () => {
           </tbody>
         </table>
       </div>
+
+      <ConfirmModal
+        open={showModal}
+        title="确认提交"
+        message="确定提交这次修改吗？此操作不可恢复。"
+        confirmText="提交"
+        onConfirm={() => { handleSubmit(item); setShowModal(false); }}
+        onCancel={() => setShowModal(false)}
+      />
 
       <div className="flex justify-end mt-6">
         {/* 分页 */}
