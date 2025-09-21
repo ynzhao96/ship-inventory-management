@@ -109,11 +109,10 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
           const next: SupplyRow = { ...it, existsInItems: found };
 
           if (found) {
-            // 只补“空字段”，不覆盖用户已经输入的
-            next.itemName = next.itemName || (item.itemName ?? '');
-            next.itemNameEn = next.itemNameEn || (item.itemNameEn ?? '');
-            next.unit = next.unit || (item.unit ?? '');
-            next.specification = next.specification || (item.specification ?? '');
+            next.itemName = item.itemName ?? '';
+            next.itemNameEn = item.itemNameEn ?? '';
+            next.unit = item.unit ?? '';
+            next.specification = item.specification ?? '';
 
             const derivedCat = deriveCategoryIdFromItemId(itemId);
             next.categoryId = next.categoryId || (item.categoryId ?? derivedCat ?? '');
@@ -229,8 +228,8 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="text"
+                    <textarea
+                      disabled
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={item.itemName}
                       onChange={(e) => handleUpdateSupplyItem(index, 'itemName', e.target.value)}
@@ -238,8 +237,8 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="text"
+                    <textarea
+                      disabled
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={item.itemNameEn || ''}
                       onChange={(e) => handleUpdateSupplyItem(index, 'itemNameEn', e.target.value)}
@@ -265,6 +264,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
+                      disabled
                       type="text"
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={item.unit}
@@ -273,8 +273,8 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
                     />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="text"
+                    <textarea
+                      disabled
                       className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={item.specification || ''}
                       onChange={(e) => handleUpdateSupplyItem(index, 'specification', e.target.value)}
