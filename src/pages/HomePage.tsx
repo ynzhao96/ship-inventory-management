@@ -6,6 +6,7 @@ import SystemLogPage from './SystemLogPage.tsx';
 import ItemListPage from './ItemListPage.tsx';
 import CategoryPage from './CategoryPage.tsx';
 import AbnormalInformationPage from './AbnormalInformationPage.tsx';
+import ShipManagementPage from './ShipManagementPage.tsx';
 
 const HomePage = ({ }: { onBack: () => void }) => {
   const [activePage, setActivePage] = useState('ship-list');
@@ -27,10 +28,11 @@ const HomePage = ({ }: { onBack: () => void }) => {
 
   // 首页的侧边栏菜单项
   const shipListMenuItems = [
-    { id: 'ship-list', label: '船舶详情', icon: /* 省略你的 SVG */ (<span className="sr-only">icon</span>) },
+    { id: 'ship-list', label: '船舶详情', icon: (<span className="sr-only">icon</span>) },
     { id: 'anomaly', label: '异常', icon: (<span className="sr-only">icon</span>) },
     { id: 'item-dictionary', label: '物料指南', icon: (<span className="sr-only">icon</span>) },
     { id: 'category-dictionary', label: '类别管理', icon: (<span className="sr-only">icon</span>) },
+    { id: 'ship-manage', label: '船舶管理', icon: (<span className="sr-only">icon</span>) },
     { id: 'data-report', label: '系统日志', icon: (<span className="sr-only">icon</span>) },
   ];
 
@@ -71,6 +73,8 @@ const HomePage = ({ }: { onBack: () => void }) => {
                   <ItemListPage />
                 ) : activePage === 'category-dictionary' ? (
                   <CategoryPage />
+                ) : activePage === 'ship-manage' ? (
+                  <ShipManagementPage />
                 ) : activePage === 'data-report' ? (
                   <SystemLogPage />
                 ) : null}
