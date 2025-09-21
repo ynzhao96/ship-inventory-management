@@ -39,7 +39,7 @@ router.post('/confirmInbound', asyncHandler(async (req, res) => {
       `UPDATE inbounds
           SET status = 'CONFIRMED',
               actual_quantity = ?,
-              confirmer,
+              confirmer = ?,
               confirm_remark = ?,
               confirmed_at = NOW()
         WHERE inbound_id = ?
