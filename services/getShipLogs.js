@@ -113,7 +113,7 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
       it.item_name                                     AS itemName,
       it.category_id                                   AS categoryId,
       ibd.actual_quantity                              AS quantity,
-      NULL                                             AS actor,
+      idb.confirmer                                    AS actor,
       ibd.confirm_remark                               AS remark
     FROM inbounds AS ibd
     LEFT JOIN items AS it ON it.item_id = ibd.item_id
