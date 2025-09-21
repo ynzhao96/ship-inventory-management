@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getCategories } from "../services/getCategories";
 import { Category } from "../types";
 import ConfirmModal from "../components/ConfirmModal";
 import Toast from "../components/Toast";
+import { updateCategory } from "../services/updateCategory";
+import { debounce } from "../utils";
 
 type CategoryRow = Category & { _isNew?: boolean };
 
@@ -19,14 +21,20 @@ const CategoryPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<CategoryRow | null>(null);
   const [operation, setOperation] = useState("");
 
+  const fetchList = useMemo(
+    () =>
+      debounce(async () => {
+        const res = await getCategories();
+        if (!res.success) {
+          throw new Error(res.error || "获取物资种类失败");
+        }
+        setCategories(res.data as CategoryRow[]);
+      }, 300),
+    []
+  );
+
   useEffect(() => {
-    (async () => {
-      const res = await getCategories();
-      if (!res.success) {
-        throw new Error(res.error || "获取物资种类失败");
-      }
-      setCategories(res.data as CategoryRow[]);
-    })();
+    fetchList();
   }, []);
 
   const handleAddCategory = () => {
@@ -44,6 +52,38 @@ const CategoryPage = () => {
         return next;
       })
     );
+  };
+
+  // 校验（INSERT/UPDATE 共用）
+  const validateRow = (row: CategoryRow): string | null => {
+    if (!String(row.categoryId)?.trim()) return "物资类别编号不能为空";
+    if (!row.categoryName?.trim()) return "物资类别名称不能为空";
+    if (!row.categoryNameEn?.trim()) return "物资类别英文名称不能为空";
+    return null;
+  };
+
+  // 提交（根据 _isNew 决定 INSERT / UPDATE）
+  const handleSubmit = async (row: CategoryRow) => {
+    const err = validateRow(row);
+    if (err) {
+      setToastText(err);
+      setShowToast(true);
+      return;
+    }
+
+    const op = operation === 'SUBMIT' ? (row._isNew ? "INSERT" : "UPDATE") : 'DELETE';
+    const payload = {
+      categoryId: String(row.categoryId),
+      categoryName: row.categoryName,
+      categoryNameEn: row.categoryNameEn,
+    };
+
+    const res = await updateCategory(payload, op as any);
+    setToastText(res.message || (row._isNew ? "创建物料成功" : "更新物料成功"));
+    requestAnimationFrame(() => setShowToast(true));
+
+    // 成功后刷新列表（也可以就地把 _isNew 去掉，但回读更稳妥）
+    fetchList();
   };
 
   return (
@@ -96,22 +136,22 @@ const CategoryPage = () => {
                 <td>
                   <button
                     className="px-3 py-1 rounded-md text-white bg-blue-500 hover:bg-blue-600"
-                  // onClick={() => {
-                  //   setSelectedItem(row);
-                  //   setModalText("确定提交这次修改吗？此操作不可恢复。");
-                  //   setOperation("SUBMIT");
-                  //   setShowModal(true);
-                  // }}
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      setModalText("确定提交这次修改吗？此操作不可恢复。");
+                      setOperation("SUBMIT");
+                      setShowModal(true);
+                    }}
                   >
                     {category._isNew ? "创建" : "提交"}
                   </button>
                   <button
                     className="px-3 py-1 rounded-md text-white bg-red-500/80 hover:bg-red-600"
                     onClick={() => {
-                      // setSelectedItem(row);
-                      // setModalText("确定删除这条记录吗？此操作不可恢复。");
-                      // setOperation("DELETE");
-                      // setShowModal(true);
+                      setSelectedCategory(category);
+                      setModalText("确定删除这条记录吗？此操作不可恢复。");
+                      setOperation("DELETE");
+                      setShowModal(true);
                     }}
                   >
                     删除
@@ -128,7 +168,7 @@ const CategoryPage = () => {
           message={modalText}
           confirmText="提交"
           onConfirm={() => {
-            // if (selectedCategory) handleSubmit(selectedCategory);
+            if (selectedCategory) handleSubmit(selectedCategory);
             setShowModal(false);
           }}
           onCancel={() => setShowModal(false)}
