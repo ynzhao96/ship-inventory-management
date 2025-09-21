@@ -7,7 +7,7 @@ router.use(authRequired);
 
 // 确认入库
 router.post('/confirmInbound', asyncHandler(async (req, res) => {
-  let { inboundId, actualQuantity, remark } = req.body || {};
+  let { inboundId, actualQuantity, confirmer, remark } = req.body || {};
   inboundId = String(inboundId ?? '').trim();
   const qty = Number(actualQuantity);
 
@@ -39,11 +39,12 @@ router.post('/confirmInbound', asyncHandler(async (req, res) => {
       `UPDATE inbounds
           SET status = 'CONFIRMED',
               actual_quantity = ?,
+              confirmer,
               confirm_remark = ?,
               confirmed_at = NOW()
         WHERE inbound_id = ?
           AND status <> 'CONFIRMED'`,
-      [qty, remark ?? null, inboundId],
+      [qty, confirmer ?? null, remark ?? null, inboundId],
       conn
     );
     if (upd.affectedRows === 0) return { conflict: true };
