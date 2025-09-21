@@ -76,7 +76,7 @@ router.post('/getInboundLog', asyncHandler(async (req, res) => {
         it.unit                                          AS unit,
         ibd.actual_quantity                              AS quantity,
         CONVERT_TZ(ibd.confirmed_at, '+00:00', '+08:00') AS confirmedAt,
-        idb.confirmer                                    AS confirmer,
+        ibd.confirmer                                    AS confirmer,
         ibd.confirm_remark                               AS confirmRemark
       FROM inbounds AS ibd
       LEFT JOIN items AS it ON it.item_id = ibd.item_id
