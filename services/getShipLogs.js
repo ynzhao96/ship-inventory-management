@@ -15,7 +15,7 @@ const ATOMIC_LOG_TYPES = new Set([
 ]);
 
 router.post('/getShipLogs', asyncHandler(async (req, res) => {
-  let { shipId, page = 1, pageSize = 10, startTime, endTime, logType = 'ALL', batchNumber } = req.body ?? {};
+  let { shipId, page = 1, pageSize = 10, startTime, endTime, logType = 'ALL', batchNumber, category } = req.body ?? {};
 
   // shipId校验
   const check = requireFields(req.body, ['shipId']);
@@ -40,11 +40,14 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
     }
   }
 
-  // NEW: 批次号清洗 & LIKE 转义（% 和 _ 与 \）
+  // NEW: 批次号/类别号清洗 & LIKE 转义（% 和 _ 与 \）
   const escapeLike = (s) => String(s).replace(/[\\%_]/g, '\\$&');
   const rawBn = typeof batchNumber === 'string' ? batchNumber.trim() : '';
+  const rawC = typeof category === 'string' ? category.trim() : '';
   const hasBatch = rawBn.length > 0;
+  const hasCat = rawC.length > 0;
   const likeBn = `%${escapeLike(rawBn)}%`;
+  const likeC = `%${escapeLike(rawC)}%`;
 
   // logType：支持 'ALL' | string | string[]
   let selectedTypes; // 'ALL' | string[]
@@ -89,6 +92,7 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
     LEFT JOIN items AS it ON it.item_id = clm.item_id
     WHERE TRIM(clm.ship_id) = ?
       ${startStr ? 'AND clm.claimed_at BETWEEN ? AND ?' : ''}
+      ${hasCat ? "AND it.category_id LIKE ? ESCAPE '\\\\'" : ''}
   `;
 
   const claimCancelSQL = `
@@ -108,6 +112,7 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
     WHERE TRIM(clm.ship_id) = ?
       AND clm.status = 'CANCELED'
       ${startStr ? 'AND clm.canceled_at BETWEEN ? AND ?' : ''}
+      ${hasCat ? "AND it.category_id LIKE ? ESCAPE '\\\\'" : ''}
   `;
 
   const inboundCreateSQL = `
@@ -126,7 +131,8 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
     LEFT JOIN items AS it ON it.item_id = ibd.item_id
     WHERE TRIM(ibd.ship_id) = ?
       ${startStr ? 'AND ibd.created_at BETWEEN ? AND ?' : ''}
-      ${hasBatch ? "AND ibd.batch_no LIKE ? ESCAPE '\\\\'" : ''}    -- NEW
+      ${hasBatch ? "AND ibd.batch_no LIKE ? ESCAPE '\\\\'" : ''}
+      ${hasCat ? "AND it.category_id LIKE ? ESCAPE '\\\\'" : ''}
   `;
 
   const inboundConfirmSQL = `
@@ -146,7 +152,8 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
     WHERE TRIM(ibd.ship_id) = ?
       AND ibd.confirmed_at IS NOT NULL
       ${startStr ? 'AND ibd.confirmed_at BETWEEN ? AND ?' : ''}
-      ${hasBatch ? "AND ibd.batch_no LIKE ? ESCAPE '\\\\'" : ''}    -- NEW
+      ${hasBatch ? "AND ibd.batch_no LIKE ? ESCAPE '\\\\'" : ''}
+      ${hasCat ? "AND it.category_id LIKE ? ESCAPE '\\\\'" : ''}
   `;
 
   const inboundCancelSQL = `
@@ -166,7 +173,8 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
     WHERE TRIM(ibd.ship_id) = ?
       AND ibd.canceled_at IS NOT NULL
       ${startStr ? 'AND ibd.canceled_at BETWEEN ? AND ?' : ''}
-      ${hasBatch ? "AND ibd.batch_no LIKE ? ESCAPE '\\\\'" : ''}    -- NEW
+      ${hasBatch ? "AND ibd.batch_no LIKE ? ESCAPE '\\\\'" : ''}
+      ${hasCat ? "AND it.category_id LIKE ? ESCAPE '\\\\'" : ''}
   `;
 
   // 组装
@@ -179,6 +187,7 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
     params.push(shipId);
     if (startStr) params.push(startStr, endStr);
     if (isInbound && hasBatch) params.push(likeBn);
+    if (hasCat) params.push(likeC);
   };
 
   if (need('CLAIM')) pushPart(claimCreateSQL, false);
