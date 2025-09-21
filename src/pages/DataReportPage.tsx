@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { getShipLogs } from '../services/getShipLogs.ts';
 import Pagination from '../components/Pagination.tsx';
+import { debounce } from '../utils.ts';
 
 type LogType = 'CLAIM' | 'CANCEL_CLAIM' | 'INBOUND_CREATE' | 'INBOUND_CONFIRM' | 'INBOUND_CANCEL' | 'ALL';
 
@@ -88,6 +89,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
   const [pageSize, setPageSize] = useState<number>(25);
 
   const [primaryType, setPrimaryType] = useState<PrimaryType>('ALL');
+  const [batchNo, setBatchNo] = useState('');
   const [subType, setSubType] = useState<SubType>('ALL');
   const [startDate, setStartDate] = useState<string>(''); // YYYY-MM-DD
   const [endDate, setEndDate] = useState<string>('');     // YYYY-MM-DD
@@ -105,54 +107,76 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
     setPrimaryType(val);
     setSubType('ALL');
     setPage(1);
+    setBatchNo('');
   };
 
-  const buildTypeFilter = () => {
-    // 默认：全部
-    if (primaryType === 'ALL') {
-      return { logType: 'ALL' as LogType };
-    }
-
+  const buildTypeFilter = (primaryType: PrimaryType, subType: SubType) => {
+    if (primaryType === 'ALL') return { logType: 'ALL' as LogType };
     if (primaryType === 'CLAIM_GROUP') {
-      if (subType === 'ALL') {
-        return { logType: ['CLAIM', 'CANCEL_CLAIM'] };
-      }
-      return { logType: subType };
+      if (subType === 'ALL') return { logType: ['CLAIM', 'CANCEL_CLAIM'] as LogType[] };
+      return { logType: subType as LogType };
     }
-
     // INBOUND_GROUP
-    if (subType === 'ALL') {
-      return { logType: ['INBOUND_CREATE', 'INBOUND_CONFIRM', 'INBOUND_CANCEL'] };
-    }
-    return { logType: subType };
+    if (subType === 'ALL') return { logType: ['INBOUND_CREATE', 'INBOUND_CONFIRM', 'INBOUND_CANCEL'] as LogType[] };
+    return { logType: subType as LogType };
   };
 
-  const fetchLogs = async () => {
+  type FetchArgs = {
+    shipId?: string;
+    page: number;
+    pageSize: number;
+    startDate?: string;
+    endDate?: string;
+    primaryType: PrimaryType;
+    subType: SubType;
+    batchNo?: string;
+  };
+
+  // ✅ 真正的取数函数：完全用参数，不依赖外部状态（避免闭包问题）
+  const doFetchLogs = async (
+    args: FetchArgs,
+    {
+      setLoading, setErrorMsg, setRows, setTotal, setTotalPages,
+      getShipLogs,
+    }: {
+      setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+      setErrorMsg: React.Dispatch<React.SetStateAction<string>>;
+      setRows: React.Dispatch<React.SetStateAction<ShipLog[]>>;
+      setTotal: React.Dispatch<React.SetStateAction<number>>;
+      setTotalPages: React.Dispatch<React.SetStateAction<number>>;
+      getShipLogs: typeof import('../services/getShipLogs').getShipLogs;
+    }
+  ) => {
+    const { shipId, page, pageSize, startDate, endDate, primaryType, subType, batchNo } = args;
+
     if (!shipId) {
       setErrorMsg('缺少 shipId');
       return;
     }
+    if ((!startDate && endDate) || (startDate && !endDate)) {
+      // 起止不成对，直接不请求
+      return;
+    }
+
     setLoading(true);
     setErrorMsg('');
-    try {
-      if ((!startDate && endDate) || (startDate && !endDate)) return;
 
-      const { logType } = buildTypeFilter();
+    try {
+      const { logType } = buildTypeFilter(primaryType, subType);
       const resp: ApiResp = await getShipLogs(
         shipId,
         page,
         pageSize,
         startDate || undefined,
         endDate || undefined,
-        logType,
+        logType as any, // 支持 string | string[]
+        batchNo
       );
 
-      const ok = (resp?.success ?? true); // 你的 http 包有时不带 success，这里做宽松处理
+      const ok = (resp?.success ?? true);
       if (!ok) {
         setErrorMsg(resp?.message || '查询失败');
-        setRows([]);
-        setTotal(0);
-        setTotalPages(1);
+        setRows([]); setTotal(0); setTotalPages(1);
         return;
       }
       const data = resp?.data;
@@ -161,19 +185,38 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
       setTotalPages(data?.totalPages ?? 1);
     } catch (e: any) {
       setErrorMsg(e?.message || '网络错误');
-      setRows([]);
-      setTotal(0);
-      setTotalPages(1);
+      setRows([]); setTotal(0); setTotalPages(1);
     } finally {
       setLoading(false);
     }
   };
 
-  // 变化即自动拉取
+  const debouncedFetchRef = useRef(
+    debounce((args: FetchArgs) => {
+      // 这里调用纯函数，传入需要的 setter 和服务
+      doFetchLogs(args, {
+        setLoading, setErrorMsg, setRows, setTotal, setTotalPages,
+        getShipLogs,
+      });
+    }, 300)
+  ).current;
+
   useEffect(() => {
-    fetchLogs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shipId, page, pageSize, primaryType, subType, startDate, endDate]);
+    debouncedFetchRef({
+      shipId,
+      page,
+      pageSize,
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
+      primaryType,
+      subType,
+      batchNo,
+    });
+    // 卸载时取消未触发的定时器（若你的 debounce 支持 .cancel）
+    return () => {
+      (debouncedFetchRef as any).cancel?.();
+    };
+  }, [shipId, page, pageSize, primaryType, subType, startDate, endDate, batchNo, debouncedFetchRef]);
 
   // 应用筛选（重置到第1页）
   const applyFilters = () => {
@@ -186,8 +229,11 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
     setStartDate('');
     setEndDate('');
     setPage(1);
-    setPageSize(10);
+    setPageSize(25);
+    setBatchNo('');
   };
+
+  const showBatch = primaryType === 'INBOUND_GROUP';
 
   return (
     <div className="p-4">
@@ -196,7 +242,9 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
       </div>
 
       {/* 筛选栏 */}
-      <div className="mb-4 grid grid-cols-1 lg:grid-cols-5 gap-3">
+      <div
+        className={`mb-4 grid grid-cols-1 ${showBatch ? 'lg:grid-cols-6' : 'lg:grid-cols-5'} gap-3 items-end`}
+      >
         {/* 一级 */}
         <div className="flex flex-col">
           <label className="text-sm text-gray-600 mb-1">日志类型（一级）</label>
@@ -219,7 +267,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
             className="border rounded-md px-3 py-2"
             value={subType}
             onChange={(e) => { setSubType(e.target.value as SubType); setPage(1); }}
-            disabled={loading || primaryType === 'ALL'}  // 全部时禁用二级
+            disabled={loading || primaryType === 'ALL'}
           >
             {SECONDARY_OPTIONS_BY_PRIMARY[primaryType].map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -227,6 +275,20 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
           </select>
         </div>
 
+        {/* 批次号 */}
+        {showBatch && (
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-600 mb-1">批次号</label>
+            <input
+              type="text"
+              className="border rounded-md px-3 py-2"
+              placeholder="输入批次号"
+              value={batchNo} onChange={(e) => setBatchNo(e.target.value)}
+            />
+          </div>
+        )}
+
+        {/* 开始日期 */}
         <div className="flex flex-col">
           <label className="text-sm text-gray-600 mb-1">开始日期</label>
           <input
@@ -238,6 +300,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
           />
         </div>
 
+        {/* 结束日期 */}
         <div className="flex flex-col">
           <label className="text-sm text-gray-600 mb-1">结束日期</label>
           <input
@@ -249,16 +312,17 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
           />
         </div>
 
-        <div className="flex items-end gap-2">
+        {/* 操作按钮 */}
+        <div className="flex items-end gap-2 justify-self-end">
           <button
-            className="px-4 py-2 rounded-md bg-black text-white disabled:opacity-50"
+            className="px-4 py-2 rounded-md bg-black text-white disabled:opacity-50 whitespace-nowrap"
             onClick={applyFilters}
             disabled={loading}
           >
             应用
           </button>
           <button
-            className="px-4 py-2 rounded-md border disabled:opacity-50"
+            className="px-4 py-2 rounded-md border disabled:opacity-50 whitespace-nowrap"
             onClick={resetFilters}
             disabled={loading}
           >
