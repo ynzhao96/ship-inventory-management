@@ -89,7 +89,7 @@ const CategoryPage = () => {
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold mb-6">类别指南</h2>
+        <h2 className="text-xl font-bold mb-6">类别管理</h2>
         <button onClick={handleAddCategory} className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">添加新类别</button>
       </div>
 
