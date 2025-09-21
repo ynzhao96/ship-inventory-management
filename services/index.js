@@ -32,6 +32,7 @@ import getSystemLog from './getSystemLog.js';
 import getItemList from './getItemList.js';
 import getAbnormals from './getAbnormals.js';
 import updateCategory from './updateCategory.js';
+import updateShip from './updateShip.js';
 
 const router = Router();
 
@@ -69,5 +70,6 @@ router.use(getSystemLog);
 router.use(getItemList);
 router.use(getAbnormals);
 router.use(updateCategory);
+router.use(updateShip);
 
 export default router;
