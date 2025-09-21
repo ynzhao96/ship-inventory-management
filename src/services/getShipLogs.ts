@@ -15,7 +15,14 @@ type Log = {
 }
 
 // 查询船舶日志
-export const getShipLogs = async (shipId?: string, page?: number, pageSize?: number, startTime?: string, endTime?: string, logType?: string) => {
+export const getShipLogs = async (
+  shipId?: string,
+  page?: number,
+  pageSize?: number,
+  startTime?: string,
+  endTime?: string,
+  logType?: string | string[],
+) => {
   const body = {
     shipId: shipId, page, pageSize, startTime, endTime, logType
   };

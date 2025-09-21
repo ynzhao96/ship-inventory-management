@@ -5,14 +5,13 @@ import { authRequired } from '../auth.js';
 const router = Router();
 router.use(authRequired);
 
-// 允许的类型
-const LOG_TYPES = new Set([
+// 原子类型集合（不含 ALL）
+const ATOMIC_LOG_TYPES = new Set([
   'CLAIM',           // 领取创建
   'CANCEL_CLAIM',    // 领取取消
   'INBOUND_CREATE',  // 入库创建
   'INBOUND_CONFIRM', // 入库确认
   'INBOUND_CANCEL',  // 入库取消
-  'ALL',
 ]);
 
 router.post('/getShipLogs', asyncHandler(async (req, res) => {
@@ -23,13 +22,13 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
   if (!check.ok) {
     return fail(res, 400, { code: 'BAD_REQUEST', message: 'shipId必填' });
   }
-  if (!LOG_TYPES.has(logType)) {
-    return fail(res, 400, { code: 'BAD_REQUEST', message: '无效的日志类型' });
-  }
+
+  // 时间校验
   if ((startTime && !endTime) || (!startTime && endTime)) {
     return fail(res, 400, { code: 'BAD_REQUEST', message: '时间信息无效' });
   }
 
+  // 翻页参数归一化
   page = Math.max(1, parseInt(page, 10) || 1);
   pageSize = Math.min(100, Math.max(1, parseInt(pageSize, 10) || 10));
   const offset = (page - 1) * pageSize;
@@ -45,8 +44,51 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
     }
   }
 
-  // 构建每段子查询（尽量贴近你现有字段；若字段不同替换注释处）
-  // —— claims: 创建（CLAIM） & 取消（CANCEL_CLAIM）
+  // =========================
+  // logType 数组化 & 校验逻辑
+  // 支持：
+  // - 'ALL'
+  // - 单个原子类型（字符串）
+  // - 原子类型数组（去重）
+  // - 若数组包含 'ALL'，等同于 ALL
+  // - 若 logType 未提供，等同于 ALL
+  // =========================
+  /** @type {'ALL' | string[]} */
+  let selectedTypes;
+
+  if (Array.isArray(logType)) {
+    const dedup = [...new Set(logType.map(String))];
+    if (dedup.length === 0) {
+      selectedTypes = 'ALL';
+    } else if (dedup.includes('ALL')) {
+      selectedTypes = 'ALL';
+    } else {
+      // 全部必须是原子类型
+      const invalid = dedup.filter(t => !ATOMIC_LOG_TYPES.has(t));
+      if (invalid.length > 0) {
+        return fail(res, 400, { code: 'BAD_REQUEST', message: `无效的日志类型: ${invalid.join(', ')}` });
+      }
+      selectedTypes = dedup;
+    }
+  } else if (typeof logType === 'string') {
+    if (logType === 'ALL' || logType === '' || logType == null) {
+      selectedTypes = 'ALL';
+    } else if (!ATOMIC_LOG_TYPES.has(logType)) {
+      return fail(res, 400, { code: 'BAD_REQUEST', message: `无效的日志类型: ${logType}` });
+    } else {
+      selectedTypes = [logType];
+    }
+  } else if (logType == null) {
+    selectedTypes = 'ALL';
+  } else {
+    return fail(res, 400, { code: 'BAD_REQUEST', message: 'logType 参数格式无效' });
+  }
+
+  const need = (t) => selectedTypes === 'ALL' || (Array.isArray(selectedTypes) && selectedTypes.includes(t));
+
+  // =========================
+  // 各子查询（保持你的字段和时区转换不变）
+  // =========================
   const claimCreateSQL = `
     SELECT
       'CLAIM'                                        AS eventType,
@@ -84,7 +126,6 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
       ${startStr ? 'AND clm.canceled_at BETWEEN ? AND ?' : ''}
   `;
 
-  // —— inbounds: 创建（INBOUND_CREATE）/ 确认（INBOUND_CONFIRM）/ 取消（INBOUND_CANCEL）
   const inboundCreateSQL = `
     SELECT
       'INBOUND_CREATE'                               AS eventType,
@@ -141,7 +182,7 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
       ${startStr ? 'AND ibd.canceled_at BETWEEN ? AND ?' : ''}
   `;
 
-  // 根据 logType 选择需要的子查询
+  // 选择需要的子查询
   const parts = [];
   const params = [];
 
@@ -150,8 +191,6 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
     params.push(shipId);
     if (startStr) params.push(startStr, endStr);
   };
-
-  const need = (t) => logType === 'ALL' || logType === t;
 
   if (need('CLAIM')) pushPart(claimCreateSQL);
   if (need('CANCEL_CLAIM')) pushPart(claimCancelSQL);
@@ -163,7 +202,7 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
     return ok(res, { data: { list: [], page, pageSize, total: 0, totalPages: 0 } }, { message: '查询船舶日志成功' });
   }
 
-  // 统一的 UNION 体
+  // UNION
   const unionSQL = parts.join('\nUNION ALL\n');
 
   // 统计总数
@@ -175,7 +214,7 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
   `;
   const [{ total }] = await q(countSql, params);
 
-  // 列表查询（按时间倒序）
+  // 列表
   const listSql = `
     SELECT *
     FROM (
@@ -184,7 +223,6 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
     ORDER BY t.eventTime DESC
     LIMIT ? OFFSET ?
   `;
-
   const rows = await q(listSql, [...params, pageSize, offset]);
 
   return ok(
