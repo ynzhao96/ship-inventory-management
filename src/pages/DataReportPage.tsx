@@ -4,6 +4,36 @@ import Pagination from '../components/Pagination.tsx';
 
 type LogType = 'CLAIM' | 'CANCEL_CLAIM' | 'INBOUND_CREATE' | 'INBOUND_CONFIRM' | 'INBOUND_CANCEL' | 'ALL';
 
+type PrimaryType = 'ALL' | 'CLAIM_GROUP' | 'INBOUND_GROUP';
+type SubType =
+  | 'ALL'
+  | 'CLAIM'
+  | 'CANCEL_CLAIM'
+  | 'INBOUND_CREATE'
+  | 'INBOUND_CONFIRM'
+  | 'INBOUND_CANCEL';
+
+const PRIMARY_OPTIONS: { value: PrimaryType; label: string }[] = [
+  { value: 'ALL', label: '全部' },
+  { value: 'CLAIM_GROUP', label: '申领' },
+  { value: 'INBOUND_GROUP', label: '入库' },
+];
+
+const SECONDARY_OPTIONS_BY_PRIMARY: Record<PrimaryType, { value: SubType; label: string }[]> = {
+  ALL: [{ value: 'ALL', label: '全部' }],
+  CLAIM_GROUP: [
+    { value: 'ALL', label: '全部' },
+    { value: 'CLAIM', label: '申领' },
+    { value: 'CANCEL_CLAIM', label: '取消申领' },
+  ],
+  INBOUND_GROUP: [
+    { value: 'ALL', label: '全部' },
+    { value: 'INBOUND_CREATE', label: '创建入库' },
+    { value: 'INBOUND_CONFIRM', label: '确认入库' },
+    { value: 'INBOUND_CANCEL', label: '取消入库' },
+  ],
+};
+
 interface ShipLog {
   eventType: Exclude<LogType, 'ALL'>;
   batchNumber?: string | null;
@@ -36,15 +66,6 @@ interface Props {
   shipId?: string;
 }
 
-const LOG_TYPE_OPTIONS: { value: LogType; label: string }[] = [
-  { value: 'ALL', label: '全部' },
-  { value: 'CLAIM', label: '申领' },
-  { value: 'CANCEL_CLAIM', label: '取消申领' },
-  { value: 'INBOUND_CREATE', label: '创建入库' },
-  { value: 'INBOUND_CONFIRM', label: '确认入库' },
-  { value: 'INBOUND_CANCEL', label: '取消入库' },
-];
-
 const badgeStyleByType: Record<Exclude<LogType, 'ALL'>, string> = {
   CLAIM: 'bg-blue-100 text-blue-700',
   CANCEL_CLAIM: 'bg-rose-100 text-rose-700',
@@ -66,7 +87,8 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(25);
 
-  const [logType, setLogType] = useState<LogType>('ALL');
+  const [primaryType, setPrimaryType] = useState<PrimaryType>('ALL');
+  const [subType, setSubType] = useState<SubType>('ALL');
   const [startDate, setStartDate] = useState<string>(''); // YYYY-MM-DD
   const [endDate, setEndDate] = useState<string>('');     // YYYY-MM-DD
 
@@ -79,6 +101,32 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
   const canPrev = useMemo(() => page > 1, [page]);
   const canNext = useMemo(() => page < totalPages, [page, totalPages]);
 
+  const onChangePrimary = (val: PrimaryType) => {
+    setPrimaryType(val);
+    setSubType('ALL');
+    setPage(1);
+  };
+
+  const buildTypeFilter = () => {
+    // 默认：全部
+    if (primaryType === 'ALL') {
+      return { logType: 'ALL' as LogType };
+    }
+
+    if (primaryType === 'CLAIM_GROUP') {
+      if (subType === 'ALL') {
+        return { logType: ['CLAIM', 'CANCEL_CLAIM'] };
+      }
+      return { logType: subType };
+    }
+
+    // INBOUND_GROUP
+    if (subType === 'ALL') {
+      return { logType: ['INBOUND_CREATE', 'INBOUND_CONFIRM', 'INBOUND_CANCEL'] };
+    }
+    return { logType: subType };
+  };
+
   const fetchLogs = async () => {
     if (!shipId) {
       setErrorMsg('缺少 shipId');
@@ -88,6 +136,8 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
     setErrorMsg('');
     try {
       if ((!startDate && endDate) || (startDate && !endDate)) return;
+
+      const { logType } = buildTypeFilter();
       const resp: ApiResp = await getShipLogs(
         shipId,
         page,
@@ -123,7 +173,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
   useEffect(() => {
     fetchLogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shipId, page, pageSize, logType, startDate, endDate]);
+  }, [shipId, page, pageSize, primaryType, subType, startDate, endDate]);
 
   // 应用筛选（重置到第1页）
   const applyFilters = () => {
@@ -131,7 +181,8 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
   };
 
   const resetFilters = () => {
-    setLogType('ALL');
+    setPrimaryType('ALL');
+    setSubType('ALL');
     setStartDate('');
     setEndDate('');
     setPage(1);
@@ -146,15 +197,31 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
 
       {/* 筛选栏 */}
       <div className="mb-4 grid grid-cols-1 lg:grid-cols-5 gap-3">
+        {/* 一级 */}
         <div className="flex flex-col">
-          <label className="text-sm text-gray-600 mb-1">日志类型</label>
+          <label className="text-sm text-gray-600 mb-1">日志类型（一级）</label>
           <select
             className="border rounded-md px-3 py-2"
-            value={logType}
-            onChange={(e) => setLogType(e.target.value as LogType)}
+            value={primaryType}
+            onChange={(e) => onChangePrimary(e.target.value as PrimaryType)}
             disabled={loading}
           >
-            {LOG_TYPE_OPTIONS.map(opt => (
+            {PRIMARY_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* 二级 */}
+        <div className="flex flex-col">
+          <label className="text-sm text-gray-600 mb-1">日志类型（二级）</label>
+          <select
+            className="border rounded-md px-3 py-2"
+            value={subType}
+            onChange={(e) => { setSubType(e.target.value as SubType); setPage(1); }}
+            disabled={loading || primaryType === 'ALL'}  // 全部时禁用二级
+          >
+            {SECONDARY_OPTIONS_BY_PRIMARY[primaryType].map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
