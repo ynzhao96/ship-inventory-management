@@ -63,7 +63,7 @@ const ShipListPage = () => {
     <div className="flex-1 overflow-y-auto bg-gray-50">
       <div className="container mx-auto px-6 py-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">船只选择</h2>
+          <h2 className="text-2xl font-bold">船舶选择</h2>
 
           <div className="relative">
             <input
