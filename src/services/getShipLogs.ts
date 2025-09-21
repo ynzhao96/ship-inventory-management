@@ -22,9 +22,10 @@ export const getShipLogs = async (
   startTime?: string,
   endTime?: string,
   logType?: string | string[],
+  batchNumber?: string
 ) => {
   const body = {
-    shipId: shipId, page, pageSize, startTime, endTime, logType
+    shipId: shipId, page, pageSize, startTime, endTime, logType, batchNumber
   };
   const res = await http(`/api/getShipLogs`, {
     method: 'POST',

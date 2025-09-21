@@ -15,27 +15,23 @@ const ATOMIC_LOG_TYPES = new Set([
 ]);
 
 router.post('/getShipLogs', asyncHandler(async (req, res) => {
-  let { shipId, page = 1, pageSize = 10, startTime, endTime, logType = 'ALL' } = req.body ?? {};
+  let { shipId, page = 1, pageSize = 10, startTime, endTime, logType = 'ALL', batchNumber } = req.body ?? {};
 
-  // 基本校验
+  // shipId校验
   const check = requireFields(req.body, ['shipId']);
-  if (!check.ok) {
-    return fail(res, 400, { code: 'BAD_REQUEST', message: 'shipId必填' });
-  }
+  if (!check.ok) return fail(res, 400, { code: 'BAD_REQUEST', message: 'shipId必填' });
 
   // 时间校验
   if ((startTime && !endTime) || (!startTime && endTime)) {
     return fail(res, 400, { code: 'BAD_REQUEST', message: '时间信息无效' });
   }
 
-  // 翻页参数归一化
   page = Math.max(1, parseInt(page, 10) || 1);
   pageSize = Math.min(100, Math.max(1, parseInt(pageSize, 10) || 10));
   const offset = (page - 1) * pageSize;
 
   // 预处理时间
-  let startStr;
-  let endStr;
+  let startStr, endStr;
   if (startTime && endTime) {
     startStr = toDayBoundary(startTime, 'start');
     endStr = toDayBoundary(endTime, 'end');
@@ -44,40 +40,30 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
     }
   }
 
-  // =========================
-  // logType 数组化 & 校验逻辑
-  // 支持：
-  // - 'ALL'
-  // - 单个原子类型（字符串）
-  // - 原子类型数组（去重）
-  // - 若数组包含 'ALL'，等同于 ALL
-  // - 若 logType 未提供，等同于 ALL
-  // =========================
-  /** @type {'ALL' | string[]} */
-  let selectedTypes;
+  // NEW: 批次号清洗 & LIKE 转义（% 和 _ 与 \）
+  const escapeLike = (s) => String(s).replace(/[\\%_]/g, '\\$&');
+  const rawBn = typeof batchNumber === 'string' ? batchNumber.trim() : '';
+  const hasBatch = rawBn.length > 0;
+  const likeBn = `%${escapeLike(rawBn)}%`;
 
+  // logType：支持 'ALL' | string | string[]
+  let selectedTypes; // 'ALL' | string[]
   if (Array.isArray(logType)) {
     const dedup = [...new Set(logType.map(String))];
-    if (dedup.length === 0) {
-      selectedTypes = 'ALL';
-    } else if (dedup.includes('ALL')) {
+    if (dedup.length === 0 || dedup.includes('ALL')) {
       selectedTypes = 'ALL';
     } else {
-      // 全部必须是原子类型
       const invalid = dedup.filter(t => !ATOMIC_LOG_TYPES.has(t));
-      if (invalid.length > 0) {
+      if (invalid.length) {
         return fail(res, 400, { code: 'BAD_REQUEST', message: `无效的日志类型: ${invalid.join(', ')}` });
       }
       selectedTypes = dedup;
     }
   } else if (typeof logType === 'string') {
-    if (logType === 'ALL' || logType === '' || logType == null) {
-      selectedTypes = 'ALL';
-    } else if (!ATOMIC_LOG_TYPES.has(logType)) {
+    if (logType === 'ALL' || logType === '' || logType == null) selectedTypes = 'ALL';
+    else if (!ATOMIC_LOG_TYPES.has(logType)) {
       return fail(res, 400, { code: 'BAD_REQUEST', message: `无效的日志类型: ${logType}` });
-    } else {
-      selectedTypes = [logType];
-    }
+    } else selectedTypes = [logType];
   } else if (logType == null) {
     selectedTypes = 'ALL';
   } else {
@@ -86,9 +72,7 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
 
   const need = (t) => selectedTypes === 'ALL' || (Array.isArray(selectedTypes) && selectedTypes.includes(t));
 
-  // =========================
-  // 各子查询（保持你的字段和时区转换不变）
-  // =========================
+  // 子查询们（入库类 where 追加批次号条件）
   const claimCreateSQL = `
     SELECT
       'CLAIM'                                        AS eventType,
@@ -142,6 +126,7 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
     LEFT JOIN items AS it ON it.item_id = ibd.item_id
     WHERE TRIM(ibd.ship_id) = ?
       ${startStr ? 'AND ibd.created_at BETWEEN ? AND ?' : ''}
+      ${hasBatch ? "AND ibd.batch_no LIKE ? ESCAPE '\\\\'" : ''}    -- NEW
   `;
 
   const inboundConfirmSQL = `
@@ -161,6 +146,7 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
     WHERE TRIM(ibd.ship_id) = ?
       AND ibd.confirmed_at IS NOT NULL
       ${startStr ? 'AND ibd.confirmed_at BETWEEN ? AND ?' : ''}
+      ${hasBatch ? "AND ibd.batch_no LIKE ? ESCAPE '\\\\'" : ''}    -- NEW
   `;
 
   const inboundCancelSQL = `
@@ -172,7 +158,7 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
       ibd.item_id                                     AS itemId,
       it.item_name                                    AS itemName,
       it.category_id                                  AS categoryId,
-      ibd.actual_quantity                             AS quantity,
+      ibd.actual_quantity                              AS quantity,
       NULL                                            AS actor,
       ibd.cancel_remark                               AS remark
     FROM inbounds AS ibd
@@ -180,32 +166,33 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
     WHERE TRIM(ibd.ship_id) = ?
       AND ibd.canceled_at IS NOT NULL
       ${startStr ? 'AND ibd.canceled_at BETWEEN ? AND ?' : ''}
+      ${hasBatch ? "AND ibd.batch_no LIKE ? ESCAPE '\\\\'" : ''}    -- NEW
   `;
 
-  // 选择需要的子查询
+  // 组装
   const parts = [];
   const params = [];
 
-  const pushPart = (sql) => {
+  // NEW: 区分是否入库，用于决定是否 push 批次号参数
+  const pushPart = (sql, isInbound = false) => {
     parts.push(sql);
     params.push(shipId);
     if (startStr) params.push(startStr, endStr);
+    if (isInbound && hasBatch) params.push(likeBn);
   };
 
-  if (need('CLAIM')) pushPart(claimCreateSQL);
-  if (need('CANCEL_CLAIM')) pushPart(claimCancelSQL);
-  if (need('INBOUND_CREATE')) pushPart(inboundCreateSQL);
-  if (need('INBOUND_CONFIRM')) pushPart(inboundConfirmSQL);
-  if (need('INBOUND_CANCEL')) pushPart(inboundCancelSQL);
+  if (need('CLAIM')) pushPart(claimCreateSQL, false);
+  if (need('CANCEL_CLAIM')) pushPart(claimCancelSQL, false);
+  if (need('INBOUND_CREATE')) pushPart(inboundCreateSQL, true);
+  if (need('INBOUND_CONFIRM')) pushPart(inboundConfirmSQL, true);
+  if (need('INBOUND_CANCEL')) pushPart(inboundCancelSQL, true);
 
   if (parts.length === 0) {
     return ok(res, { data: { list: [], page, pageSize, total: 0, totalPages: 0 } }, { message: '查询船舶日志成功' });
   }
 
-  // UNION
   const unionSQL = parts.join('\nUNION ALL\n');
 
-  // 统计总数
   const countSql = `
     SELECT COUNT(1) AS total
     FROM (
@@ -214,7 +201,6 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
   `;
   const [{ total }] = await q(countSql, params);
 
-  // 列表
   const listSql = `
     SELECT *
     FROM (
