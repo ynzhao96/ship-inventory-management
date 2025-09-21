@@ -74,8 +74,7 @@ router.post('/updateCategory', asyncHandler(async (req, res) => {
 
       // 回读
       const [row] = await q(
-        `SELECT id AS categoryId, name AS categoryName, name_en AS categoryNameEn,
-                unit, specification, category_id AS categoryId
+        `SELECT id AS categoryId, name AS categoryName, name_en AS categoryNameEn
            FROM categories WHERE id = ?`,
         [categoryId],
         conn
@@ -121,8 +120,7 @@ router.post('/updateCategory', asyncHandler(async (req, res) => {
       } catch { }
 
       const [row] = await q(
-        `SELECT id AS categoryId, name AS categoryName, name_en AS categoryNameEn,
-                unit, specification, category_id AS categoryId
+        `SELECT id AS categoryId, name AS categoryName, name_en AS categoryNameEn
            FROM categories WHERE id = ?`,
         [categoryId],
         conn
