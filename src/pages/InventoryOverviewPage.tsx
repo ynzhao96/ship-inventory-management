@@ -88,7 +88,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
           <div className="p-6">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">{selectedItem.itemName}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{selectedItem.itemName} - {selectedItem.itemNameEn}</h2>
                 <p className="text-gray-500">物资编号：{selectedItem.itemId}</p>
                 <p className="text-gray-500">规格：{selectedItem.specification}</p>
                 <p className="text-gray-500">备注：{selectedItem.remark}</p>
@@ -246,7 +246,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
               onClick={() => handleItemClick(item)}
             >
               <div className="flex justify-between items-start mb-2">
-                <h3 className="text-lg font-semibold">{item.itemName}</h3>
+                <h3 className="text-lg font-semibold">{item.itemName} - {item.itemNameEn}</h3>
                 <span className="text-sm text-gray-500">{item.itemId}</span>
               </div>
               <div className="text-sm text-gray-500 mb-2">{categories.find(category => category.categoryId === item.categoryId)?.categoryName || ''}</div>
@@ -270,6 +270,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资编号</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资名称</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资英文名称</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资种类</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">当前库存</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">待入库</th>
@@ -284,6 +285,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
                 >
                   <td className="px-6 py-4 whitespace-nowrap">{item.itemId}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.itemName}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{item.itemNameEn}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{categories.find(category => category.categoryId === item.categoryId)?.categoryName || ''}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.quantity}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{item.inboundQuantity === '0' ? '' : item.inboundQuantity}</td>
