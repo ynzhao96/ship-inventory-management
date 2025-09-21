@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import ShipListPage from './ShipListPage.tsx';
 import SystemLogPage from './SystemLogPage.tsx';
 import ItemListPage from './ItemListPage.tsx';
+import CategoryPage from './CategoryPage.tsx';
 import AbnormalInformationPage from './AbnormalInformationPage.tsx';
 
 const HomePage = ({ }: { onBack: () => void }) => {
@@ -29,6 +30,7 @@ const HomePage = ({ }: { onBack: () => void }) => {
     { id: 'ship-list', label: '船舶管理', icon: /* 省略你的 SVG */ (<span className="sr-only">icon</span>) },
     { id: 'anomaly', label: '异常', icon: (<span className="sr-only">icon</span>) },
     { id: 'item-dictionary', label: '物料指南', icon: (<span className="sr-only">icon</span>) },
+    { id: 'category-dictionary', label: '类别指南', icon: (<span className="sr-only">icon</span>) },
     { id: 'data-report', label: '系统日志', icon: (<span className="sr-only">icon</span>) },
   ];
 
@@ -67,6 +69,8 @@ const HomePage = ({ }: { onBack: () => void }) => {
                   <AbnormalInformationPage />
                 ) : activePage === 'item-dictionary' ? (
                   <ItemListPage />
+                ) : activePage === 'category-dictionary' ? (
+                  <CategoryPage />
                 ) : activePage === 'data-report' ? (
                   <SystemLogPage />
                 ) : null}
