@@ -139,12 +139,12 @@ router.post('/updateShip', asyncHandler(async (req, res) => {
 
   const result = await withTransaction(async (conn) => {
     // 存在性检查
-    const exists = await q('SELECT 1 FROM categories WHERE id = ?', [shipId], conn);
+    const exists = await q('SELECT 1 FROM ships WHERE id = ?', [shipId], conn);
     if (!exists?.length) {
-      return fail(res, 404, { code: 'NOT_FOUND', message: `物料类别 ${shipId} 不存在` });
+      return fail(res, 404, { code: 'NOT_FOUND', message: `船舶 ${shipId} 不存在` });
     }
 
-    const ret = await q('DELETE FROM categories WHERE id = ?', [shipId], conn);
+    const ret = await q('DELETE FROM ships WHERE id = ?', [shipId], conn);
 
     try {
       await addLog?.(conn, {
