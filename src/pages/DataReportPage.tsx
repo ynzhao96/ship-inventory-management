@@ -4,6 +4,7 @@ import Pagination from '../components/Pagination.tsx';
 import { debounce } from '../utils.ts';
 import { Category } from '../types.ts';
 import { getCategories } from '../services/getCategories.ts';
+import * as XLSX from 'xlsx';
 
 type LogType = 'CLAIM' | 'CANCEL_CLAIM' | 'INBOUND_CREATE' | 'INBOUND_CONFIRM' | 'INBOUND_CANCEL' | 'ALL';
 
@@ -107,6 +108,13 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
 
   const canPrev = useMemo(() => page > 1, [page]);
   const canNext = useMemo(() => page < totalPages, [page, totalPages]);
+
+  // 导出相关
+  const [exporting, setExporting] = useState(false);
+  const [exportPage, setExportPage] = useState(0);
+  const [exportTotalPages, setExportTotalPages] = useState(0);
+  const exportCanceledRef = useRef(false);
+  const exportAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -250,6 +258,106 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
 
   const showBatch = primaryType === 'INBOUND_GROUP';
 
+  // 取消导出
+  const handleCancelExport = () => {
+    exportCanceledRef.current = true;
+    exportAbortRef.current?.abort(); // 中断当前页请求（若支持）
+  };
+
+  // 导出全部（带进度 & 取消）
+  const handleExportAll = async () => {
+    if (!shipId) return;
+
+    // 基本准备
+    setExporting(true);
+    exportCanceledRef.current = false;
+    setExportPage(0);
+    setExportTotalPages(0);
+
+    const headers = ['时间', '事件', '批次号', '物资名称', '物资ID', '分类ID', '数量', '操作人', '备注'];
+    const colWidths = [20, 12, 16, 24, 16, 10, 10, 12, 30];
+    const label = (t: ShipLog['eventType']) => labelByType[t];
+    const toAoA = (list: ShipLog[]) => list.map(r => ([
+      r.eventTime, label(r.eventType), r.batchNumber ?? '', r.itemName, r.itemId, r.categoryId,
+      r.quantity, r.actor ?? '', r.remark ?? ''
+    ]));
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([headers]);
+    ws['!cols'] = colWidths.map(wch => ({ wch }));
+    ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+    ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }) };
+
+    // 后端的 pageSize 上限是 100，这里导出就直接用 100 减少请求数
+    const pageSizeForExport = 100;
+    const { logType } = buildTypeFilter(primaryType, subType);
+
+    try {
+      // 先请求第一页，拿 total/totalPages
+      let ctrl = new AbortController();
+      exportAbortRef.current = ctrl;
+
+      const first = await getShipLogs(
+        shipId, 1, pageSizeForExport,
+        startDate || undefined, endDate || undefined,
+        logType as any, batchNo || undefined, selectedCategory, ctrl.signal
+      );
+
+      if (exportCanceledRef.current) throw new Error('EXPORT_CANCELED');
+
+      const total = first?.data?.total ?? 0;
+      const totalPages = Math.max(1, Math.ceil(total / pageSizeForExport));
+      setExportTotalPages(totalPages);
+      setExportPage(Math.min(1, totalPages));
+
+      XLSX.utils.sheet_add_aoa(ws, toAoA(first?.data?.list ?? []), { origin: -1 });
+
+      // 逐页追加
+      for (let p = 2; p <= totalPages; p++) {
+        if (exportCanceledRef.current) throw new Error('EXPORT_CANCELED');
+
+        ctrl = new AbortController();
+        exportAbortRef.current = ctrl;
+
+        const resp = await getShipLogs(
+          shipId, p, pageSizeForExport,
+          startDate || undefined, endDate || undefined,
+          logType as any, batchNo || undefined, selectedCategory, ctrl.signal
+        );
+
+        if (exportCanceledRef.current) throw new Error('EXPORT_CANCELED');
+
+        XLSX.utils.sheet_add_aoa(ws, toAoA(resp?.data?.list ?? []), { origin: -1 });
+        setExportPage(p);
+
+        // 让出事件循环，避免 UI 卡顿
+        // 若不需要可移除
+        await new Promise(r => setTimeout(r, 0));
+      }
+
+      XLSX.utils.book_append_sheet(wb, ws, '日志');
+
+      // 行数较大时建议用 xlsx
+      const bookType: 'xlsx' | 'xls' = total > 65000 ? 'xlsx' : 'xlsx'; // 如需 .xls 可按条件切换
+      XLSX.writeFile(wb, `数据报表_${new Date().toISOString().slice(0, 10)}.${bookType}`, { bookType });
+    } catch (err: any) {
+      if (err?.name === 'AbortError' || err?.message === 'EXPORT_CANCELED') {
+        // 用户取消：静默处理或提示已取消
+        // 这里不弹错误
+      } else {
+        // 其他异常可提示
+        setErrorMsg(err?.message || '导出失败');
+      }
+    } finally {
+      // 收尾
+      setExporting(false);
+      exportAbortRef.current = null;
+      exportCanceledRef.current = false;
+      setExportPage(0);
+      setExportTotalPages(0);
+    }
+  };
+
   return (
     <div className="p-4">
       <div className="mb-4 flex items-center justify-between">
@@ -350,6 +458,26 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
           >
             重置
           </button>
+
+          {/* 右侧导出操作 */}
+          <div className="ml-auto flex gap-2">
+            {!exporting ? (
+              <button
+                className="px-3 py-2 rounded-md border disabled:opacity-50"
+                onClick={handleExportAll}
+                disabled={loading || exporting}
+              >
+                导出全部
+              </button>
+            ) : (
+              <button
+                className="px-3 py-2 rounded-md border border-rose-300 text-rose-600 hover:bg-rose-50"
+                onClick={handleCancelExport}
+              >
+                取消导出
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
