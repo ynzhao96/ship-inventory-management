@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { ok, fail, asyncHandler, requireFields, q, addLog } from '../utils.js';
 import { genToken, TOKEN_TTL_SECONDS } from '../auth.js';
+import bcrypt from 'bcryptjs';
 
 const router = Router();
 
