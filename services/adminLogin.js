@@ -21,8 +21,10 @@ router.post('/adminLogin', asyncHandler(async (req, res) => {
   }
 
   const user = rows[0];
-  // ⚠️ 生产请改为 bcrypt.compare
-  if (user.password !== password) {
+
+  const input = String(password);
+  okPwd = await bcrypt.compare(input, String(user.password));
+  if (!okPwd) {
     return fail(res, 401, { code: 'INVALID_PASSWORD', message: '密码错误' });
   }
 
