@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { ok, fail, asyncHandler, requireFields, q, addLog } from '../utils.js';
 import { authRequired } from '../auth.js';
+import bcrypt from 'bcryptjs';
 
 const router = Router();
 router.use(authRequired);
@@ -11,6 +12,9 @@ router.post('/updateUserInfo', asyncHandler(async (req, res) => {
   if (!shipId) {
     return fail(res, 400, { code: 'BAD_REQUEST', message: 'shipId必填' });
   }
+
+  // 加密密码
+  const encryptedPwd = await bcrypt.hash(password, 12);
 
   try {
     const rows = await q(
@@ -26,7 +30,7 @@ router.post('/updateUserInfo', asyncHandler(async (req, res) => {
       }
       const ins = await q(
         'INSERT INTO users (ship_id, username, password, type) VALUES (?, ?, ?, 1)',
-        [shipId, username, password]
+        [shipId, username, encryptedPwd]
       );
       // ins.insertId 可用（若你需要）
     } else {
@@ -37,7 +41,7 @@ router.post('/updateUserInfo', asyncHandler(async (req, res) => {
       const sets = [];
       const params = [];
       if (username != null && username !== '') { sets.push('username = ?'); params.push(username); }
-      if (password != null && password !== '') { sets.push('password = ?'); params.push(password); }
+      if (password != null && password !== '') { sets.push('password = ?'); params.push(encryptedPwd); }
       params.push(shipId);
 
       const upd = await q(
