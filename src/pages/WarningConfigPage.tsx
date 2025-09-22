@@ -15,6 +15,7 @@ const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
   interface WarningConfig {
     itemId: string;
     itemName: string;
+    itemNameEn: string;
     threshold: number;
   }
 
@@ -51,6 +52,7 @@ const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
     const newConfig: WarningConfig = {
       itemId: '',
       itemName: '',
+      itemNameEn: '',
       threshold: 0
     };
     setWarningConfigs([...warningConfigs, newConfig]);
@@ -115,6 +117,7 @@ const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资编号</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资名称</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物资英文名称</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">预警阈值</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
             </tr>
@@ -135,6 +138,14 @@ const WarningConfigPage: React.FC<Props> = ({ shipId }) => {
                     type="text"
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={config.itemName}
+                    disabled
+                  />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <input
+                    type="text"
+                    className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={config.itemNameEn}
                     disabled
                   />
                 </td>
