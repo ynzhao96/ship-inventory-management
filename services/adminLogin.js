@@ -27,7 +27,7 @@ router.post('/adminLogin', asyncHandler(async (req, res) => {
   let okPwd = false;
   okPwd = await bcrypt.compare(input, String(user.password));
   if (!okPwd) {
-    return fail(res, 401, { code: 'INVALID_PASSWORD', message: '密码错误' });
+    return fail(res, 400, { code: 'INVALID_PASSWORD', message: '密码错误' });
   }
 
   // 2) 生成 token 与过期时间

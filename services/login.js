@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { ok, fail, asyncHandler, q, requireFields } from '../utils.js';
 import { genToken, TOKEN_TTL_SECONDS } from '../auth.js';
+import bcrypt from 'bcryptjs';
 
 const router = Router();
 
@@ -24,9 +25,11 @@ router.post('/login', asyncHandler(async (req, res) => {
   }
   const user = rows[0];
 
-  // TODO: 使用 bcrypt.compare(password, user.passwordHash) 等安全方式
-  if (password !== user.password) {
-    return fail(res, 400, { code: 'LOGIN_FAILED', message: '密码错误' });
+  const input = String(password);
+  let okPwd = false;
+  okPwd = await bcrypt.compare(input, String(user.password));
+  if (!okPwd) {
+    return fail(res, 400, { code: 'INVALID_PASSWORD', message: '密码错误' });
   }
 
   // 2) 生成 token 与过期时间
