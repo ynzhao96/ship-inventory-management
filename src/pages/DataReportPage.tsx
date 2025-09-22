@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { getShipLogs } from '../services/getShipLogs.ts';
 import Pagination from '../components/Pagination.tsx';
 import { debounce } from '../utils.ts';
+import { Category } from '../types.ts';
+import { getCategories } from '../services/getCategories.ts';
 
 type LogType = 'CLAIM' | 'CANCEL_CLAIM' | 'INBOUND_CREATE' | 'INBOUND_CONFIRM' | 'INBOUND_CANCEL' | 'ALL';
 
@@ -100,14 +102,28 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
   const [total, setTotal] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(1);
 
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+
   const canPrev = useMemo(() => page > 1, [page]);
   const canNext = useMemo(() => page < totalPages, [page, totalPages]);
+
+  useEffect(() => {
+    (async () => {
+      const res = await getCategories();
+      if (!res.success) {
+        throw new Error(res.error || "获取物资种类失败");
+      }
+      setCategories(res.data as Category[]);
+    })();
+  }, []);
 
   const onChangePrimary = (val: PrimaryType) => {
     setPrimaryType(val);
     setSubType('ALL');
     setPage(1);
     setBatchNo('');
+    setSelectedCategory('');
   };
 
   const buildTypeFilter = (primaryType: PrimaryType, subType: SubType) => {
@@ -130,6 +146,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
     primaryType: PrimaryType;
     subType: SubType;
     batchNo?: string;
+    category?: string;
   };
 
   // ✅ 真正的取数函数：完全用参数，不依赖外部状态（避免闭包问题）
@@ -147,7 +164,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
       getShipLogs: typeof import('../services/getShipLogs').getShipLogs;
     }
   ) => {
-    const { shipId, page, pageSize, startDate, endDate, primaryType, subType, batchNo } = args;
+    const { shipId, page, pageSize, startDate, endDate, primaryType, subType, batchNo, category } = args;
 
     if (!shipId) {
       setErrorMsg('缺少 shipId');
@@ -170,7 +187,8 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
         startDate || undefined,
         endDate || undefined,
         logType as any, // 支持 string | string[]
-        batchNo
+        batchNo,
+        category
       );
 
       const ok = (resp?.success ?? true);
@@ -211,17 +229,13 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
       primaryType,
       subType,
       batchNo,
+      category: selectedCategory,
     });
     // 卸载时取消未触发的定时器（若你的 debounce 支持 .cancel）
     return () => {
       (debouncedFetchRef as any).cancel?.();
     };
-  }, [shipId, page, pageSize, primaryType, subType, startDate, endDate, batchNo, debouncedFetchRef]);
-
-  // 应用筛选（重置到第1页）
-  const applyFilters = () => {
-    setPage(1);
-  };
+  }, [shipId, page, pageSize, primaryType, subType, startDate, endDate, batchNo, selectedCategory, debouncedFetchRef]);
 
   const resetFilters = () => {
     setPrimaryType('ALL');
@@ -231,6 +245,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
     setPage(1);
     setPageSize(25);
     setBatchNo('');
+    setSelectedCategory('');
   };
 
   const showBatch = primaryType === 'INBOUND_GROUP';
@@ -243,7 +258,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
 
       {/* 筛选栏 */}
       <div
-        className={`mb-4 grid grid-cols-1 ${showBatch ? 'lg:grid-cols-6' : 'lg:grid-cols-5'} gap-3 items-end`}
+        className={`mb-4 grid grid-cols-1 ${showBatch ? 'lg:grid-cols-7' : 'lg:grid-cols-6'} gap-3 items-end`}
       >
         {/* 一级 */}
         <div className="flex flex-col">
@@ -288,6 +303,20 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
           </div>
         )}
 
+        {/* 类别 */}
+        <div className="flex flex-col">
+          <label className="text-sm text-gray-600 mb-1">物资类别</label>
+          <select
+            className="border rounded-md px-3 py-2"
+            value={selectedCategory}
+            onChange={(e) => { setSelectedCategory(e.target.value); setPage(1); }}
+          >
+            {[{ categoryId: '', categoryName: '全部', categoryNameEn: 'All' } as Category, ...categories].map((cat, index) => (
+              <option key={index} value={cat.categoryId}>{cat.categoryName}</option>
+            ))}
+          </select>
+        </div>
+
         {/* 开始日期 */}
         <div className="flex flex-col">
           <label className="text-sm text-gray-600 mb-1">开始日期</label>
@@ -316,13 +345,6 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
         <div className="flex items-end gap-2 justify-self-end">
           <button
             className="px-4 py-2 rounded-md bg-black text-white disabled:opacity-50 whitespace-nowrap"
-            onClick={applyFilters}
-            disabled={loading}
-          >
-            应用
-          </button>
-          <button
-            className="px-4 py-2 rounded-md border disabled:opacity-50 whitespace-nowrap"
             onClick={resetFilters}
             disabled={loading}
           >
