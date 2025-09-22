@@ -479,6 +479,33 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
             )}
           </div>
         </div>
+
+        {/* ✅ 进度面板（导出时显示） */}
+        {exporting && (
+          <div className="mt-3 p-3 border rounded-lg bg-white shadow flex items-center gap-3">
+            <div className="flex-1">
+              <div className="text-sm text-gray-700 mb-1">
+                导出中：第 {Math.max(1, exportPage)} / {Math.max(1, exportTotalPages)} 页
+              </div>
+              <div className="h-2 bg-gray-200 rounded">
+                <div
+                  className="h-2 bg-blue-600 rounded"
+                  style={{
+                    width: `${exportTotalPages ? Math.round((exportPage / exportTotalPages) * 100) : 0}%`,
+                    transition: 'width .2s ease',
+                  }}
+                />
+              </div>
+            </div>
+            <button
+              className="px-3 py-1.5 rounded-md border border-rose-300 text-rose-600 hover:bg-rose-50"
+              onClick={handleCancelExport}
+            >
+              取消
+            </button>
+          </div>
+        )}
+
       </div>
 
       {/* 列表 */}
