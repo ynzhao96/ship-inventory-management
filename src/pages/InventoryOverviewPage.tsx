@@ -71,14 +71,14 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
       filteredRecords = itemLogs?.inbounds || [];
     } else if (activeTab === '入库确认') {
       filteredRecords = itemLogs?.confirms || [];
-    } else if (activeTab === '申领记录') {
+    } else if (activeTab === '出库记录') {
       filteredRecords = itemLogs?.claims || [];
     } else {
       // 全部：合并并打上来源标签，便于区分
       filteredRecords = [
         ...(itemLogs?.inbounds || []).map(r => ({ ...r, __type: '入库提交' })),
         ...(itemLogs?.confirms || []).map(r => ({ ...r, __type: '入库确认' })),
-        ...(itemLogs?.claims || []).map(r => ({ ...r, __type: '申领记录' })),
+        ...(itemLogs?.claims || []).map(r => ({ ...r, __type: '出库记录' })),
       ];
     }
 
@@ -105,7 +105,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
 
             <div className="border-b border-gray-200 mb-6">
               <nav className="-mb-px flex space-x-8">
-                {['入库提交', '入库确认', '申领记录'].map(tab => (
+                {['入库提交', '入库确认', '出库记录'].map(tab => (
                   <button
                     key={tab}
                     className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab
@@ -139,7 +139,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">备注</th>
                     </tr>
                   )}
-                  {activeTab === '申领记录' && (
+                  {activeTab === '出库记录' && (
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">申领人</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">数量</th>
@@ -167,7 +167,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
                         <td className="px-6 py-4 whitespace-nowrap text-left">{record.confirmRemark}</td>
                       </tr>)
                   )}
-                  {activeTab === '申领记录' && (
+                  {activeTab === '出库记录' && (
                     filteredRecords.map(record =>
                       <tr key={record.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-left">{record.claimer}</td>
