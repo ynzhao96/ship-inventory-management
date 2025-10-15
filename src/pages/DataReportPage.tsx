@@ -19,7 +19,7 @@ type SubType =
 
 const PRIMARY_OPTIONS: { value: PrimaryType; label: string }[] = [
   { value: 'ALL', label: '全部' },
-  { value: 'CLAIM_GROUP', label: '申领' },
+  { value: 'CLAIM_GROUP', label: '出库' },
   { value: 'INBOUND_GROUP', label: '入库' },
 ];
 
@@ -27,8 +27,8 @@ const SECONDARY_OPTIONS_BY_PRIMARY: Record<PrimaryType, { value: SubType; label:
   ALL: [{ value: 'ALL', label: '全部' }],
   CLAIM_GROUP: [
     { value: 'ALL', label: '全部' },
-    { value: 'CLAIM', label: '申领' },
-    { value: 'CANCEL_CLAIM', label: '取消申领' },
+    { value: 'CLAIM', label: '出库' },
+    { value: 'CANCEL_CLAIM', label: '取消出库' },
   ],
   INBOUND_GROUP: [
     { value: 'ALL', label: '全部' },
@@ -79,8 +79,8 @@ const badgeStyleByType: Record<Exclude<LogType, 'ALL'>, string> = {
 };
 
 const labelByType: Record<Exclude<LogType, 'ALL'>, string> = {
-  CLAIM: '申领',
-  CANCEL_CLAIM: '取消申领',
+  CLAIM: '出库',
+  CANCEL_CLAIM: '取消出库',
   INBOUND_CREATE: '创建入库',
   INBOUND_CONFIRM: '确认入库',
   INBOUND_CANCEL: '取消入库',
