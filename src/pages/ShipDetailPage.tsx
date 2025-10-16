@@ -122,8 +122,8 @@ const ShipDetailPage = ({ onBack }: { onBack: () => void }) => {
     <div className="min-h-screen w-full flex flex-col bg-gray-50">
       <Header
         title={`${shipId} - ${ship?.name}`}
-        notificationCount={2}
         onBack={onBack}
+        color='gray'
       />
 
       <div className="flex flex-1 overflow-hidden">

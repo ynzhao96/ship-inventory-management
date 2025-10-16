@@ -44,7 +44,7 @@ const HomePage = ({ }: { onBack: () => void }) => {
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-gray-50">
-      <Header title="船舶管理系统" notificationCount={11} />
+      <Header title="船舶管理系统" color='blue' />
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar

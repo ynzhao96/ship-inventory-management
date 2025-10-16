@@ -6,18 +6,22 @@ interface HeaderProps {
   onBack?: () => void;
   userName?: string;
   userAvatar?: string;
+  color?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({
-  title,
-  onBack }) => {
+const Header: React.FC<HeaderProps> = ({ title, onBack, color }) => {
+  const themeColor =
+    color === 'blue' ? 'bg-blue-900'
+      : color === 'gray' ? 'bg-gray-600'
+        : 'bg-blue-900'
+
   return (
-    <header className="bg-blue-900 text-white shadow z-10">
-      <div className=" px-4 py-3 flex justify-between items-center">
+    <header className={`${themeColor} text-white shadow z-10`}>
+      <div className="px-4 py-3 flex justify-between items-center">
         <div className="flex items-center">
           <button
             onClick={onBack}
-            className="mr-3 bg-inherit hover:bg-blue-800 p-1 rounded"
+            className={`mr-3 bg-inherit hover:${themeColor} p-1 rounded`}
             style={{ visibility: onBack ? 'visible' : 'hidden' }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
