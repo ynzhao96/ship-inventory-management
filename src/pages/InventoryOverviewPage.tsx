@@ -90,6 +90,7 @@ const InventoryOverviewPage: React.FC<InventoryOverviewPageProps> = ({ shipId })
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">{selectedItem.itemName} - {selectedItem.itemNameEn}</h2>
                 <p className="text-gray-500">物资编号：{selectedItem.itemId}</p>
+                <p className="text-gray-500">单位：{selectedItem.unit}</p>
                 <p className="text-gray-500">规格：{selectedItem.specification}</p>
                 <p className="text-gray-500">备注：{selectedItem.remark}</p>
               </div>
