@@ -15,6 +15,7 @@ router.get('/getInboundList', asyncHandler(async (req, res) => {
       it.item_name                                       AS itemName,
       it.item_name_en                                    AS itemNameEn,
       it.unit                                            AS unit,
+      it.specification                                   AS specification,
       ibd.quantity                                       AS quantity,
       ibd.status                                         AS status,
       CONVERT_TZ(ibd.created_at, '+00:00', '+08:00')     AS createdAt
