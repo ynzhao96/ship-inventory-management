@@ -33,6 +33,7 @@ import getItemList from './getItemList.js';
 import getAbnormals from './getAbnormals.js';
 import updateCategory from './updateCategory.js';
 import updateShip from './updateShip.js';
+import updateInbound from './updateInbound.js';
 
 const router = Router();
 
@@ -71,5 +72,6 @@ router.use(getItemList);
 router.use(getAbnormals);
 router.use(updateCategory);
 router.use(updateShip);
+router.use(updateInbound);
 
 export default router;

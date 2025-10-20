@@ -38,6 +38,7 @@ export type Inbound = {
   inboundId?: number;
   itemId?: string;
   itemName?: string;
+  itemNameEn?: string;
   quantity?: number;
   status?: string;
   unit?: string;

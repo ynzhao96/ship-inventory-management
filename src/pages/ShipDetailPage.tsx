@@ -8,6 +8,7 @@ import DataReportPage from './DataReportPage';
 import AccountManagementPage from './AccountManagementPage';
 import InventoryOverviewPage from './InventoryOverviewPage';
 import CrewManagementPage from './CrewManagementPage';
+import InboundListPage from './InboundListPage.tsx';
 import { useParams } from 'react-router-dom';
 import { Ship } from '../types';
 import { getShipInfo } from '../services/getShipInfo.ts';
@@ -55,6 +56,15 @@ const ShipDetailPage = ({ onBack }: { onBack: () => void }) => {
     {
       id: 'add-supply',
       label: '物资入库',
+      icon: (
+        <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 4v16m8-8H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )
+    },
+    {
+      id: 'inbound-list',
+      label: '待入库列表',
       icon: (
         <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 4v16m8-8H4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -149,6 +159,8 @@ const ShipDetailPage = ({ onBack }: { onBack: () => void }) => {
                   <ShipInfoPage ship={ship} />
                 ) : activePage === 'add-supply' ? (
                   <SupplyFormPage shipId={shipId} />
+                ) : activePage === 'inbound-list' ? (
+                  <InboundListPage shipId={shipId} />
                 ) : activePage === 'inventory-prewarn' ? (
                   <WarningConfigPage shipId={shipId} />
                 ) : activePage === 'inventory-storage' ? (
