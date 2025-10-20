@@ -45,6 +45,8 @@ interface ShipLog {
   shipId: string;
   itemId: string;
   itemName: string;
+  unit?: string;
+  specification?: string;
   categoryId: string | number;
   quantity: number;
   actor?: string | null;
@@ -274,11 +276,11 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
     setExportPage(0);
     setExportTotalPages(0);
 
-    const headers = ['时间', '事件', '批次号', '物资名称', '物资ID', '物资种类', '数量', '操作人', '备注'];
+    const headers = ['时间', '事件', '批次号', '物资ID', '物资名称', '单位', '规格', '物资种类', '数量', '操作人', '备注'];
     const colWidths = [20, 12, 16, 24, 16, 10, 10, 12, 30];
     const label = (t: ShipLog['eventType']) => labelByType[t];
     const toAoA = (list: ShipLog[]) => list.map(r => ([
-      r.eventTime, label(r.eventType), r.batchNumber ?? '', r.itemName, r.itemId, categories.find((x) => x.categoryId === r.categoryId)?.categoryName,
+      r.eventTime, label(r.eventType), r.batchNumber ?? '', r.itemId, r.itemName, r.unit, r.specification, categories.find((x) => x.categoryId === r.categoryId)?.categoryName,
       r.quantity, r.actor ?? '', r.remark ?? ''
     ]));
 
@@ -518,6 +520,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
                 <th className="px-4 py-2">事件</th>
                 <th className="px-4 py-2">批次号</th>
                 <th className="px-4 py-2">物资</th>
+                <th className="px-4 py-2">规格</th>
                 <th className="px-4 py-2">数量</th>
                 <th className="px-4 py-2">操作人</th>
                 <th className="px-4 py-2">备注</th>
@@ -543,21 +546,23 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
               {!loading && rows.map((row, idx) => (
                 <tr key={`${row.eventType}-${row.itemId}-${row.eventTime}-${idx}`} className="border-t">
                   <td className="px-4 py-2 whitespace-nowrap">{row.eventTime}</td>
-                  <td className="px-4 py-2">
+                  <td className="px-4 py-2 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded-md text-xs font-medium ${badgeStyleByType[row.eventType]}`}>
                       {labelByType[row.eventType]}
                     </span>
                   </td>
-                  <td className="px-4 py-2">{row.batchNumber || '-'}</td>
-                  <td className="px-4 py-2">
+                  <td className="px-4 py-2 whitespace-nowrap">{row.batchNumber || '-'}</td>
+                  <td className="px-4 py-2 whitespace-nowrap">
                     <div className="flex flex-col">
                       <span className="font-medium">{row.itemName}</span>
                       <span className="text-xs text-gray-500">物资编号: {row.itemId}</span>
                       <span className="text-xs text-gray-500">种类: {categories.find((x) => x.categoryId === row.categoryId)?.categoryName || ''}</span>
+                      <span className="text-xs text-gray-500">单位: {row.unit}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-2">{row.quantity}</td>
-                  <td className="px-4 py-2">{row.actor || '-'}</td>
+                  <td className="px-4 py-2">{row.specification}</td>
+                  <td className="px-4 py-2 whitespace-nowrap">{row.quantity}</td>
+                  <td className="px-4 py-2 whitespace-nowrap">{row.actor || '-'}</td>
                   <td className="px-4 py-2">{row.remark || '-'}</td>
                 </tr>
               ))}
