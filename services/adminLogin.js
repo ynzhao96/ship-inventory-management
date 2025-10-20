@@ -30,7 +30,8 @@ router.post('/adminLogin', asyncHandler(async (req, res) => {
 
   // 生成 token 与过期时间
   const token = genToken();
-  const expiration = new Date(Date.now() + TOKEN_TTL_SECONDS * 1000);
+  const now = Date.now();
+  const expiration = new Date(now + TOKEN_TTL_SECONDS * 1000);
 
   // 查该用户当前的 token 记录，按 last_login 升序（最早的在前）
   const tokenRows = await q(
