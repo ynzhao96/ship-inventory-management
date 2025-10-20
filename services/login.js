@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 
 const router = Router();
 
+// 船舶端登录(多端登录，最多 3 端)
 router.post('/login', asyncHandler(async (req, res) => {
   const { username, password } = req.body ?? {};
   const check = requireFields(req.body, ['username', 'password']);
@@ -36,13 +37,26 @@ router.post('/login', asyncHandler(async (req, res) => {
   const token = genToken();
   const expiration = new Date(Date.now() + TOKEN_TTL_SECONDS * 1000);
 
-  // 3) 更新到 users 表（一个帐号仅保留一个有效 token）
-  await q(
-    `UPDATE users
-        SET token = ?, token_expiration = ?
-      WHERE username = ?`,
-    [token, expiration, user.username]
+  // 查该用户当前的 token 记录，按 last_login 升序（最早的在前）
+  const tokenRows = await q(
+    'SELECT token_id FROM tokens WHERE username = ? ORDER BY last_login ASC',
+    [user.username]
   );
+
+  if (tokenRows.length < 3) {
+    // 未达到上限，新增一条
+    await q(
+      'INSERT INTO tokens (token, username, token_expiration, last_login) VALUES (?, ?, ?, NOW())',
+      [token, user.username, expiration]
+    );
+  } else {
+    // 已达上限 = 3，替换“最早登录”的那条记录
+    const oldestId = tokenRows[0].token_id;
+    await q(
+      'UPDATE tokens SET token = ?, token_expiration = ?, last_login = NOW() WHERE token_id = ?',
+      [token, expiration, oldestId]
+    );
+  }
 
   // 4) 返回 token 与过期时间（ISO 字符串方便前端处理）
   return ok(res, { data: { token, shipId: user.shipId } }, { message: '登录成功' });
