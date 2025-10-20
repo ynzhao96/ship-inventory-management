@@ -32,8 +32,8 @@ export async function authRequired(req, res, next) {
 
   try {
     const rows = await q(
-      `SELECT username, token_expiration AS tokenExpiration
-         FROM users
+      `SELECT token_expiration AS tokenExpiration
+         FROM tokens
         WHERE token = ?
         LIMIT 1`,
       [token]
