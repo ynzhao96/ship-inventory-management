@@ -274,11 +274,11 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
     setExportPage(0);
     setExportTotalPages(0);
 
-    const headers = ['时间', '事件', '批次号', '物资名称', '物资ID', '分类ID', '数量', '操作人', '备注'];
+    const headers = ['时间', '事件', '批次号', '物资名称', '物资ID', '物资种类', '数量', '操作人', '备注'];
     const colWidths = [20, 12, 16, 24, 16, 10, 10, 12, 30];
     const label = (t: ShipLog['eventType']) => labelByType[t];
     const toAoA = (list: ShipLog[]) => list.map(r => ([
-      r.eventTime, label(r.eventType), r.batchNumber ?? '', r.itemName, r.itemId, r.categoryId,
+      r.eventTime, label(r.eventType), r.batchNumber ?? '', r.itemName, r.itemId, categories.find((x) => x.categoryId === r.categoryId)?.categoryName,
       r.quantity, r.actor ?? '', r.remark ?? ''
     ]));
 
@@ -552,7 +552,8 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
                   <td className="px-4 py-2">
                     <div className="flex flex-col">
                       <span className="font-medium">{row.itemName}</span>
-                      <span className="text-xs text-gray-500">ID: {row.itemId} / Cat: {row.categoryId}</span>
+                      <span className="text-xs text-gray-500">物资编号: {row.itemId}</span>
+                      <span className="text-xs text-gray-500">种类: {categories.find((x) => x.categoryId === row.categoryId)?.categoryName || ''}</span>
                     </div>
                   </td>
                   <td className="px-4 py-2">{row.quantity}</td>
