@@ -53,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       <li key={item.id}>
         <button
           className={[
-            'flex items-center w-full px-4 py-3 text-left transition-colors',
+            'flex items-center w-full px-4 py-3 text-left transition-colors focus:outline-none focus-visible:ring',
             isActive ? 'text-blue-500 bg-blue-50' : 'text-gray-700 hover:bg-gray-100',
             collapsed ? 'justify-center px-0' : ''
           ].join(' ')}
