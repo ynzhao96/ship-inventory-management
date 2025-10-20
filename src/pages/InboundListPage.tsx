@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { getInboundList } from "../services/getInboundList";
-import { Category, Inbound } from "../types";
+import { Inbound } from "../types";
 import ConfirmModal from "../components/ConfirmModal";
 import Toast from "../components/Toast";
-import { updateCategory } from "../services/updateCategory";
 import { debounce } from "../utils";
-
-type CategoryRow = Category & { _isNew?: boolean };
+import { updateInbound } from "../services/updateInbound";
 
 interface Props {
   shipId?: string;
@@ -22,7 +20,7 @@ const InboundListPage: React.FC<Props> = ({ shipId }) => {
   const [toastText, setToastText] = useState("");
 
   // 选中行（用于确认弹窗）
-  const [selectedCategory, setSelectedCategory] = useState<CategoryRow | null>(null);
+  const [selectedInbound, setSelectedInbound] = useState<Inbound | null>(null);
   const [operation, setOperation] = useState("");
 
   const fetchList = useMemo(
@@ -42,12 +40,12 @@ const InboundListPage: React.FC<Props> = ({ shipId }) => {
   }, []);
 
   // 行编辑
-  const handleEditCategory = (id: string | number, field: string, value: string | number) => {
+  const handleEditInbound = (id: string | number, field: string, value: string | number) => {
     const idx = Number(id);
-    setCategories((prev) =>
+    setInboundList((prev) =>
       prev.map((row, i) => {
         if (i !== idx) return row;
-        const next: CategoryRow = { ...row, [field]: value } as CategoryRow;
+        const next: Inbound = { ...row, [field]: value } as Inbound;
 
         return next;
       })
@@ -55,15 +53,15 @@ const InboundListPage: React.FC<Props> = ({ shipId }) => {
   };
 
   // 校验（INSERT/UPDATE 共用）
-  const validateRow = (row: CategoryRow): string | null => {
-    if (!String(row.categoryId)?.trim()) return "物资类别编号不能为空";
-    if (!row.categoryName?.trim()) return "物资类别名称不能为空";
-    if (!row.categoryNameEn?.trim()) return "物资类别英文名称不能为空";
+  const validateRow = (row: Inbound): string | null => {
+    if (!String(row.inboundId)?.trim()) return "入库信息id不能为空";
+    if (!row.batchNumber?.trim()) return "批次号不能为空";
+    if (!row.quantity) return "入库数量不能为空";
     return null;
   };
 
   // 提交（根据 _isNew 决定 INSERT / UPDATE）
-  const handleSubmit = async (row: CategoryRow) => {
+  const handleSubmit = async (row: Inbound) => {
     const err = validateRow(row);
     if (err) {
       setToastText(err);
@@ -71,15 +69,15 @@ const InboundListPage: React.FC<Props> = ({ shipId }) => {
       return;
     }
 
-    const op = operation === 'SUBMIT' ? (row._isNew ? "INSERT" : "UPDATE") : 'DELETE';
+    const op = operation === 'SUBMIT' ? "UPDATE" : 'DELETE';
     const payload = {
-      categoryId: String(row.categoryId),
-      categoryName: row.categoryName,
-      categoryNameEn: row.categoryNameEn,
+      inboundId: String(row.inboundId),
+      batchNumber: row.batchNumber,
+      quantity: row.quantity,
     };
 
-    const res = await updateCategory(payload, op as any);
-    setToastText(res.message || (row._isNew ? "创建物料成功" : "更新物料成功"));
+    const res = await updateInbound(payload, op as any);
+    setToastText(res.message || ("更新物料成功"));
     requestAnimationFrame(() => setShowToast(true));
 
     // 成功后刷新列表（也可以就地把 _isNew 去掉，但回读更稳妥）
@@ -112,7 +110,7 @@ const InboundListPage: React.FC<Props> = ({ shipId }) => {
                     type="text"
                     className="w-full px-1 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={inbound.batchNumber}
-                    onChange={(e) => handleEditCategory(index, 'batchNumber', e.target.value)}
+                    onChange={(e) => handleEditInbound(index, 'batchNumber', e.target.value)}
                     placeholder="请输入批次号"
                   />
                 </td>
@@ -121,7 +119,7 @@ const InboundListPage: React.FC<Props> = ({ shipId }) => {
                     type="text"
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-not-allowed"
                     value={inbound.itemId}
-                    onChange={(e) => handleEditCategory(index, 'itemId', e.target.value)}
+                    onChange={(e) => handleEditInbound(index, 'itemId', e.target.value)}
                     placeholder="请输入物资编号"
                     disabled
                   />
@@ -131,7 +129,7 @@ const InboundListPage: React.FC<Props> = ({ shipId }) => {
                     type="text"
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-not-allowed"
                     value={inbound.itemName}
-                    onChange={(e) => handleEditCategory(index, 'itemName', e.target.value)}
+                    onChange={(e) => handleEditInbound(index, 'itemName', e.target.value)}
                     placeholder="请输入物资名称"
                     disabled
                   />
@@ -141,17 +139,17 @@ const InboundListPage: React.FC<Props> = ({ shipId }) => {
                     type="text"
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-not-allowed"
                     value={inbound.itemNameEn}
-                    onChange={(e) => handleEditCategory(index, 'itemNameEn', e.target.value)}
+                    onChange={(e) => handleEditInbound(index, 'itemNameEn', e.target.value)}
                     placeholder="请输入物资英文名称"
                     disabled
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <input
-                    type="text"
+                    type="number"
                     className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={inbound.quantity}
-                    onChange={(e) => handleEditCategory(index, 'quantity', e.target.value)}
+                    onChange={(e) => handleEditInbound(index, 'quantity', e.target.value)}
                     placeholder="请输入入库数量"
                   />
                 </td>
@@ -159,18 +157,18 @@ const InboundListPage: React.FC<Props> = ({ shipId }) => {
                   <button
                     className="px-3 py-1 rounded-md text-white bg-blue-500 hover:bg-blue-600"
                     onClick={() => {
-                      setSelectedCategory(inbound);
+                      setSelectedInbound(inbound);
                       setModalText("确定提交这次修改吗？此操作不可恢复。");
                       setOperation("SUBMIT");
                       setShowModal(true);
                     }}
                   >
-                    {inbound._isNew ? "创建" : "提交"}
+                    {"提交"}
                   </button>
                   <button
                     className="px-3 py-1 rounded-md text-white bg-red-500/80 hover:bg-red-600"
                     onClick={() => {
-                      setSelectedCategory(inbound);
+                      setSelectedInbound(inbound);
                       setModalText("确定删除这条记录吗？此操作不可恢复。");
                       setOperation("DELETE");
                       setShowModal(true);
@@ -190,7 +188,7 @@ const InboundListPage: React.FC<Props> = ({ shipId }) => {
           message={modalText}
           confirmText="提交"
           onConfirm={() => {
-            if (selectedCategory) handleSubmit(selectedCategory);
+            if (selectedInbound) handleSubmit(selectedInbound);
             setShowModal(false);
           }}
           onCancel={() => setShowModal(false)}

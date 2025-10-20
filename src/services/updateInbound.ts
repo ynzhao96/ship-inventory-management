@@ -8,7 +8,7 @@ export const updateInbound = async (
   },
   operation: 'UPDATE' | 'DELETE') => {
   const body = {
-    category: inbound,
+    inbound: inbound,
     operation: operation
   };
   return await http('/api/updateInbound', {
