@@ -276,7 +276,27 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
     setExportPage(0);
     setExportTotalPages(0);
 
+    // === 组装自定义顶部信息 ===
+    const startStr = startDate ? new Date(startDate).toISOString().slice(0, 10) : '(未选择)';
+    const endStr = endDate ? new Date(endDate).toISOString().slice(0, 10) : '(未选择)';
+    const periodLine = `时间段: ${startStr} ~ ${endStr}`;
+    const eventTypeTitle = `事件类型: ${subType === 'ALL' ?
+      PRIMARY_OPTIONS.find(opt => opt.value === primaryType)?.label :
+      SECONDARY_OPTIONS_BY_PRIMARY?.[primaryType]?.find(opt => opt.value === subType)?.label}`;
+    const batchNumberTitle = `批次号: ${batchNo || '(未选择)'}`;
+    const categoryTitle = `物资种类: ${selectedCategory || '全部'}`;
+
     const headers = ['时间', '事件', '批次号', '物资ID', '物资名称', '单位', '规格', '物资种类', '数量', '操作人', '备注'];
+    const topInfoRows = [
+      [periodLine],
+      [eventTypeTitle],
+      [batchNumberTitle],
+      [categoryTitle],
+      [''],           // 空行做视觉间距
+      headers         // 表头行
+    ];
+    // 表头行数量
+    const headerRowIdx = topInfoRows.length - 1; // 0-based
     const colWidths = [20, 12, 16, 24, 16, 10, 10, 12, 30];
     const label = (t: ShipLog['eventType']) => labelByType[t];
     const toAoA = (list: ShipLog[]) => list.map(r => ([
@@ -285,10 +305,20 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
     ]));
 
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet([headers]);
+    const ws = XLSX.utils.aoa_to_sheet(topInfoRows);
+    // 合并“说明行”整行单元格（不合并表头行）
+    ws['!merges'] = Array.from({ length: headerRowIdx }, (_, r) => ({
+      s: { r, c: 0 },
+      e: { r, c: headers.length - 1 },
+    }));
     ws['!cols'] = colWidths.map(wch => ({ wch }));
     ws['!freeze'] = { xSplit: 0, ySplit: 1 };
-    ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }) };
+    ws['!autofilter'] = {
+      ref: XLSX.utils.encode_range({
+        s: { r: headerRowIdx, c: 0 },
+        e: { r: headerRowIdx, c: headers.length - 1 }
+      })
+    };
 
     // 后端的 pageSize 上限是 100，这里导出就直接用 100 减少请求数
     const pageSizeForExport = 100;
