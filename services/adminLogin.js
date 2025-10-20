@@ -42,15 +42,15 @@ router.post('/adminLogin', asyncHandler(async (req, res) => {
   if (tokenRows.length < 3) {
     // 未达到上限，新增一条
     await q(
-      'INSERT INTO tokens (token, username, token_expiration, last_login) VALUES (?, ?, ?, ?)',
-      [token, user.username, expiration, now]
+      'INSERT INTO tokens (token, username, token_expiration, last_login) VALUES (?, ?, ?, NOW())',
+      [token, user.username, expiration]
     );
   } else {
     // 已达上限 = 3，替换“最早登录”的那条记录
     const oldestId = tokenRows[0].token_id;
     await q(
-      'UPDATE tokens SET token = ?, token_expiration = ?, last_login = ? WHERE token_id = ?',
-      [token, expiration, now, oldestId]
+      'UPDATE tokens SET token = ?, token_expiration = ?, last_login = NOW() WHERE token_id = ?',
+      [token, expiration, oldestId]
     );
   }
 
