@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 
 const router = Router();
 
-// 管理员登录（多端登录，最多 3 端）
+// 管理员登录（多端登录，最多 5 端）
 router.post('/adminLogin', asyncHandler(async (req, res) => {
   const { username, password } = req.body || {};
   const check = requireFields(req.body, ['username', 'password']);
@@ -39,7 +39,7 @@ router.post('/adminLogin', asyncHandler(async (req, res) => {
     [user.username]
   );
 
-  if (tokenRows.length < 3) {
+  if (tokenRows.length < 5) {
     // 未达到上限，新增一条
     await q(
       'INSERT INTO tokens (token, username, token_expiration, last_login) VALUES (?, ?, ?, NOW())',
