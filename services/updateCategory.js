@@ -64,12 +64,12 @@ router.post('/updateCategory', asyncHandler(async (req, res) => {
       );
 
       try {
-        await addLog?.(conn, {
-          module: 'categories',
-          action: 'insert',
-          remark: `categoryId=${categoryId}`,
-          payload: JSON.stringify({ category })
-        });
+        // await addLog?.(conn, {
+        //   module: 'categories',
+        //   action: 'insert',
+        //   remark: `categoryId=${categoryId}`,
+        //   payload: JSON.stringify({ category })
+        // });
       } catch { }
 
       // 回读
@@ -111,12 +111,12 @@ router.post('/updateCategory', asyncHandler(async (req, res) => {
       await q(`UPDATE categories SET ${sets.join(', ')} WHERE id = ?`, [...args, categoryId], conn);
 
       try {
-        await addLog?.(conn, {
-          module: 'categories',
-          action: 'update',
-          remark: `categoryId=${categoryId}`,
-          payload: JSON.stringify({ category })
-        });
+        // await addLog?.(conn, {
+        //   module: 'categories',
+        //   action: 'update',
+        //   remark: `categoryId=${categoryId}`,
+        //   payload: JSON.stringify({ category })
+        // });
       } catch { }
 
       const [row] = await q(
@@ -147,12 +147,12 @@ router.post('/updateCategory', asyncHandler(async (req, res) => {
     const ret = await q('DELETE FROM categories WHERE id = ?', [categoryId], conn);
 
     try {
-      await addLog?.(conn, {
-        module: 'categories',
-        action: 'delete',
-        remark: `categoryId=${categoryId}`,
-        payload: JSON.stringify({ category })
-      });
+      // await addLog?.(conn, {
+      //   module: 'categories',
+      //   action: 'delete',
+      //   remark: `categoryId=${categoryId}`,
+      //   payload: JSON.stringify({ category })
+      // });
     } catch { }
 
     return { affected: ret?.affectedRows ?? 0 };

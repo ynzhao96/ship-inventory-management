@@ -109,12 +109,12 @@ router.post('/updateThreshold', asyncHandler(async (req, res) => {
 
       // 写操作日志（可选）
       try {
-        await addLog?.(conn, {
-          module: 'inventory',
-          action: 'update_threshold_sync',
-          remark: `shipId=${shipId}, updated=${updatedCount}, cleared=${clearedCount}`,
-          payload: JSON.stringify({ items, toClear }),
-        });
+        // await addLog?.(conn, {
+        //   module: 'inventory',
+        //   action: 'update_threshold_sync',
+        //   remark: `shipId=${shipId}, updated=${updatedCount}, cleared=${clearedCount}`,
+        //   payload: JSON.stringify({ items, toClear }),
+        // });
       } catch { /* 忽略日志错误 */ }
     });
 

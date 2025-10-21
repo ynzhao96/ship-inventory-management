@@ -71,12 +71,12 @@ router.post('/updateInbound', asyncHandler(async (req, res) => {
       await q(`UPDATE inbounds SET ${sets.join(', ')} WHERE inbound_id = ?`, [...args, inboundId], conn);
 
       try {
-        await addLog?.(conn, {
-          module: 'inbounds',
-          action: 'update',
-          remark: `inboundId=${inboundId}`,
-          payload: JSON.stringify({ inbound })
-        });
+        // await addLog?.(conn, {
+        //   module: 'inbounds',
+        //   action: 'update',
+        //   remark: `inboundId=${inboundId}`,
+        //   payload: JSON.stringify({ inbound })
+        // });
       } catch { }
 
       const [row] = await q(
@@ -107,12 +107,12 @@ router.post('/updateInbound', asyncHandler(async (req, res) => {
     const ret = await q('DELETE FROM inbounds WHERE inbound_id = ?', [inboundId], conn);
 
     try {
-      await addLog?.(conn, {
-        module: 'inbounds',
-        action: 'delete',
-        remark: `inboundId=${inboundId}`,
-        payload: JSON.stringify({ inbound })
-      });
+      // await addLog?.(conn, {
+      //   module: 'inbounds',
+      //   action: 'delete',
+      //   remark: `inboundId=${inboundId}`,
+      //   payload: JSON.stringify({ inbound })
+      // });
     } catch { }
 
     return { affected: ret?.affectedRows ?? 0 };

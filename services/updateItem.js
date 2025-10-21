@@ -74,12 +74,13 @@ router.post('/updateItem', asyncHandler(async (req, res) => {
       );
 
       try {
-        await addLog?.(conn, {
-          module: 'items',
-          action: 'insert',
-          remark: `itemId=${itemId}`,
-          payload: JSON.stringify({ item })
-        });
+        // await addLog?.(conn, {
+        //   module: 'items',
+        //   action: 'insert',
+        //   remark: `itemId=${itemId}`,
+        //   payload: JSON.stringify({ item })
+        // });
+        // await addLog('INBOUND_CREATED', 'admin', batchNo, null, `管理员添加物资入库，${itemListLog}`);
       } catch { }
 
       // 回读
@@ -124,12 +125,12 @@ router.post('/updateItem', asyncHandler(async (req, res) => {
       await q(`UPDATE items SET ${sets.join(', ')} WHERE item_id = ?`, [...args, itemId], conn);
 
       try {
-        await addLog?.(conn, {
-          module: 'items',
-          action: 'update',
-          remark: `itemId=${itemId}`,
-          payload: JSON.stringify({ item })
-        });
+        // await addLog?.(conn, {
+        //   module: 'items',
+        //   action: 'update',
+        //   remark: `itemId=${itemId}`,
+        //   payload: JSON.stringify({ item })
+        // });
       } catch { }
 
       const [row] = await q(
@@ -181,12 +182,12 @@ router.post('/updateItem', asyncHandler(async (req, res) => {
     const ret = await q('DELETE FROM items WHERE item_id = ?', [itemId], conn);
 
     try {
-      await addLog?.(conn, {
-        module: 'items',
-        action: 'delete',
-        remark: `itemId=${itemId}, force=${!!force}`,
-        payload: JSON.stringify({ item })
-      });
+      // await addLog?.(conn, {
+      //   module: 'items',
+      //   action: 'delete',
+      //   remark: `itemId=${itemId}, force=${!!force}`,
+      //   payload: JSON.stringify({ item })
+      // });
     } catch { }
 
     return { affected: ret?.affectedRows ?? 0 };

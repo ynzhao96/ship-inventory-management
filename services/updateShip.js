@@ -64,12 +64,12 @@ router.post('/updateShip', asyncHandler(async (req, res) => {
       );
 
       try {
-        await addLog?.(conn, {
-          module: 'ships',
-          action: 'insert',
-          remark: `shipId=${shipId}`,
-          payload: JSON.stringify({ ship })
-        });
+        // await addLog?.(conn, {
+        //   module: 'ships',
+        //   action: 'insert',
+        //   remark: `shipId=${shipId}`,
+        //   payload: JSON.stringify({ ship })
+        // });
       } catch { }
 
       // 回读
@@ -111,12 +111,12 @@ router.post('/updateShip', asyncHandler(async (req, res) => {
       await q(`UPDATE ships SET ${sets.join(', ')} WHERE id = ?`, [...args, shipId], conn);
 
       try {
-        await addLog?.(conn, {
-          module: 'ships',
-          action: 'update',
-          remark: `shipId=${shipId}`,
-          payload: JSON.stringify({ ship })
-        });
+        // await addLog?.(conn, {
+        //   module: 'ships',
+        //   action: 'update',
+        //   remark: `shipId=${shipId}`,
+        //   payload: JSON.stringify({ ship })
+        // });
       } catch { }
 
       const [row] = await q(
@@ -147,12 +147,12 @@ router.post('/updateShip', asyncHandler(async (req, res) => {
     const ret = await q('DELETE FROM ships WHERE id = ?', [shipId], conn);
 
     try {
-      await addLog?.(conn, {
-        module: 'ships',
-        action: 'delete',
-        remark: `shipId=${shipId}`,
-        payload: JSON.stringify({ ship })
-      });
+      // await addLog?.(conn, {
+      //   module: 'ships',
+      //   action: 'delete',
+      //   remark: `shipId=${shipId}`,
+      //   payload: JSON.stringify({ ship })
+      // });
     } catch { }
 
     return { affected: ret?.affectedRows ?? 0 };
