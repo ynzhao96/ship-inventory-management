@@ -567,7 +567,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
       XLSX.utils.book_append_sheet(wb, ws, '按物资汇总');
 
       const bookType: 'xlsx' = 'xlsx';
-      XLSX.writeFile(wb, `按物资汇总_${new Date().toISOString().slice(0, 10)}.${bookType}`, { bookType });
+      XLSX.writeFile(wb, `数据汇总_${new Date().toISOString().slice(0, 10)}.${bookType}`, { bookType });
     } catch (err: any) {
       if (err?.name === 'AbortError' || err?.message === 'EXPORT_CANCELED') {
         // 取消则静默
