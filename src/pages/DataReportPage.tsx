@@ -284,7 +284,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
       PRIMARY_OPTIONS.find(opt => opt.value === primaryType)?.label :
       SECONDARY_OPTIONS_BY_PRIMARY?.[primaryType]?.find(opt => opt.value === subType)?.label}`;
     const batchNumberTitle = `批次号: ${batchNo || '(未选择)'}`;
-    const categoryTitle = `物资种类: ${selectedCategory || '全部'}`;
+    const categoryTitle = `物资种类: ${categories.find((x) => x.categoryId === selectedCategory)?.categoryName || '全部'}`;
 
     const headers = ['时间', '事件', '批次号', '物资ID', '物资名称', '单位', '规格', '物资种类', '数量', '操作人', '备注'];
     const topInfoRows = [
@@ -390,6 +390,199 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
     }
   };
 
+  // ✅ 新增：按物资汇总导出（统计某时间段内每个物资的入库确认总量 & 出库总量）
+  const handleExportByItem = async () => {
+    if (!shipId) return;
+
+    // 与现有导出一致的状态管理
+    setExporting(true);
+    exportCanceledRef.current = false;
+    setExportPage(0);
+    setExportTotalPages(0);
+
+    // === 顶部说明信息 ===
+    const startStr = startDate ? new Date(startDate).toISOString().slice(0, 10) : '(未选择)';
+    const endStr = endDate ? new Date(endDate).toISOString().slice(0, 10) : '(未选择)';
+    const periodLine = `时间段: ${startStr} ~ ${endStr}`;
+    const categoryTitle = `物资种类筛选: ${categories.find((x) => x.categoryId === selectedCategory)?.categoryName || '全部'}`;
+    const headers = ['物资ID', '物资名称', '单位', '规格', '物资种类', '入库确认合计', '出库合计', '净变动(入-出)'];
+
+    // 你项目里的事件名请按实际调整👇
+    // 入库只统计“入库确认”
+    const INBOUND_TYPES = new Set<string>(['INBOUND_CONFIRM']);
+    // 出库统计所有导致库存减少的事件（按你的实际事件名补全）
+    const OUTBOUND_TYPES = new Set<string>([
+      'OUTBOUND', 'OUTBOUND_CONFIRM', 'USE', 'CONSUME', 'CLAIM', 'CLAIM_CONFIRM'
+    ]);
+
+    // 若你的后端 quantity 已经正负分明，可用“符号”判断；
+    // 这里为了稳妥，仍以事件类型为主，数量取绝对值参与对应方向的合计
+    const normalizeQty = (q: any) => {
+      const num = Number(q);
+      return Number.isFinite(num) ? Math.abs(num) : 0;
+    };
+
+    type AggRow = {
+      itemId: string;
+      itemName: string;
+      unit?: string;
+      specification?: string;
+      categoryName?: string;
+      inboundSum: number;
+      outboundSum: number;
+    };
+
+    const aggMap = new Map<string, AggRow>();
+
+    const wb = XLSX.utils.book_new();
+
+    // 顶部信息 + 表头（单 sheet）
+    const topInfoRows = [
+      [periodLine],
+      [categoryTitle],
+      [''], // 空行
+      headers
+    ];
+    const headerRowIdx = topInfoRows.length - 1; // 0-based
+    const ws = XLSX.utils.aoa_to_sheet(topInfoRows);
+
+    // 合并顶部说明整行
+    ws['!merges'] = Array.from({ length: headerRowIdx }, (_, r) => ({
+      s: { r, c: 0 },
+      e: { r, c: headers.length - 1 },
+    }));
+    ws['!cols'] = [
+      { wch: 20 }, // 物资ID
+      { wch: 18 }, // 物资名称
+      { wch: 10 }, // 单位
+      { wch: 12 }, // 规格
+      { wch: 14 }, // 物资种类
+      { wch: 14 }, // 入库确认合计
+      { wch: 12 }, // 出库合计
+      { wch: 12 }, // 净变动
+    ];
+    ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+    ws['!autofilter'] = {
+      ref: XLSX.utils.encode_range({
+        s: { r: headerRowIdx, c: 0 },
+        e: { r: headerRowIdx, c: headers.length - 1 }
+      })
+    };
+
+    // 导出使用较大的分页，减少请求
+    const pageSizeForExport = 100;
+
+    try {
+      // 第一次请求，拿 total / totalPages
+      let ctrl = new AbortController();
+      exportAbortRef.current = ctrl;
+
+      // 这里“按物资汇总”需要拿到给定时间段内的所有日志，不限定事件类型
+      // 因此 logType 传 undefined（或让后端返回全部类型）
+      const first = await getShipLogs(
+        shipId, 1, pageSizeForExport,
+        startDate || undefined, endDate || undefined,
+        undefined, // ⬅️ 取全部类型
+        batchNo || undefined,
+        selectedCategory,
+        ctrl.signal
+      );
+
+      if (exportCanceledRef.current) throw new Error('EXPORT_CANCELED');
+
+      const total = first?.data?.total ?? 0;
+      const totalPages = Math.max(1, Math.ceil(total / pageSizeForExport));
+      setExportTotalPages(totalPages);
+      setExportPage(Math.min(1, totalPages));
+
+      const processPage = (list: ShipLog[] = []) => {
+        for (const r of list) {
+          const itemId = String(r.itemId ?? '');
+          if (!itemId) continue;
+
+          const key = itemId;
+          if (!aggMap.has(key)) {
+            aggMap.set(key, {
+              itemId,
+              itemName: r.itemName ?? '',
+              unit: r.unit ?? '',
+              specification: r.specification ?? '',
+              categoryName: categories.find(x => x.categoryId === r.categoryId)?.categoryName ?? '',
+              inboundSum: 0,
+              outboundSum: 0,
+            });
+          }
+          const row = aggMap.get(key)!;
+
+          // 按事件分类累计
+          const et = String(r.eventType || '');
+          if (INBOUND_TYPES.has(et)) {
+            row.inboundSum += normalizeQty(r.quantity);
+          } else if (OUTBOUND_TYPES.has(et)) {
+            row.outboundSum += normalizeQty(r.quantity);
+          }
+        }
+      };
+
+      processPage(first?.data?.list ?? []);
+
+      // 后续页
+      for (let p = 2; p <= totalPages; p++) {
+        if (exportCanceledRef.current) throw new Error('EXPORT_CANCELED');
+
+        ctrl = new AbortController();
+        exportAbortRef.current = ctrl;
+
+        const resp = await getShipLogs(
+          shipId, p, pageSizeForExport,
+          startDate || undefined, endDate || undefined,
+          undefined, // 全部类型
+          batchNo || undefined,
+          selectedCategory,
+          ctrl.signal
+        );
+
+        if (exportCanceledRef.current) throw new Error('EXPORT_CANCELED');
+        processPage(resp?.data?.list ?? []);
+        setExportPage(p);
+
+        // 让出事件循环，避免 UI 卡顿
+        await new Promise(r => setTimeout(r, 0));
+      }
+
+      // 将聚合结果写入 Sheet
+      const sorted = Array.from(aggMap.values()).sort((a, b) => a.itemId.localeCompare(b.itemId));
+      const dataRows = sorted.map(r => ([
+        r.itemId,
+        r.itemName,
+        r.unit ?? '',
+        r.specification ?? '',
+        r.categoryName ?? '',
+        r.inboundSum,
+        r.outboundSum,
+        (r.inboundSum - r.outboundSum),
+      ]));
+      XLSX.utils.sheet_add_aoa(ws, dataRows, { origin: -1 });
+
+      XLSX.utils.book_append_sheet(wb, ws, '按物资汇总');
+
+      const bookType: 'xlsx' = 'xlsx';
+      XLSX.writeFile(wb, `按物资汇总_${new Date().toISOString().slice(0, 10)}.${bookType}`, { bookType });
+    } catch (err: any) {
+      if (err?.name === 'AbortError' || err?.message === 'EXPORT_CANCELED') {
+        // 取消则静默
+      } else {
+        setErrorMsg(err?.message || '导出失败');
+      }
+    } finally {
+      setExporting(false);
+      exportAbortRef.current = null;
+      exportCanceledRef.current = false;
+      setExportPage(0);
+      setExportTotalPages(0);
+    }
+  };
+
   return (
     <div className="p-4">
       <div className="mb-4 flex items-center justify-between">
@@ -482,7 +675,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
         </div>
 
         {/* 操作按钮 */}
-        <div className="flex items-end gap-2 justify-self-end">
+        <div className="flex items-end gap-2 justify-self-start">
           <button
             className="px-4 py-2 rounded-md bg-black text-white disabled:opacity-50 whitespace-nowrap"
             onClick={resetFilters}
@@ -490,76 +683,31 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
           >
             重置
           </button>
-
-          {/* 右侧导出操作 */}
-          <div className="ml-auto flex gap-2">
-            {!exporting ? (
-              <button
-                className="px-3 py-2 rounded-md border disabled:opacity-50"
-                onClick={handleExportAll}
-                disabled={loading || exporting}
-              >
-                导出全部
-              </button>
-            ) : (
-              <button
-                className="px-3 py-2 rounded-md border border-rose-300 text-rose-600 hover:bg-rose-50"
-                onClick={handleCancelExport}
-              >
-                取消导出
-              </button>
-            )}
-          </div>
         </div>
-
-        {/* ✅ 进度面板（导出时显示） */}
-        {exporting && (
-          <div className="mt-3 p-3 border rounded-lg bg-white shadow flex items-center gap-3">
-            <div className="flex-1">
-              <div className="text-sm text-gray-700 mb-1">
-                导出中：第 {Math.max(1, exportPage)} / {Math.max(1, exportTotalPages)} 页
-              </div>
-              <div className="h-2 bg-gray-200 rounded">
-                <div
-                  className="h-2 bg-blue-600 rounded"
-                  style={{
-                    width: `${exportTotalPages ? Math.round((exportPage / exportTotalPages) * 100) : 0}%`,
-                    transition: 'width .2s ease',
-                  }}
-                />
-              </div>
-            </div>
-            <button
-              className="px-3 py-1.5 rounded-md border border-rose-300 text-rose-600 hover:bg-rose-50"
-              onClick={handleCancelExport}
-            >
-              取消
-            </button>
-          </div>
-        )}
-
       </div>
 
       {/* 列表 */}
-      <div className="border rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
+      <div className="border rounded-lg bg-white shadow-sm overflow-hidden">
+        {/* 滚动容器：内部滚动 */}
+        <div className="max-h-[63vh] overflow-auto">
+          <table className="min-w-full text-sm table-fixed">
+            <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
               <tr className="text-left">
-                <th className="px-4 py-2">时间</th>
-                <th className="px-4 py-2">事件</th>
-                <th className="px-4 py-2">批次号</th>
-                <th className="px-4 py-2">物资</th>
-                <th className="px-4 py-2">规格</th>
-                <th className="px-4 py-2">数量</th>
-                <th className="px-4 py-2">操作人</th>
-                <th className="px-4 py-2">备注</th>
+                <th className="px-4 py-2 whitespace-nowrap">时间</th>
+                <th className="px-4 py-2 whitespace-nowrap">事件</th>
+                <th className="px-4 py-2 whitespace-nowrap">批次号</th>
+                <th className="px-4 py-2 whitespace-nowrap">物资</th>
+                <th className="px-4 py-2 whitespace-nowrap">规格</th>
+                <th className="px-4 py-2 whitespace-nowrap">数量</th>
+                <th className="px-4 py-2 whitespace-nowrap">操作人</th>
+                <th className="px-4 py-2 whitespace-nowrap">备注</th>
               </tr>
             </thead>
+
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-gray-500">
+                  <td colSpan={8} className="px-4 py-6 text-center text-gray-500">
                     加载中…
                   </td>
                 </tr>
@@ -567,41 +715,93 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
 
               {!loading && rows.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-gray-500">
+                  <td colSpan={8} className="px-4 py-6 text-center text-gray-500">
                     暂无日志
                   </td>
                 </tr>
               )}
 
-              {!loading && rows.map((row, idx) => (
-                <tr key={`${row.eventType}-${row.itemId}-${row.eventTime}-${idx}`} className="border-t">
-                  <td className="px-4 py-2 whitespace-nowrap">{row.eventTime}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-md text-xs font-medium ${badgeStyleByType[row.eventType]}`}>
-                      {labelByType[row.eventType]}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap">{row.batchNumber || '-'}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    <div className="flex flex-col">
-                      <span className="font-medium">{row.itemName}</span>
-                      <span className="text-xs text-gray-500">物资编号: {row.itemId}</span>
-                      <span className="text-xs text-gray-500">种类: {categories.find((x) => x.categoryId === row.categoryId)?.categoryName || ''}</span>
-                      <span className="text-xs text-gray-500">单位: {row.unit}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-2">{row.specification}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{row.quantity}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{row.actor || '-'}</td>
-                  <td className="px-4 py-2">{row.remark || '-'}</td>
-                </tr>
-              ))}
+              {!loading &&
+                rows.map((row, idx) => (
+                  <tr key={`${row.eventType}-${row.itemId}-${row.eventTime}-${idx}`} className="border-t">
+                    <td className="px-4 py-2 whitespace-nowrap">{row.eventTime}</td>
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      <span className={`px-2 py-1 rounded-md text-xs font-medium ${badgeStyleByType[row.eventType]}`}>
+                        {labelByType[row.eventType]}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 whitespace-nowrap">{row.batchNumber || '-'}</td>
+                    <td className="px-4 py-2 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="font-medium">{row.itemName}</span>
+                        <span className="text-xs text-gray-500">物资编号: {row.itemId}</span>
+                        <span className="text-xs text-gray-500">
+                          种类: {categories.find((x) => x.categoryId === row.categoryId)?.categoryName || ''}
+                        </span>
+                        <span className="text-xs text-gray-500">单位: {row.unit}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-2">{row.specification}</td>
+                    <td className="px-4 py-2 whitespace-nowrap">{row.quantity}</td>
+                    <td className="px-4 py-2 whitespace-nowrap">{row.actor || '-'}</td>
+                    <td className="px-4 py-2">{row.remark || '-'}</td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
 
-        {/* 分页 */}
-        <div className="border-t">
+        {/* 底部栏 */}
+        <div className="border-t bg-gray-50 flex flex-row justify-between">
+          {/* === 导出操作区 === */}
+          <div className="">
+            <div className="w-fit p-4 rounded-lg shadow-sm">
+              <div className="flex flex-col flex-nowrap items-center justify-between gap-3 whitespace-nowrap">
+                {!exporting ? (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleExportAll}
+                      disabled={loading}
+                      className="px-4 py-2 rounded-md border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 active:bg-gray-200 disabled:opacity-50 transition"
+                    >
+                      导出明细
+                    </button>
+                    <button
+                      onClick={handleExportByItem}
+                      disabled={loading}
+                      className="px-4 py-2 rounded-md border border-blue-400 bg-blue-50 text-blue-600 hover:bg-blue-100 active:bg-blue-200 disabled:opacity-50 transition"
+                    >
+                      导出汇总
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="flex-1">
+                      <div className="text-sm text-gray-600 mb-1">
+                        正在导出：第 {Math.max(1, exportPage)} / {Math.max(1, exportTotalPages)} 页
+                      </div>
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-2 bg-blue-600 rounded-full transition-all duration-200 ease-out"
+                          style={{
+                            width: `${exportTotalPages ? Math.round((exportPage / exportTotalPages) * 100) : 0}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleCancelExport}
+                      className="px-3 py-1.5 rounded-md border border-rose-400 text-rose-600 hover:bg-rose-50 active:bg-rose-100 transition"
+                    >
+                      ✖ 取消导出
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* 分页 */}
           <Pagination
             page={page}
             pageSize={pageSize}
@@ -610,10 +810,14 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
             canPrev={canPrev}
             canNext={canNext}
             onChangePage={(p) => setPage(p)}
-            onChangePageSize={(size) => { setPage(1); setPageSize(size); }}
+            onChangePageSize={(size) => {
+              setPage(1);
+              setPageSize(size);
+            }}
           />
         </div>
       </div>
+
 
       {/* 错误提示 */}
       {errorMsg && (
