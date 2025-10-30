@@ -72,6 +72,7 @@ router.post('/getClaimLog', asyncHandler(async (req, res) => {
         it.item_name_en                                AS itemNameEn,
         it.category_id                                 AS categoryId,
         it.unit                                        AS unit,
+        it.specification                               AS specification,
         clm.quantity                                   AS quantity,
         clm.claimer                                    AS claimer,
         CONVERT_TZ(clm.claimed_at, '+00:00', '+08:00') AS claimedAt,
