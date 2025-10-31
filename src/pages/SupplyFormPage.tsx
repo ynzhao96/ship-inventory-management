@@ -168,7 +168,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
       items: supplyItems
     });
 
-    setToastText(res.message || '');
+    setToastText((res.success ? res.message : res.error) || '');
     requestAnimationFrame(() => setShowToast(true));
     clearAll();
   };

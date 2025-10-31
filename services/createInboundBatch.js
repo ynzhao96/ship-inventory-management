@@ -8,7 +8,7 @@ router.use(authRequired);
 
 router.post('/createInboundBatch', asyncHandler(async (req, res) => {
   const { batchNo, creator, shipId, items } = req.body || {};
-  if (!batchNo || creator || !shipId || !Array.isArray(items) || items.length === 0) {
+  if (!batchNo || !creator || !shipId || !Array.isArray(items) || items.length === 0) {
     return fail(res, 400, { code: 'BAD_REQUEST', message: 'batchNo, creator, shipId, items 必填且 items 需为非空数组' });
   }
   for (let i = 0; i < items.length; i++) {
