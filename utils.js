@@ -15,7 +15,7 @@ export const fail = (res, httpStatus, { code = 'ERROR', message = 'Error', extra
   return res.status(httpStatus).json({
     success: false,
     code,
-    message,
+    message: message,
     error: message,     // 兼容字段
     ...extra,           // 可放更多信息
   });
