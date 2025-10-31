@@ -21,7 +21,7 @@ router.post('/createInboundBatch', asyncHandler(async (req, res) => {
 
   const { list } = await withTransaction(async (conn) => {
     // 批量 INSERT
-    const placeholders = items.map(() => '(?, ?, ?, ?, ?, NOW())').join(',');
+    const placeholders = items.map(() => '(?, ?, ?, ?, ?, ?, NOW())').join(',');
     const params = items.flatMap(it => [batchNo, creator, shipId, it.itemId, Number(it.quantity), 'PENDING']);
 
     const ins = await q(
