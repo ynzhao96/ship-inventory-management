@@ -131,7 +131,7 @@ router.post('/getShipLogs', asyncHandler(async (req, res) => {
       it.specification                               AS specification,
       it.category_id                                 AS categoryId,
       ibd.quantity                                   AS quantity,
-      'Administrator'                                AS actor,
+      ibd.creator                                    AS actor,
       NULL                                           AS remark
     FROM inbounds AS ibd
     LEFT JOIN items AS it ON it.item_id = ibd.item_id
