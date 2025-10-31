@@ -15,6 +15,7 @@ interface Props {
 type SupplyRow = InboundItemInput & { existsInItems?: boolean };
 
 const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
+  const [creator, setCreator] = useState('');
   const [batchNumber, setBatchNumber] = useState('');
   const [supplyItems, setSupplyItems] = useState<SupplyRow[]>([
     { itemId: '', itemName: '', categoryId: '', quantity: 0, unit: '' }
@@ -29,6 +30,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
   // 清空页面所有信息
   const clearAll = () => {
     setBatchNumber('');
+    setCreator('');
     setSupplyItems([]);
   };
 
@@ -42,6 +44,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
 
   const validateSupplyForm = (): string | null => {
     if (!batchNumber) return '请填写批次号';
+    if (!creator) return '请填写操作人';
     if (!supplyItems.length) return '请添加物资';
     for (const item of supplyItems) {
       if (!item.itemId) return '物资编号不能为空';
@@ -146,7 +149,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
     [supplyItems]
   );
 
-  const formError = useMemo(() => validateSupplyForm(), [batchNumber, supplyItems]);
+  const formError = useMemo(() => validateSupplyForm(), [batchNumber, creator, supplyItems]);
   const disableSubmit = !!formError || hasMissing;
 
   // 提交
@@ -160,6 +163,7 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
 
     const res = await createInboundBatch({
       batchNo: batchNumber,
+      creator: creator,
       shipId: shipId,
       items: supplyItems
     });
@@ -173,15 +177,27 @@ const SupplyFormPage: React.FC<Props> = ({ shipId }) => {
     <div className="bg-white shadow rounded-lg p-6">
       <h2 className="text-xl font-bold mb-6">物资补充</h2>
 
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">批次号</label>
-        <input
-          type="text"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={batchNumber}
-          onChange={(e) => setBatchNumber(e.target.value)}
-          placeholder="请输入批次号"
-        />
+      <div className="w-full mb-6 flex flex-row justify-start">
+        <div className="pr-20">
+          <label className="block text-sm font-medium text-gray-700 mb-2">批次号</label>
+          <input
+            type="text"
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={batchNumber}
+            onChange={(e) => setBatchNumber(e.target.value)}
+            placeholder="请输入批次号"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">操作人</label>
+          <input
+            type="text"
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={creator}
+            onChange={(e) => setCreator(e.target.value)}
+            placeholder="请输入操作人"
+          />
+        </div>
       </div>
 
       <div className="mb-6">
