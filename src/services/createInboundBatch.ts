@@ -4,11 +4,13 @@ import { http } from "../http";
 // 批量添加入库
 export const createInboundBatch = async (params: {
   batchNo: string;
+  creator: string;
   shipId?: number | string;
   items: InboundItemInput[];
 }) => {
   const body = {
     batchNo: String(params.batchNo ?? '').trim(),
+    creator: String(params.creator ?? '').trim(),
     shipId: normalizeId(params.shipId),
     items: (params.items ?? []).map(it => ({
       itemId: String(it.itemId ?? '').trim(),
