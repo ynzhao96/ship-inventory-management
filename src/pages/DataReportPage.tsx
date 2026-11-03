@@ -410,7 +410,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
     // 入库只统计“入库确认”
     const INBOUND_TYPES = new Set<string>(['INBOUND_CONFIRM']);
     // 出库统计所有导致库存减少的事件（按你的实际事件名补全）
-    const OUTBOUND_TYPES = new Set<string>(['CLAIMED']);
+    const OUTBOUND_TYPES = new Set<string>(['CLAIM']);
 
     // 若你的后端 quantity 已经正负分明，可用“符号”判断；
     // 这里为了稳妥，仍以事件类型为主，数量取绝对值参与对应方向的合计
