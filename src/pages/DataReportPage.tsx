@@ -655,6 +655,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
           <label className="text-sm text-gray-600 mb-1">开始日期</label>
           <input
             type="date"
+            lang="zh-CN"
             className="border rounded-md px-3 py-2"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
@@ -667,6 +668,7 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
           <label className="text-sm text-gray-600 mb-1">结束日期</label>
           <input
             type="date"
+            lang="zh-CN"
             className="border rounded-md px-3 py-2"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
