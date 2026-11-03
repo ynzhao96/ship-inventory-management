@@ -409,8 +409,9 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
 
     // 入库只统计“入库确认”
     const INBOUND_TYPES = new Set<string>(['INBOUND_CONFIRM']);
-    // 出库统计所有导致库存减少的事件（按你的实际事件名补全）
-    const OUTBOUND_TYPES = new Set<string>(['CLAIM']);
+    // 出库统计所有出库以及减去所有出库取消
+    const OUTBOUND_TYPE = 'CLAIM';
+    const OUTBOUND_CANCEL_TYPE = 'CANCEL_CLAIM';
 
     // 若你的后端 quantity 已经正负分明，可用“符号”判断；
     // 这里为了稳妥，仍以事件类型为主，数量取绝对值参与对应方向的合计
@@ -515,8 +516,10 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
           const et = String(r.eventType || '');
           if (INBOUND_TYPES.has(et)) {
             row.inboundSum += normalizeQty(r.quantity);
-          } else if (OUTBOUND_TYPES.has(et)) {
+          } else if (OUTBOUND_TYPE === et) {
             row.outboundSum += normalizeQty(r.quantity);
+          } else if (OUTBOUND_CANCEL_TYPE === et) {
+            row.outboundSum -= normalizeQty(r.quantity);
           }
         }
       };
