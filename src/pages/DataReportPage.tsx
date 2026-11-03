@@ -407,13 +407,10 @@ const DataReportPage: React.FC<Props> = ({ shipId }) => {
     const categoryTitle = `物资种类筛选: ${categories.find((x) => x.categoryId === selectedCategory)?.categoryName || '全部'}`;
     const headers = ['物资ID', '物资名称', '单位', '规格', '物资种类', '入库确认合计', '出库合计', '净变动(入-出)'];
 
-    // 你项目里的事件名请按实际调整👇
     // 入库只统计“入库确认”
     const INBOUND_TYPES = new Set<string>(['INBOUND_CONFIRM']);
     // 出库统计所有导致库存减少的事件（按你的实际事件名补全）
-    const OUTBOUND_TYPES = new Set<string>([
-      'OUTBOUND', 'OUTBOUND_CONFIRM', 'USE', 'CONSUME', 'CLAIM', 'CLAIM_CONFIRM'
-    ]);
+    const OUTBOUND_TYPES = new Set<string>(['CLAIMED']);
 
     // 若你的后端 quantity 已经正负分明，可用“符号”判断；
     // 这里为了稳妥，仍以事件类型为主，数量取绝对值参与对应方向的合计
